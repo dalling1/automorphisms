@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<head>
+ <meta charset="utf-8">
+ <title>Automorphism</title>
+ <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:Light&display=swap">
+</head>
+<body onload="run();">
+
+
+<script>
+// function to provide labels ///////////////////////////////////////////////////////////////////// fn:label
+function label(n){
+ return (n>=0 & n<thelabels.length ? thelabels[n] : "X"); // return 'X' if n is out of range
+}
+
+// function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
+function mkdot(nodes,edges){
+ colours=['red','blue','green','magenta','cyan','black','yellow'];
+ var thisgraph = 'graph {\n\tedge [penwidth=5]\n\tranksep=10\n';
+ thisgraph += '\tnode [shape=circle, color=black, style=filled, fillcolor="#88888844", fontsize=14]\n'
+ thisgraph += '\t// EDGES\n';
+ for (var i=0;i<theedges.length;i++){
+//  thisgraph += '\t' + theedges[i][0] + EDGESEP + theedges[i][1] + '\n';
+  var from = thenodes[theedges[i][0]].join("");
+  var to = thenodes[theedges[i][1]].join("");
+  if (from.length==0) from = ROOTNODE;
+  if (to.length==0) to = ROOTNODE;
+  thiscolour = colours[to[to.length-1]]
+  thisgraph += '\t' + from + EDGESEP + to + ' [color='+thiscolour+']\n';
+ }
+ thisgraph += '}\n';
+ return thisgraph;
+}
+
+// function to find a d3 node with the given label ///////////////////////////////////////////////// fn: findlabel
+function findlabel(nodes,label){
+ var foundindex = -1;
+ for (var i=0;i<nodes.length;i++){
+  if (nodes[i].label==label){
+   foundindex = i;
+  }
+ }
+ return foundindex;
+}
+
+
+const Pi = Math.acos(-1);
+const thelabels = "abcdefghijklmnopqrstuvwxyz0123456789".split(""); // used for dot language output
+const EDGESEP = " -- "; // dot language output separator (-- or ->)
+const ROOTNODE = "\u{d8}";
+
+function run(){
+ var maxdepth = 3;
+ var valency = 4;
+ var valencyList = [];
+ for (var v=0;v<valency;v++){
+  valencyList.push(v);
+ }
+
+ // initialise
+ thenodes = [];
+ thenodes[0] = []; // root node
+ theedges = [];    // pair-wise edges, using indices
+
+ // loop over all nodes and add children to those at the (current) maximum depth
+ for (var d=0;d<maxdepth;d++){
+  for (var i=0;i<thenodes.length;i++){
+   if (thenodes[i].length==d){
+    for (var v=0;v<valency;v++){
+     if (thenodes[i][thenodes[i].length-1]!=v){ // but only add this node if it really exists (ie. not doubling back on the path)
+      thenodes[thenodes.length] = thenodes[i].concat(v);
+      // and add an edge at the same time
+      theedges.push([i,thenodes.length-1]);
+     }
+    }
+   }
+  }
+ }
+
+ // create the dot graph //////////////////////////////////////////////////////////////////////////////// make the graph
+ G=mkdot(thenodes,theedges);
+ console.log(G);
+ // feed it to:
+ //		https://dreampuf.github.io/GraphvizOnline/
+
+
+
+ // now define the automorphism:
+ autoFrom = [1,2,3];
+ autoTo = [1,0];
+ localAction = permuteCyclic(valencyList,1); // for example
+
+
+
+} // end run()
+
+function randomInt(n=1){
+ return Math.floor(Math.random()*n); // random integer from the set [0, 1, ..., n-1]
+}
+
+function permuteCyclic(list,dist=0){
+ var out = Array(list.length); // initialise
+ while (dist>list.length) dist-=list.length; // avoid winding
+ while (dist<0) dist+=list.length; // avoid winding
+ for (var i=0;i<(list.length-dist);i++) out[i]=list[i+dist]; // 0 ... dist
+ for (var i=list.length-dist;i<list.length;i++) out[i]=list[i+dist-list.length]; // dist+1 ... end
+ return out;
+}
+
+function permuteRandom(list){
+ var inlist = Array(list.length); // initialise
+ var out = Array(list.length); // initialise
+ for (var i=0;i<list.length;i++) inlist[i] = list[i]; // make a copy
+ for (var i=0;i<list.length;i++) out[i] = inlist.splice(randomInt(inlist.length),1); // extract the copy in random order
+ return out;
+}
+
+</script>
+
+</body>
+</html>
