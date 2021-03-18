@@ -14,19 +14,25 @@ function label(n){
 }
 
 // function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
-function mkdot(nodes,edges){
+function mkdot(nodes,edges,uselabels=false){
  colours=['red','blue','green','magenta','cyan','black','yellow'];
  var thisgraph = 'graph {\n\tedge [penwidth=5]\n\tranksep=10\n';
  thisgraph += '\tnode [shape=circle, color=black, style=filled, fillcolor="#88888844", fontsize=14]\n'
  thisgraph += '\t// EDGES\n';
  for (var i=0;i<theedges.length;i++){
-//  thisgraph += '\t' + theedges[i][0] + EDGESEP + theedges[i][1] + '\n';
   var from = thenodes[theedges[i][0]].join("");
   var to = thenodes[theedges[i][1]].join("");
-  if (from.length==0) from = ROOTNODE;
-  if (to.length==0) to = ROOTNODE;
+  if (uselabels){
+   var fromLabel = thenodes[theedges[i][0]].map(label).join("");
+   var toLabel = thenodes[theedges[i][1]].map(label).join("");
+  } else {
+   var fromLabel = from;
+   var toLabel = to;
+  }
+  if (fromLabel.length==0) fromLabel = ROOTNODE;
+  if (toLabel.length==0) toLabel = ROOTNODE;
   thiscolour = colours[to[to.length-1]]
-  thisgraph += '\t' + from + EDGESEP + to + ' [color='+thiscolour+']\n';
+  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color='+thiscolour+']\n';
  }
  thisgraph += '}\n';
  return thisgraph;
@@ -50,17 +56,18 @@ const EDGESEP = " -- "; // dot language output separator (-- or ->)
 const ROOTNODE = "\u{d8}";
 
 function run(){
- var maxdepth = 3;
- var valency = 4;
+ var maxdepth = 4;
+ valency = 3;
  var valencyList = [];
  for (var v=0;v<valency;v++){
   valencyList.push(v);
  }
 
  // initialise
- thenodes = [];
- thenodes[0] = []; // root node
- theedges = [];    // pair-wise edges, using indices
+ thenodes = [];      // list of nodes by address
+ thenodes[0] = [];   // root node
+ theedges = [];      // pair-wise edges, using indices
+ thenodeindex = [];  // associative array, index by node address
 
  // loop over all nodes and add children to those at the (current) maximum depth
  for (var d=0;d<maxdepth;d++){
@@ -69,6 +76,8 @@ function run(){
     for (var v=0;v<valency;v++){
      if (thenodes[i][thenodes[i].length-1]!=v){ // but only add this node if it really exists (ie. not doubling back on the path)
       thenodes[thenodes.length] = thenodes[i].concat(v);
+      // store the index of each node address as well (to aid searching)
+      thenodeindex[thenodes[thenodes.length-1].toString()] = thenodes.length-1;
       // and add an edge at the same time
       theedges.push([i,thenodes.length-1]);
      }
@@ -78,27 +87,52 @@ function run(){
  }
 
  // create the dot graph //////////////////////////////////////////////////////////////////////////////// make the graph
- G=mkdot(thenodes,theedges);
+ G=mkdot(thenodes,theedges,1);
  console.log(G);
  // feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
 
 
 
- // now define the automorphism:
- autoFrom = [1,2,3];
- autoTo = [1,0];
- localAction = permuteCyclic(valencyList,1); // for example
+ // now define the automorphism: [THESE WILL COME FROM USER INPUT]
+ autoFrom = [0,1,2];
+ autoTo = [1,2];
+ localActionPermutation = permutationCyclic(valencyList,1); // for example
 
+ // get neighbours
+ autoNeighbours = findNeighbours(autoFrom,valency);  // these nodes...
+ toNeighbours = findNeighbours(autoTo,valency);     // ...map to these nodes
+ permNeighbours = localAction(toNeighbours,localActionPermutation,valency);
+ 
+
+ // map these neighbours according to the localAction:
+// toNeighbours = [];
+// for (var v=0;v<valency;v++){ // equivalently, autoNeighbours.length
+//  toNeighbours.push(permute(autoNeighbours[v],localAction,valency,1));
+// }
+
+ console.log(autoFrom.map(label).toString()+" --> "+autoTo.map(label).toString()+" reference node");
+ for (var i=0;i<autoNeighbours.length;i++){
+  console.log(autoNeighbours[i].map(label).toString()+" --> "+toNeighbours[i].map(label).toString()+" --> "+permNeighbours[i].map(label).toString());
+ }
+
+/*
+ // find the node which is moving (using the node index)
+ indxFrom = thenodeindex[autoFrom];
+ // find the destination
+ indxTo = thenodeindex[autoTo];
+*/
 
 
 } // end run()
 
+// random integers ////////////////////////////////////////////////////////////////////////////////////// fn: randomInt
 function randomInt(n=1){
  return Math.floor(Math.random()*n); // random integer from the set [0, 1, ..., n-1]
 }
 
-function permuteCyclic(list,dist=0){
+// cyclically permute a given list (by a specified "distance") ////////////////////////////////////////// fn: permutationCyclic
+function permutationCyclic(list,dist=0){
  var out = Array(list.length); // initialise
  while (dist>list.length) dist-=list.length; // avoid winding
  while (dist<0) dist+=list.length; // avoid winding
@@ -107,13 +141,85 @@ function permuteCyclic(list,dist=0){
  return out;
 }
 
-function permuteRandom(list){
+// randomly permute a given list //////////////////////////////////////////////////////////////////////// fn: permutationRandom
+function permutationRandom(list){
  var inlist = Array(list.length); // initialise
  var out = Array(list.length); // initialise
  for (var i=0;i<list.length;i++) inlist[i] = list[i]; // make a copy
  for (var i=0;i<list.length;i++) out[i] = inlist.splice(randomInt(inlist.length),1); // extract the copy in random order
  return out;
 }
+
+// test a permutation vector for legality /////////////////////////////////////////////////////////////// fn: testPermuation
+function testPermutation(perm,valency){
+ // test for a valid permutation
+ if (perm.length==valency){ // right size?
+  for (var p=0;p<perm.length;p++){
+   if (perm.indexOf(perm[p])!=p){ // repeated entries?
+    console.log("ERROR: invalid permutation (repeated entries)");
+    return false;
+   }
+  }
+ } else {
+  console.log("ERROR: permutation length is not equal to the valency");
+  return false;
+ }
+ return true;
+}
+
+// permute a given list using the provided permutation ////////////////////////////////////////////////// fn: permute
+function localAction(list,perm,valency){
+ // takes a list of a node's neighbours (ie. list length = valency) and permutes them
+
+ if (testPermutation(perm,valency)){
+  // legal permutation, so perform the operation
+  var out = Array(list.length);
+  for (var i=0;i<list.length;i++){
+//   out[i] = perm[list[i]]; // permute elements of the list (ie. replace each element with its permuted value)
+   out[i] = list[perm[i]]; // permute elements: local action (ie swap the elements of the list around with each other)
+  }
+  return out;
+ } else {
+  return undefined;
+ }
+}
+
+/*
+// permute a given list using the provided permutation ////////////////////////////////////////////////// fn: permute
+function permute(list,perm,valency){
+ // n is the number of elements *from the end* to permute
+
+ if (testPermutation(perm,valency)){
+  // legal permutation, so perform the operation
+  var out = Array(list.length);
+  for (var i=0;i<list.length-n;i++){
+   out[i] = list[i]; // simply copy non-permuting elements
+  }
+  for (var i=list.length-n;i<list.length;i++){
+   out[i] = perm[list[i]]; // permute elements of the list: "regular" permutation
+//   out[i] = list[perm[i]]; // permute the list: local action
+  }
+  return out;
+ } else {
+  return undefined;
+ }
+}
+*/
+
+// find the neighbours of a given node, for a given valency //////////////////////////////////////////////// fn: findNeighbours
+function findNeighbours(node,valency){
+ neighbours = Array(valency); // initialise
+ for (var v=0;v<valency;v++){
+  if (v==node[node.length-1]){ // check for the "parent" node
+   // add the neighbour towards the root node
+   neighbours[v] = node.slice(0,node.length-1);
+  } else {
+   neighbours[v] = node.concat(v);
+  }
+ }
+ return neighbours;
+}
+
 
 </script>
 
