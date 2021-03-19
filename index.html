@@ -111,9 +111,12 @@ function run(){
 //  toNeighbours.push(permute(autoNeighbours[v],localAction,valency,1));
 // }
 
- console.log(autoFrom.map(label).toString()+" --> "+autoTo.map(label).toString()+" reference node");
+ console.log("Reference node moves:");
+ console.log(autoFrom.map(label).toString()+" --> "+autoTo.map(label).toString());
+ console.log(" ");
+ console.log("Node label --> maps to --> permutes to");
  for (var i=0;i<autoNeighbours.length;i++){
-  console.log(autoNeighbours[i].map(label).toString()+" --> "+toNeighbours[i].map(label).toString()+" --> "+permNeighbours[i].map(label).toString());
+  console.log(autoNeighbours[i].map(label).toString()+"\t-->\t"+toNeighbours[i].map(label).toString()+"\t-->\t"+permNeighbours[i].map(label).toString());
  }
 
 /*
@@ -175,8 +178,8 @@ function localAction(list,perm,valency){
   // legal permutation, so perform the operation
   var out = Array(list.length);
   for (var i=0;i<list.length;i++){
-//   out[i] = perm[list[i]]; // permute elements of the list (ie. replace each element with its permuted value)
-   out[i] = list[perm[i]]; // permute elements: local action (ie swap the elements of the list around with each other)
+//reversed   out[i] = list[perm[i]]; // permute elements: local action (ie swap the elements of the list around with each other)
+   out[perm[i]] = list[i]; // permute elements: local action (ie swap the elements of the list around with each other)
   }
   return out;
  } else {
