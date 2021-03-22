@@ -12,19 +12,24 @@
 function label(n){
  return (n>=0 & n<thelabels.length ? thelabels[n] : "X"); // return 'X' if n is out of range
 }
+function labelNode(node){
+ thelabel = node.map(label).join("");
+ if (thelabel.length==0) thelabel = ROOTNODE;
+ return thelabel;
+}
 
 // function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
 function mkdot(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],destNeigh=[],localActionNeigh=[]){
  colours=['red','blue','green','magenta','cyan','black','yellow'];
  var thisgraph = 'graph {\n\tedge [penwidth=1]\n\tranksep=10\n';
- thisgraph += '\tnode [shape=circle, color=black, style=filled, fillcolor="#88888844", fontsize=14, fixedsize=true]\n'
+ thisgraph += '\tnode [shape=circle, color=black, style=filled, fillcolor="#88888844", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'
  thisgraph += '\t// EDGES\n';
  for (var i=0;i<theedges.length;i++){
   var from = thenodes[theedges[i][0]].join("");
   var to = thenodes[theedges[i][1]].join("");
   if (uselabels){
-   var fromLabel = thenodes[theedges[i][0]].map(label).join("");
-   var toLabel = thenodes[theedges[i][1]].map(label).join("");
+   var fromLabel = labelNode(thenodes[theedges[i][0]]);
+   var toLabel = labelNode(thenodes[theedges[i][1]]);
   } else {
    var fromLabel = from;
    var toLabel = to;
@@ -35,29 +40,46 @@ function mkdot(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],de
   thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color='+thiscolour+']\n';
  }
 
- if (refNode.length>0 & destNode.length>0 & refNeigh.length==destNeigh.length & refNeigh.length==localActionNeigh.length){
+// if (refNode.length>0 & destNode.length>0 & refNeigh.length==destNeigh.length & refNeigh.length==localActionNeigh.length){
+ if (refNeigh.length==destNeigh.length & refNeigh.length==localActionNeigh.length){
   // draw dashed edges showing the new edges
-  thisgraph += '\n\tedge [penwidth=5]\n';
+  // insert a comment for blanking out all of the unspecified (in the automorphism) nodes (just in case it is wanted)
+  thisgraph += '\n\t// NO LABELS?\n';
+  thisgraph += '//\t';
+  for (var i=0;i<nodes.length;i++){
+   thisgraph += labelNode(nodes[i])+',';
+  }
+  thisgraph = thisgraph.slice(0,thisgraph.length-1); // remove trailing comma
+  thisgraph += ' [label=""]\n';
+
+  thisgraph += '\n\t// AUTOMORPHISM\n';
+  thisgraph += '\tedge [penwidth=5]\n';
+
   for (var i=0;i<localActionNeigh.length;i++){
-   if (destNeigh[i].length<refNode.length){
+
+   /* --- start colour */
+   if (destNeigh[i].length<destNode.length){
     // "parent" neighbour, use the last entry of the reference node for the colour:
-    thiscolour = colours[refNode[refNode.length-1]];
+    thiscolour = colours[destNode[destNode.length-1]];
    } else {
     // "regular" neighbour, use the last entry for the colour:
     thiscolour = colours[destNeigh[i][destNeigh[i].length-1]];
    }
-   thisgraph += '\t'+destNode.map(label).join("") + EDGESEP + localActionNeigh[i].map(label).join("") + ' [style=dashed, color='+thiscolour+']\n';
+   /* --- end colour */
+
+   thisgraph += '\t'+labelNode(destNode) + EDGESEP + labelNode(localActionNeigh[i]) + ' [style=dashed, color='+thiscolour+']\n';
   }
   // highlight and relabel the reference node and its neighbours
-  thisgraph += '\t'+refNode.map(label).join("")+' [fillcolor=green, label="'+refNode.map(label).join("")+'"]\n';
+  thisgraph += '\t'+labelNode(refNode)+' [fillcolor=green, fontcolor=black, penwidth=5, label="'+labelNode(refNode)+'"]\n';
   for (var i=0;i<refNeigh.length;i++){
-   thisgraph += '\t'+refNeigh[i].map(label).join("")+' [fillcolor=green, label="'+refNeigh[i].map(label).join("")+'"]\n';
+   thisgraph += '\t'+labelNode(refNeigh[i])+' [fillcolor=green, fontcolor=black, label="'+labelNode(refNeigh[i])+'"]\n';
   }
   // highlight and relabel the destination nodes
-  thisgraph += '\t'+destNode.map(label).join("")+' [fillcolor=yellow, label="'+destNode.map(label).join("")+'\\n'+refNode.map(label).join("")+'"]\n';
+  thisgraph += '\t'+labelNode(destNode)+' [fillcolor=yellow, fontcolor=black, penwidth=5, label="'+labelNode(destNode)+'\\n'+labelNode(refNode)+'"]\n';
   for (var i=0;i<localActionNeigh.length;i++){
-   thisgraph += '\t'+localActionNeigh[i].map(label).join("")+' [fillcolor=yellow, label="'+localActionNeigh[i].map(label).join("")+'\\n'+refNeigh[i].map(label).join("")+'"]\n';
+   thisgraph += '\t'+labelNode(localActionNeigh[i])+' [fillcolor=yellow, fontcolor=black, label="'+labelNode(localActionNeigh[i])+'\\n'+labelNode(refNeigh[i])+'"]\n';
   }
+
  } else {
   console.log("[mkdot] Wrong length");
  }
@@ -84,7 +106,7 @@ const EDGESEP = " -- "; // dot language output separator (-- or ->)
 const ROOTNODE = "\u{d8}";
 
 function run(){
- var maxdepth = 4;
+ var maxdepth = 5;
  valency = 3;
  var valencyList = [];
  for (var v=0;v<valency;v++){
@@ -116,9 +138,31 @@ function run(){
 
 
  // now define the automorphism: [THESE WILL COME FROM USER INPUT]
- autoFrom = [0,1,2];
- autoTo = [1,2];
- localActionPermutation = permutationCyclic(valencyList,1); // for example
+ if (1){
+  autoFrom = [0,1,2];
+  autoTo = [1,2];
+  localActionPermutation = permutationCyclic(valencyList,1); // for example
+ }
+ if (0){
+  autoFrom = [];
+  autoTo = [1,2];
+  localActionPermutation = permutationCyclic(valencyList,1); // for example
+ }
+ if (0){
+  autoFrom = [2,0,1];
+  autoTo = [1,0,2];
+  localActionPermutation = permutationCyclic(valencyList,1); // for example
+ }
+ if (0){
+  autoFrom = [2,1,2];
+  autoTo = [1,0,2];
+  localActionPermutation = permutationCyclic(valencyList,1); // for example
+ }
+ if (1){
+  autoFrom = [2,1,2,1];
+  autoTo = [1,0,2];
+  localActionPermutation = permutationCyclic(valencyList,1); // for example
+ }
 
  // get neighbours
  autoNeighbours = findNeighbours(autoFrom,valency);  // these nodes...
@@ -133,7 +177,7 @@ function run(){
 // }
 
  console.log("Reference node moves:");
- console.log(autoFrom.map(label).toString()+" --> "+autoTo.map(label).toString());
+ console.log(labelNode(autoFrom)+" --> "+labelNode(autoTo));
  console.log(" ");
  console.log("Node label --> maps to --> permutes to");
  for (var i=0;i<autoNeighbours.length;i++){
@@ -148,14 +192,6 @@ function run(){
  console.log(G);
  // feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
-
-
-/*
- // find the node which is moving (using the node index)
- indxFrom = thenodeindex[autoFrom];
- // find the destination
- indxTo = thenodeindex[autoTo];
-*/
 
 
 } // end run()
