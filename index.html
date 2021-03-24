@@ -13,6 +13,13 @@
   #theinput {
    padding: 10px;
   }
+  .red {
+   color: red;
+  }
+  .toobig {
+   color: yellow;
+   background-color: red;
+  }
   form {
    margin: 10px;
   }
@@ -43,6 +50,7 @@
 -->
   <label for="input_valency">Valency:</label><input type="range" id="input_valency" value="3" min="2" max="10" /> <output id="output_valency"></output><br/>
   <label for="input_maxdepth">Depth:</label><input type="range" id="input_maxdepth" value="3" min="0" max="8" /> <output id="output_maxdepth"></output><br/>
+  <label for="output_Nnodes">Nodes:</label><output id="output_Nnodes"></output><br/>
   <br/>
 
   <button onclick="run();return false;">Run</button>
@@ -250,7 +258,9 @@ function run(){
  //		https://dreampuf.github.io/GraphvizOnline/
 
  // turn on the GraphViz button
- document.getElementById("gvbutton").removeAttribute("disabled");
+ if (calcSize()<=20000){
+  document.getElementById("gvbutton").removeAttribute("disabled");
+ }
 
  return 0;
 } // end run()
@@ -358,6 +368,29 @@ function manageControls(){
  document.getElementById("gvbutton").setAttribute("disabled","true");
  document.getElementById("output_valency").value = parseInt(document.getElementById("input_valency").value);
  document.getElementById("output_maxdepth").value = parseInt(document.getElementById("input_maxdepth").value);
+ document.getElementById("output_Nnodes").value = calcSize();
+ if (calcSize()>20000){
+  document.getElementById("output_Nnodes").classList.add("toobig")
+  document.getElementById("gvbutton").classList.add("toobig")
+ } else if (calcSize()>5000){
+  document.getElementById("output_Nnodes").classList.add("red")
+  document.getElementById("gvbutton").classList.remove("toobig")
+ } else {
+  document.getElementById("output_Nnodes").classList.remove("red","toobig")
+  document.getElementById("gvbutton").classList.remove("toobig")
+ }
+}
+
+// how big is the graph? /////////////////////////////////////////////////////////////////////////// fn: calcSize
+function calcSize(valency=null,maxdepth=null){
+ // get the valency and maxdepth if they were not provided:
+ if (valency==null) valency = parseInt(document.getElementById("input_valency").value);
+ if (maxdepth==null) maxdepth = parseInt(document.getElementById("input_maxdepth").value);
+ var Nnodes = 0;
+ for (var d=0;d<=maxdepth;d++){
+  Nnodes += Math.pow(valency,d); // valency^d nodes at each depth
+ }
+ return Nnodes;
 }
 
 </script>
