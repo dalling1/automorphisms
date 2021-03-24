@@ -3,11 +3,41 @@
  <meta charset="utf-8">
  <title>Automorphism</title>
  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:Light&display=swap">
+ <style>
+  #theoutput {
+   clear: both;
+   border: 1px solid red;
+   padding: 5px;
+   font-family: monospace, monospace;
+  }
+  #theinput {
+   padding: 10px;
+  }
+ </style>
 </head>
-<body onload="run();">
+<body>
+
+<form id="theinput">
+  Valency: <input type="text" id="input_valency"  onchange="document.getElementById('gvbutton').setAttribute('disabled','true');" value="3" size="20" maxlength="20"/><br/>
+  Depth:   <input type="text" id="input_maxdepth" onchange="document.getElementById('gvbutton').setAttribute('disabled','true');" value="3" size="20" maxlength="20"/><br/>
+
+  <button style="margin-right:30px;" onclick="run();return false;">Run</button>
+  <button onclick="copy('theoutput');return false;">Copy Output</button>
+  <button id="gvbutton" disabled="true" onclick="window.open(makeGraphVizLink(G),'_blank');return false;">GraphViz</button><br/>
+</form>
+
+<div id="theoutput" title="Click to copy">Dot code will appear here</div>
 
 
 <script>
+ // set up some constants
+ const Pi = Math.acos(-1);
+// const thelabels = "abcdefghijklmnopqrstuvwxyz0123456789".split(""); // used for dot language output
+ const thelabels = "rbgmckyabcdefghijklmnopqrstuvwxyz0123456789".split(""); // used for dot language output [using first three colour initials]
+ const EDGESEP = " -- "; // dot language output separator (-- or ->)
+ const ROOTNODE = "\u{d8}"; // capital-O-with-stroke symbol https://graphemica.com/%C3%98
+
+
 // function to provide labels ///////////////////////////////////////////////////////////////////// fn:label
 function label(n){
  return (n>=0 & n<thelabels.length ? thelabels[n] : "X"); // return 'X' if n is out of range
@@ -20,9 +50,15 @@ function labelNode(node){
 
 // function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
 function mkdot(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],destNeigh=[],localActionNeigh=[]){
+ var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
+ var valency = parseInt(document.getElementById("input_valency").value);
+
  colours=['red','blue','green','magenta','cyan','black','yellow'];
- var thisgraph = 'graph {\n\tedge [penwidth=1]\n\tranksep=10\n';
- thisgraph += '\tnode [shape=circle, color=black, style=filled, fillcolor="#88888844", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'
+
+ var thisgraph = 'graph {\n';
+ thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
+ thisgraph += '\tedge [penwidth=1]\n\tranksep=10\n';
+ thisgraph += '\tnode [shape=circle, color=black, style=filled, fillcolor="#88888844", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n\n'
  thisgraph += '\t// EDGES\n';
  for (var i=0;i<theedges.length;i++){
   var from = thenodes[theedges[i][0]].join("");
@@ -81,6 +117,7 @@ function mkdot(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],de
   }
 
  } else {
+  // error if the reference and destination neighbour lists are different lengths
   console.log("[mkdot] Wrong length");
  }
 
@@ -100,14 +137,12 @@ function findlabel(nodes,label){
 }
 
 
-const Pi = Math.acos(-1);
-const thelabels = "abcdefghijklmnopqrstuvwxyz0123456789".split(""); // used for dot language output
-const EDGESEP = " -- "; // dot language output separator (-- or ->)
-const ROOTNODE = "\u{d8}";
-
 function run(){
- var maxdepth = 5;
- valency = 3;
+// var maxdepth = 3;
+// valency = 3;
+ // use the form values:
+ var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
+ var valency = parseInt(document.getElementById("input_valency").value);
  var valencyList = [];
  for (var v=0;v<valency;v++){
   valencyList.push(v);
@@ -138,13 +173,13 @@ function run(){
 
 
  // now define the automorphism: [THESE WILL COME FROM USER INPUT]
- if (1){
+ if (0){
   autoFrom = [0,1,2];
   autoTo = [1,2];
   localActionPermutation = permutationCyclic(valencyList,1); // for example
  }
- if (0){
-  autoFrom = [];
+ if (1){
+  autoFrom = [2];
   autoTo = [1,2];
   localActionPermutation = permutationCyclic(valencyList,1); // for example
  }
@@ -158,7 +193,7 @@ function run(){
   autoTo = [1,0,2];
   localActionPermutation = permutationCyclic(valencyList,1); // for example
  }
- if (1){
+ if (0){
   autoFrom = [2,1,2,1];
   autoTo = [1,0,2];
   localActionPermutation = permutationCyclic(valencyList,1); // for example
@@ -169,13 +204,6 @@ function run(){
  toNeighbours = findNeighbours(autoTo,valency);     // ...map to these nodes
  permNeighbours = localAction(toNeighbours,localActionPermutation,valency);
  
-
- // map these neighbours according to the localAction:
-// toNeighbours = [];
-// for (var v=0;v<valency;v++){ // equivalently, autoNeighbours.length
-//  toNeighbours.push(permute(autoNeighbours[v],localAction,valency,1));
-// }
-
  console.log("Reference node moves:");
  console.log(labelNode(autoFrom)+" --> "+labelNode(autoTo));
  console.log(" ");
@@ -189,11 +217,15 @@ function run(){
  drawFrom = [autoFrom].concat(autoNeighbours);
  drawTo = [autoTo].concat(permNeighbours);
  G=mkdot(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
- console.log(G);
+ document.getElementById("theoutput").innerHTML = '<pre>'+G+'</pre>';
+ document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
  // feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
 
+ // turn on the GraphViz button
+ document.getElementById("gvbutton").removeAttribute("disabled");
 
+ return 0;
 } // end run()
 
 // random integers ////////////////////////////////////////////////////////////////////////////////////// fn: randomInt
@@ -245,36 +277,15 @@ function localAction(list,perm,valency){
   // legal permutation, so perform the operation
   var out = Array(list.length);
   for (var i=0;i<list.length;i++){
-//reversed   out[i] = list[perm[i]]; // permute elements: local action (ie swap the elements of the list around with each other)
-   out[perm[i]] = list[i]; // permute elements: local action (ie swap the elements of the list around with each other)
+  // permute elements: local action (ie swap the elements of the list around with each other)
+   out[i] = list[perm[i]];
+//   out[perm[i]] = list[i]; // reverse of standard notation
   }
   return out;
  } else {
   return undefined;
  }
 }
-
-/*
-// permute a given list using the provided permutation ////////////////////////////////////////////////// fn: permute
-function permute(list,perm,valency){
- // n is the number of elements *from the end* to permute
-
- if (testPermutation(perm,valency)){
-  // legal permutation, so perform the operation
-  var out = Array(list.length);
-  for (var i=0;i<list.length-n;i++){
-   out[i] = list[i]; // simply copy non-permuting elements
-  }
-  for (var i=list.length-n;i<list.length;i++){
-   out[i] = perm[list[i]]; // permute elements of the list: "regular" permutation
-//   out[i] = list[perm[i]]; // permute the list: local action
-  }
-  return out;
- } else {
-  return undefined;
- }
-}
-*/
 
 // find the neighbours of a given node, for a given valency //////////////////////////////////////////////// fn: findNeighbours
 function findNeighbours(node,valency){
@@ -290,7 +301,30 @@ function findNeighbours(node,valency){
  return neighbours;
 }
 
+// copy the clicked object's contents /////////////////////////////////////////////////////////////////////// fn: copy
+async function copy(targetId=null){
+ // Modified from https://www.jasongaylord.com/blog/2020/05/21/copy-to-clipboard-using-javascript
+ if (!navigator.clipboard){
+  return;
+ }
 
+ try {
+  if (targetId==null){
+   target = event.srcElement;
+  } else {
+   target = document.getElementById(targetId);
+  }
+  var copy_value = target.getAttribute("data-copy-text");
+  await navigator.clipboard.writeText(copy_value);
+ } catch (error){
+  console.error("copy failed", error);
+ }
+}
+
+// create a GraphViz Online link //////////////////////////////////////////////////////////////////////////// fn: makeGraphVizLink
+function makeGraphVizLink(G){
+ return 'https://dreampuf.github.io/GraphvizOnline/#'+encodeURIComponent(G);
+}
 </script>
 
 </body>
