@@ -55,10 +55,10 @@
 
   <button onclick="run();return false;">Run</button>
   <button onclick="copy('theoutput');return false;">Copy Output</button>
-  <button id="gvbutton" disabled="true" onclick="window.open(makeGraphVizLink(G),'_blank');return false;">GraphViz</button><br/>
+  <button id="gvbutton" disabled="true" onclick="window.open(makeGraphVizLink(G),'_blank');return false;" title="Opens in new tab/window">GraphViz</button><br/>
 </form>
 
-<div id="theoutput" title="Click to copy">Dot code will appear here</div>
+<div id="theoutput" title="Click to copy">Dot code will be shown here. GraphViz button opens the result in a new tab/window.</div>
 
 
 <script>
