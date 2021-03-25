@@ -370,10 +370,12 @@ function manageControls(){
  document.getElementById("output_maxdepth").value = parseInt(document.getElementById("input_maxdepth").value);
  document.getElementById("output_Nnodes").value = calcSize();
  if (calcSize()>20000){
+  document.getElementById("gvbutton").setAttribute("disabled","true");
   document.getElementById("output_Nnodes").classList.add("toobig")
   document.getElementById("gvbutton").classList.add("toobig")
  } else if (calcSize()>5000){
   document.getElementById("output_Nnodes").classList.add("red")
+  document.getElementById("output_Nnodes").classList.remove("toobig")
   document.getElementById("gvbutton").classList.remove("toobig")
  } else {
   document.getElementById("output_Nnodes").classList.remove("red","toobig")
