@@ -5,13 +5,25 @@
  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:Light&display=swap">
  <style>
   #theoutput {
+   width: 45vw;
    clear: both;
+   float: left;
    border: 1px solid red;
    padding: 5px;
    font-family: monospace, monospace;
+   font-size: 8px;
   }
   #theinput {
+   float: left;
    padding: 10px;
+  }
+  #thegraph {
+   width: 45vw;
+   height: 45vw; /* ie. square */
+   border: 1px solid green;
+   padding: 5px;
+   font-family: monospace, monospace;
+   float: left;
   }
   .red {
    color: red;
@@ -40,6 +52,8 @@
    font-size: 16px;
   }
  </style>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.18.1/cytoscape.min.js" integrity="sha512-MgZAJudXekIHKoFtEk1NUwpSSCDt6JlfkUdwgX/1ustAyJltGO82ayHPOyK31xy9q84nGecgtF+D9hdm2OZldg==" crossorigin="anonymous"></script>
+ <script src="https://cytoscape.org/cytoscape.js-euler/cytoscape-euler.js"></script>
 </head>
 <body onload="manageControls();">
 
@@ -55,11 +69,21 @@
 
   <button onclick="run();return false;">Run</button>
   <button onclick="copy('theoutput');return false;">Copy Output</button>
-  <button id="gvbutton" disabled="true" onclick="window.open(makeGraphVizLink(G),'_blank');return false;" title="Opens in new tab/window">GraphViz</button><br/>
+  <button id="gvbutton" disabled="true" onclick="window.open(makeGraphVizLink(G),'_blank');return false;" title="Opens in new tab/window">GraphViz</button>
+
+  <select id="input_layout" onchange="run2(GC);return false;">
+   <option value="null">null</option>
+   <option value="grid" selected>grid</option>
+   <option value="random">random</option>
+   <option value="cose">cose</option>
+<!--   <option value="euler">euler</option>-->
+  </select>
+  <br/>
 </form>
 
 <div id="theoutput" title="Click to copy">Dot code will be shown here. GraphViz button opens the result in a new tab/window.</div>
-
+<svg id="notthegraph"><g/></svg>
+<div id="thegraph"></div>
 
 <script>
  // set up some constants
@@ -68,11 +92,12 @@
  const thelabels = "rbgmckyabcdefghijklmnopqrstuvwxyz0123456789".split(""); // used for dot language output [using first three colour initials]
  const EDGESEP = " -- "; // dot language output separator (-- or ->)
  const ROOTNODE = "\u{d8}"; // capital-O-with-stroke symbol https://graphemica.com/%C3%98
+// const ROOTNODE = "0";
 
 
 // function to provide label characters //////////////////////////////////////////////////////////// fn:label
 function label(n){
- return (n>=0 & n<thelabels.length ? thelabels[n] : "X"); // return 'X' if n is out of range
+ return (n>=0 & n<thelabels.length ? thelabels[n] : "X"); // return "X" if n is out of range
 }
 
 // function to label a whole node ////////////////////////////////////////////////////////////////// fn: labelNode
@@ -82,12 +107,71 @@ function labelNode(node){
  return thelabel;
 }
 
+// function to turn the nodes and edges into a cytoscape data structure //////////////////////////// fn: mkcyto
+function mkcyto(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],destNeigh=[],localActionNeigh=[]){
+ var thedata = [];
+ for (var i=0;i<nodes.length;i++){
+  var thisnode = {
+   "data": {
+    "id": "node"+i,
+    "label": labelNode(nodes[i]),
+    "weight": 4
+   },
+   "position": {
+// omit pre-computed positions for now
+//    "x": 150,
+//    "y": 45
+   },
+   "group": "nodes",
+   "removed": false,
+   "selected": false,
+   "selectable": true,
+   "locked": false,
+   "grabbable": true,
+   "classes": ""
+  };
+  thedata.push(thisnode);
+ }
+
+
+ for (var i=0;i<edges.length;i++){
+  var from = nodes[edges[i][0]].join("");
+  var to = nodes[edges[i][1]].join("");
+  var thiscolour = colours[to[to.length-1]];
+
+  var thisedge = {
+   "data": {
+    "id": "edge"+i,
+    "weight": 12,
+    "source": "node"+edges[i][0],
+    "target": "node"+edges[i][1]
+   },
+   "position": {},
+   "group": "edges",
+   "removed": false,
+   "selected": false,
+   "selectable": true,
+   "locked": false,
+   "grabbable": true,
+   "css": {"line-color": thiscolour},
+//   "target-arrow-shape": "none",
+   "classes": ""
+   };
+   thedata.push(thisedge);
+  };
+
+
+ // finished, return the object containing the nodes and edges:
+ return thedata;
+}
+
+
 // function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
 function mkdot(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],destNeigh=[],localActionNeigh=[]){
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
  var valency = parseInt(document.getElementById("input_valency").value);
 
- colours=['red','blue','green','magenta','cyan','black','yellow'];
+ colours=["red","blue","green","magenta","cyan","black","yellow"];
 
  var thisgraph = 'graph {\n';
  thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
@@ -160,17 +244,39 @@ function mkdot(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],de
  return thisgraph;
 }
 
-// function to find a d3 node with the given label ///////////////////////////////////////////////// fn: findlabel
-function findlabel(nodes,label){
- var foundindex = -1;
- for (var i=0;i<nodes.length;i++){
-  if (nodes[i].label==label){
-   foundindex = i;
-  }
- }
- return foundindex;
-}
 
+function run2(graphData){
+ /* good animation example: :https://cytoscape.org/cytoscape.js-cose-bilkent/ */
+
+ var cy=cytoscape({
+  container: document.getElementById("thegraph"),
+  elements: graphData,
+
+  style: [ // the stylesheet for the graph
+    {
+      selector: "node",
+      style: {
+        "background-color": "#666",
+        "label": "data(label)" // was "data(id)"
+      }
+    },
+
+    {
+      selector: "edge",
+      style: {
+//        "width": 3,
+//        "line-color": "#ccc",
+//        "target-arrow-color": "#ccc",
+//        "target-arrow-shape": "triangle",
+        "curve-style": "bezier"
+      }
+    }
+  ],
+
+  layout: {name: document.getElementById("input_layout").value},
+
+ });
+}
 
 function run(){
 // var maxdepth = 3;
@@ -251,8 +357,9 @@ function run(){
  // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
  drawFrom = [autoFrom].concat(autoNeighbours);
  drawTo = [autoTo].concat(permNeighbours);
- G=mkdot(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
- document.getElementById("theoutput").innerHTML = '<pre>'+G+'</pre>';
+ G = mkdot(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
+ GC = mkcyto(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
+ document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
  // feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
@@ -261,6 +368,8 @@ function run(){
  if (calcSize()<=20000){
   document.getElementById("gvbutton").removeAttribute("disabled");
  }
+
+ run2(GC); // cytoscape
 
  return 0;
 } // end run()
@@ -360,7 +469,7 @@ async function copy(targetId=null){
 
 // create a GraphViz Online link /////////////////////////////////////////////////////////////////// fn: makeGraphVizLink
 function makeGraphVizLink(G){
- return 'https://dreampuf.github.io/GraphvizOnline/#'+encodeURIComponent(G);
+ return "https://dreampuf.github.io/GraphvizOnline/#"+encodeURIComponent(G);
 }
 
 // manage the control values and buttons /////////////////////////////////////////////////////////// fn: manageControls
