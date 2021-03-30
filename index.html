@@ -294,6 +294,8 @@ function run(){
  thenodes[0] = [];   // root node
  theedges = [];      // pair-wise edges, using indices
  thenodeindex = [];  // associative array, index by node address
+ thenewnodes = [];   // list of nodes by address post-automorphism
+ autoprogress = [];  // list of flags indicating which nodes have been determined under the automorphism
 
  // loop over all nodes and add children to those at the (current) maximum depth
  for (var d=0;d<maxdepth;d++){
@@ -319,7 +321,7 @@ function run(){
   autoTo = [1,2];
   localActionPermutation = permutationCyclic(valencyList,1); // for example
  }
- if (1){
+ if (0){
   autoFrom = [2];
   autoTo = [1,2];
   localActionPermutation = permutationCyclic(valencyList,1); // for example
@@ -339,6 +341,11 @@ function run(){
   autoTo = [1,0,2];
   localActionPermutation = permutationCyclic(valencyList,1); // for example
  }
+ if (1){
+  autoFrom = [2];
+  autoTo = [1,2,1];
+  localActionPermutation = permutationCyclic(valencyList,1); // for example
+ }
 
  // get neighbours
  autoNeighbours = findNeighbours(autoFrom,valency);  // these nodes...
@@ -353,6 +360,20 @@ function run(){
   console.log(autoNeighbours[i].map(label).toString()+"\t-->\t"+toNeighbours[i].map(label).toString()+"\t-->\t"+permNeighbours[i].map(label).toString());
  }
 
+ // compute the "new" labels according to this automorphism:
+ for (var k=0;k<thenewnodes.length;k++){
+  autoprogress[k] = false;
+  thenewnodes[k] = null;
+ }
+ // the reference node:
+ thisindx = thenodeindex[autoTo];  // final destination
+ thenewnodes[thisindx] = autoFrom; // ... of this "original" label
+ autoprogress[thisindx] = true;
+ for (var i=0;i<autoNeighbours.length;i++){
+  thisindx = thenodeindex[permNeighbours[i]]; // final destination
+  thenewnodes[thisindx] = autoNeighbours[i];  // ... of this "original" label
+  autoprogress[thisindx] = true;
+ }
 
  // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
  drawFrom = [autoFrom].concat(autoNeighbours);
