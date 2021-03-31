@@ -321,6 +321,11 @@ function run(){
   }
  }
 
+ // initialise the post-automorphism nodes
+ for (var i=0;i<thenodes.length;i++){
+  thenewnodes[i] = null; // Note: empty value is reserved for the root node
+  autoprogress[i] = false;
+ }
 
  // now define the automorphism: [THESE WILL COME FROM USER INPUT]
  if (0){
@@ -367,15 +372,12 @@ function run(){
   console.log(autoNeighbours[i].map(label).toString()+"\t-->\t"+toNeighbours[i].map(label).toString()+"\t-->\t"+permNeighbours[i].map(label).toString());
  }
 
- // compute the "new" labels according to this automorphism:
- for (var k=0;k<thenewnodes.length;k++){
-  autoprogress[k] = false;
-  thenewnodes[k] = null;
- }
- // the reference node:
+ // Compute the "new" labels according to this automorphism:
+ // 1. the reference node:
  thisindx = thenodeindex[autoTo];  // final destination
  thenewnodes[thisindx] = autoFrom; // ... of this "original" label
  autoprogress[thisindx] = true;
+ // 2. the reference node's neighbours:
  for (var i=0;i<autoNeighbours.length;i++){
   thisindx = thenodeindex[permNeighbours[i]]; // final destination
   thenewnodes[thisindx] = autoNeighbours[i];  // ... of this "original" label
