@@ -71,7 +71,8 @@
   <button onclick="copy('theoutput');return false;">Copy Output</button>
   <button id="gvbutton" disabled="true" onclick="window.open(makeGraphVizLink(G),'_blank');return false;" title="Opens in new tab/window">GraphViz</button>
 
-  <select id="input_layout" onchange="run2(GC);return false;">
+  <select id="input_layout" onchange="run2();return false;">
+   <option value="none">none</option>
    <option value="null">null</option>
    <option value="grid" selected>grid</option>
    <option value="random">random</option>
@@ -247,35 +248,41 @@ function mkdot(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],de
 
 function run2(graphData){
  /* good animation example: :https://cytoscape.org/cytoscape.js-cose-bilkent/ */
+ 
+ // skip this if the Cytoscape layout is "none":
+ if (document.getElementById("input_layout").value=="none"){
+  console.log("Skipping Cytoscape graph");
+ } else {
+  graphData = mkcyto(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
+  var cy=cytoscape({
+   container: document.getElementById("thegraph"),
+   elements: graphData,
 
- var cy=cytoscape({
-  container: document.getElementById("thegraph"),
-  elements: graphData,
+   style: [ // the stylesheet for the graph
+     {
+       selector: "node",
+       style: {
+         "background-color": "#666",
+         "label": "data(label)" // was "data(id)"
+       }
+     },
 
-  style: [ // the stylesheet for the graph
-    {
-      selector: "node",
-      style: {
-        "background-color": "#666",
-        "label": "data(label)" // was "data(id)"
-      }
-    },
+     {
+       selector: "edge",
+       style: {
+//         "width": 3,
+//         "line-color": "#ccc",
+//         "target-arrow-color": "#ccc",
+//         "target-arrow-shape": "triangle",
+         "curve-style": "bezier"
+       }
+     }
+   ],
 
-    {
-      selector: "edge",
-      style: {
-//        "width": 3,
-//        "line-color": "#ccc",
-//        "target-arrow-color": "#ccc",
-//        "target-arrow-shape": "triangle",
-        "curve-style": "bezier"
-      }
-    }
-  ],
+   layout: {name: document.getElementById("input_layout").value},
 
-  layout: {name: document.getElementById("input_layout").value},
-
- });
+  });
+ } // end if "none" loop
 }
 
 function run(){
@@ -376,10 +383,9 @@ function run(){
  }
 
  // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
- drawFrom = [autoFrom].concat(autoNeighbours);
- drawTo = [autoTo].concat(permNeighbours);
+// drawFrom = [autoFrom].concat(autoNeighbours);
+// drawTo = [autoTo].concat(permNeighbours);
  G = mkdot(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
- GC = mkcyto(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
  document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
  // feed it to:
@@ -390,7 +396,7 @@ function run(){
   document.getElementById("gvbutton").removeAttribute("disabled");
  }
 
- run2(GC); // cytoscape
+ run2(); // cytoscape
 
  return 0;
 } // end run()
