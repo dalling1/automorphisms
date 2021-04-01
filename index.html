@@ -102,9 +102,13 @@ function label(n){
 
 // function to label a whole node ////////////////////////////////////////////////////////////////// fn: labelNode
 function labelNode(node){
- thelabel = node.map(label).join("");
- if (thelabel.length==0) thelabel = ROOTNODE;
- return thelabel;
+ if (node!=null){
+  thelabel = node.map(label).join("");
+  if (thelabel.length==0) thelabel = ROOTNODE;
+  return thelabel;
+ } else {
+  return null;
+ }
 }
 
 // function to turn the nodes and edges into a cytoscape data structure //////////////////////////// fn: mkcyto
@@ -290,12 +294,13 @@ function run(){
  }
 
  // initialise
- thenodes = [];      // list of nodes by address
- thenodes[0] = [];   // root node
- theedges = [];      // pair-wise edges, using indices
- thenodeindex = [];  // associative array, index by node address
- thenewnodes = [];   // list of nodes by address post-automorphism
- autoprogress = [];  // list of flags indicating which nodes have been determined under the automorphism
+ thenodes = [];       // list of nodes by address
+ thenodes[0] = [];    // root node
+ theedges = [];       // pair-wise edges, using indices
+ thenodeindex = [];   // associative array, index by node address
+ thenewnodes = [];    // list of nodes by address post-automorphism
+ thelocalaction = []; // list of automorphism permutation at each node (local action)
+ autoprogress = [];   // list of flags indicating which nodes have been determined under the automorphism
 
  // loop over all nodes and add children to those at the (current) maximum depth
  for (var d=0;d<maxdepth;d++){
@@ -314,7 +319,14 @@ function run(){
   }
  }
 
+ // initialise some automorphism variables:
+ for (var k=0;k<thenodes.length;k++){
+  autoprogress[k] = false;
+  thenewnodes[k] = null;
+  thelocalaction[k] = null;
+ }
 
+/*
  // now define the automorphism: [THESE WILL COME FROM USER INPUT]
  if (0){
   autoFrom = [0,1,2];
@@ -346,6 +358,15 @@ function run(){
   autoTo = [1,2,1];
   localActionPermutation = permutationCyclic(valencyList,1); // for example
  }
+*/
+
+ //
+ // define the automorphism: [EVENTUALLY THESE WILL COME FROM USER INPUT]
+ //
+ autoFrom = [2];
+ autoTo = [1,2,1];
+ localActionPermutation = permutationCyclic(valencyList,1); // for example
+
 
  // get neighbours
  autoNeighbours = findNeighbours(autoFrom,valency);  // these nodes...
@@ -360,26 +381,13 @@ function run(){
   console.log(autoNeighbours[i].map(label).toString()+"\t-->\t"+toNeighbours[i].map(label).toString()+"\t-->\t"+permNeighbours[i].map(label).toString());
  }
 
- // compute the "new" labels according to this automorphism:
- for (var k=0;k<thenewnodes.length;k++){
-  autoprogress[k] = false;
-  thenewnodes[k] = null;
- }
- // the reference node:
- thisindx = thenodeindex[autoTo];  // final destination
- thenewnodes[thisindx] = autoFrom; // ... of this "original" label
- autoprogress[thisindx] = true;
- for (var i=0;i<autoNeighbours.length;i++){
-  thisindx = thenodeindex[permNeighbours[i]]; // final destination
-  thenewnodes[thisindx] = autoNeighbours[i];  // ... of this "original" label
-  autoprogress[thisindx] = true;
- }
 
  // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
  drawFrom = [autoFrom].concat(autoNeighbours);
  drawTo = [autoTo].concat(permNeighbours);
  G = mkdot(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
  GC = mkcyto(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
+ // put the dot graph onto the page
  document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
  // feed it to:
@@ -390,7 +398,14 @@ function run(){
   document.getElementById("gvbutton").removeAttribute("disabled");
  }
 
- run2(GC); // cytoscape
+ run2(GC); // draw the Cytoscape graph
+
+ // the new approach to performing the automorphism:
+ // (for now, only define the local action at the reference node)
+ thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom;
+ thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
+ processnode(autoFrom,valency);
+
 
  return 0;
 } // end run()
@@ -430,7 +445,7 @@ function testPermutation(perm,valency){
    }
   }
  } else {
-  console.log("ERROR: permutation length is not equal to the valency");
+  console.log("ERROR: permutation length ("+perm.length+") is not equal to the valency ("+valency+")");
   return false;
  }
  return true;
@@ -524,6 +539,76 @@ function calcSize(valency=null,maxdepth=null){
   Nnodes += Math.pow(valency,d); // valency^d nodes at each depth
  }
  return Nnodes;
+}
+
+
+// process the automorphism //////////////////////////////////////////////////////////////////////// fn: processnode
+function processnode(v,valency,debug=false){
+ console.log("Processing node "+labelNode(v)); // +"                                   ie. "+v.toString()+" (valency="+valency+")");
+ var indx = findNode(v,thenodeindex);
+ // has this node been drawn within the current extent of the graph?
+ if (indx==undefined){
+  console.log("    ... stopping at "+labelNode(v)+" [node not drawn]"); // v is off the drawn graph
+ } else {
+  if (autoprogress[indx]){
+   console.log("    ... already done node "+labelNode(v));
+  } else {
+   autoprogress[indx] = true;
+
+   // 1. retrieve the local action, f_v, at this node
+   //    -- user-given or
+   //    -- (constrained) random or
+   //    -- same as at the reference node
+   // [EVENTUALLY THESE WILL COME FROM USER INPUT]
+/*
+   if (indx<10){
+    thelocalaction[indx] = localActionPermutation; // for now, use the reference node's local action everywhere
+   } else {
+    thelocalaction[indx] = null; // don't define a local action on some nodes, so that their post-automorphism neighbours remain undefined
+   }
+*/
+
+   if (thelocalaction[indx]==null){
+    console.log("    ... no local action defined at "+labelNode(v));
+   } else {
+    // 2. find this node's neighbours, vi
+    var vi = findNeighbours(v,valency);
+    if (debug) console.log(" The neighbours of "+labelNode(v)+" are "+vi.map(labelNode).toString());
+
+    // 3. permute them according to the local action to give vif (remember that localAction() takes a list of nodes as its input)
+    var vif = localAction(vi,thelocalaction[indx],valency);
+
+    // 3. for each neighbour:
+    for (var i=0;i<vi.length;i++){
+     if (debug) console.log("  Working on "+labelNode(v)+" neighbour "+labelNode(vi[i])+" -> "+labelNode(vif[i]));
+     // find the index of this node's destination
+     destindx = findNode(vif[i],thenodeindex);
+
+     // can we draw this destination node?
+     if (destindx==undefined){
+      if (debug) console.log("   "+labelNode(vi[i])+" node destination "+labelNode(vif[i])+" is outside the drawn graph ");
+      console.log("    ... skipping "+labelNode(vif[i])+" [destination not drawn]"); // v is off the drawn graph
+     } else {
+      if (1|debug) console.log("                                                            "+labelNode(vi[i])+" node destination "+labelNode(vif[i])+" is at node "+destindx);
+      thenewnodes[destindx] = vi[i];
+      // now work on this neighbour's neighbours
+      if (debug) console.log("Calling processnode(["+vi[i]+"],"+valency+"), ie. processnode(["+labelNode(vi[i])+"],"+valency+")");
+      processnode(vi[i],valency);
+     }
+    }
+   }
+  }
+ }
+ return 0;
+}
+
+// find the index of a node by its address ///////////////////////////////////////////////////////// fn: findNode
+function findNode(v,nodeindex){
+ if (v.length){
+  return nodeindex[v];
+ } else {
+  return 0; // the root node is always the first node
+ }
 }
 
 </script>
