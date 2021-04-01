@@ -250,7 +250,7 @@ function mkdot(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],de
 }
 
 
-function run2(graphData){
+function run2(){
  /* good animation example: :https://cytoscape.org/cytoscape.js-cose-bilkent/ */
  
  // skip this if the Cytoscape layout is "none":
@@ -402,7 +402,7 @@ function run(){
   document.getElementById("gvbutton").removeAttribute("disabled");
  }
 
- run2(GC); // draw the Cytoscape graph
+ run2(); // draw the Cytoscape graph
 
  // the new approach to performing the automorphism:
  // (for now, only define the local action at the reference node)
