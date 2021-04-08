@@ -58,12 +58,9 @@
 <body onload="manageControls();">
 
 <form id="theinput" method="POST" oninput="manageControls();">
-<!--
-  <label for="xinput_valency">Valency:</label><input type="text" id="input_valency"  onchange="document.getElementById('gvbutton').setAttribute('disabled','true');" value="3" size="20" maxlength="20"/><br/>
-  <label for="xinput_maxdepth">Depth:</label><input type="text" id="input_maxdepth" onchange="document.getElementById('gvbutton').setAttribute('disabled','true');" value="3" size="20" maxlength="20"/><br/>
--->
   <label for="input_valency">Valency:</label><input type="range" id="input_valency" value="3" min="2" max="10" /> <output id="output_valency"></output><br/>
   <label for="input_maxdepth">Depth:</label><input type="range" id="input_maxdepth" value="3" min="0" max="8" /> <output id="output_maxdepth"></output><br/>
+  <label for="input_extent">Drawn nodes only:</label><input type="checkbox" id="input_extent" /> <output id="output_extent"></output><br/>
   <label for="output_Nnodes">Nodes:</label><output id="output_Nnodes"></output><br/>
   <br/>
 
@@ -71,7 +68,7 @@
   <button onclick="copy('theoutput');return false;">Copy Output</button>
   <button id="gvbutton" disabled="true" onclick="window.open(makeGraphVizLink(G),'_blank');return false;" title="Opens in new tab/window">GraphViz</button>
 
-  <select id="input_layout" onchange="run2();return false;">
+  <select id="input_layout" onchange="drawCytoscapeGraph();return false;">
    <option value="none">none</option>
    <option value="null">null</option>
    <option value="grid" selected>grid</option>
@@ -89,11 +86,9 @@
 <script>
  // set up some constants
  const Pi = Math.acos(-1);
-// const thelabels = "abcdefghijklmnopqrstuvwxyz0123456789".split(""); // used for dot language output
  const thelabels = "rbgmckyabcdefghijklmnopqrstuvwxyz0123456789".split(""); // used for dot language output [using first three colour initials]
  const EDGESEP = " -- "; // dot language output separator (-- or ->)
  const ROOTNODE = "\u{d8}"; // capital-O-with-stroke symbol https://graphemica.com/%C3%98
-// const ROOTNODE = "0";
  const colours=["red","blue","green","magenta","cyan","black","yellow"];
 
 // function to provide label characters //////////////////////////////////////////////////////////// fn:label
@@ -116,15 +111,7 @@ function labelNode(node){
 function mkcyto(){
  var thedata = [];
  for (var i=0;i<thenodes.length;i++){
-  // one way to label:
-/*
-  var thislabel = labelNode(thenodes[thenewnodeindex[thenodes[i]]]); // get the label of the node's destination
-  if (thenodes[i].length==0) thislabel = labelNode(thenodes[thenewnodeindex["ROOT"]]); // ... but check for the root node
-  if (thislabel==null) thislabel="";
-  var finallabel = labelNode(thenodes[i])+" -> "+thislabel;
-*/
-
-  // another way to label: (better)
+  // label the nodes:
   var thislabel = labelNode(thenewnodes[i]); // get the label of the node's destination
   var thisclass = "";
   if (thislabel==null){
@@ -251,87 +238,9 @@ function mkdot(){
  return thisgraph;
 }
 
-// function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
-function mkdot_old(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],destNeigh=[],localActionNeigh=[]){
- var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
- var valency = parseInt(document.getElementById("input_valency").value);
 
- colours=["red","blue","green","magenta","cyan","black","yellow"];
-
- var thisgraph = 'graph {\n';
- thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
- thisgraph += '\tedge [penwidth=1, color=black]\n';
- thisgraph += '\tnode [shape=circle, color=black, style=filled, fillcolor="#88888844", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'
- thisgraph += '\tranksep=2\n';
- thisgraph += '\n\t// EDGES\n';
- for (var i=0;i<theedges.length;i++){
-  var from = thenodes[theedges[i][0]].join("");
-  var to = thenodes[theedges[i][1]].join("");
-  if (uselabels){
-   var fromLabel = labelNode(thenodes[theedges[i][0]]);
-   var toLabel = labelNode(thenodes[theedges[i][1]]);
-  } else {
-   var fromLabel = from;
-   var toLabel = to;
-  }
-  if (fromLabel.length==0) fromLabel = ROOTNODE;
-  if (toLabel.length==0) toLabel = ROOTNODE;
-  thiscolour = colours[to[to.length-1]]
-//  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color='+thiscolour+']\n';
-  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + '\n';
- }
-
- if (refNeigh.length==destNeigh.length & refNeigh.length==localActionNeigh.length){
-  // draw dashed edges showing the new edges
-  // insert a comment for blanking out all of the unspecified (in the automorphism) nodes (just in case it is wanted)
-  thisgraph += '\n\t// NO LABELS? Uncomment this line:\n';
-  thisgraph += '//\t';
-  for (var i=0;i<nodes.length;i++){
-   thisgraph += labelNode(nodes[i])+',';
-  }
-  thisgraph = thisgraph.slice(0,thisgraph.length-1); // remove trailing comma
-  thisgraph += ' [label=""]\n';
-
-  thisgraph += '\n\t// AUTOMORPHISM\n';
-  thisgraph += '\tedge [penwidth=5]\n';
-
-  for (var i=0;i<localActionNeigh.length;i++){
-
-   /* --- start colour */
-   if (destNeigh[i].length<destNode.length){
-    // "parent" neighbour, use the last entry of the reference node for the colour:
-    thiscolour = colours[destNode[destNode.length-1]];
-   } else {
-    // "regular" neighbour, use the last entry for the colour:
-    thiscolour = colours[destNeigh[i][destNeigh[i].length-1]];
-   }
-   /* --- end colour */
-
-   thisgraph += '\t'+labelNode(destNode) + EDGESEP + labelNode(localActionNeigh[i]) + ' [style=dashed, color='+thiscolour+']\n';
-  }
-  // highlight and relabel the reference node and its neighbours
-  thisgraph += '\t'+labelNode(refNode)+' [fillcolor=green, fontcolor=black, penwidth=5, label="'+labelNode(refNode)+'"]\n';
-  for (var i=0;i<refNeigh.length;i++){
-   thisgraph += '\t'+labelNode(refNeigh[i])+' [fillcolor=green, fontcolor=black, label="'+labelNode(refNeigh[i])+'"]\n';
-  }
-  // highlight and relabel the destination nodes
-  thisgraph += '\t'+labelNode(destNode)+' [fillcolor=yellow, fontcolor=black, penwidth=5, label="'+labelNode(destNode)+'\\n'+labelNode(refNode)+'"]\n';
-  for (var i=0;i<localActionNeigh.length;i++){
-   thisgraph += '\t'+labelNode(localActionNeigh[i])+' [fillcolor=yellow, fontcolor=black, label="'+labelNode(localActionNeigh[i])+'\\n'+labelNode(refNeigh[i])+'"]\n';
-  }
-
- } else {
-  // error if the reference and destination neighbour lists are different lengths
-  console.log("[mkdot] Wrong length");
- }
-
- thisgraph += '}\n';
- return thisgraph;
-}
-
-
-function run2(){
- /* good animation example: :https://cytoscape.org/cytoscape.js-cose-bilkent/ */
+function drawCytoscapeGraph(){
+ /* good animation example: https://cytoscape.org/cytoscape.js-cose-bilkent/ */
  
  // skip this if the Cytoscape layout is "none":
  if (document.getElementById("input_layout").value=="none"){
@@ -410,7 +319,6 @@ function run(){
  // initialise the post-automorphism nodes
  for (var i=0;i<thenodes.length;i++){
   thenewnodes[i] = null; // Note: empty value is reserved for the root node
-  autoprogress[i] = false;
  }
 
 /*
@@ -461,7 +369,7 @@ function run(){
  thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
  processnode(autoFrom,valency);
 
- run2(); // perform the automorphism and draw the Cytoscape graph
+ drawCytoscapeGraph(); // perform the automorphism and draw the Cytoscape graph
 
  // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
  G = mkdot();
@@ -618,19 +526,20 @@ function processnode(v,valency,debug=false){
  var destindx = thenewnodeindex[v];
  if (v.length==0) destindx = thenewnodeindex["ROOT"];
 
- var testnode = 'rgrgr';
- if (labelNode(v)==testnode) console.log("------------------------------------------------------------- node "+testnode+" at "+indx);
+ var onlyDrawDrawnNodes = document.getElementById("input_extent").checked;
 
  // has this node been drawn within the current extent of the graph?
- if (0&indx==undefined){ // EXTEND HERE
+ if (onlyDrawDrawnNodes&indx==undefined){
   console.log("    ... stopping at "+labelNode(v)+" [node not drawn]"); // v is off the drawn graph
+  autoprogress.push(labelNode(v));
  } else if (destindx==undefined){
   console.log("    ... stopping at "+labelNode(v)+" [destination not drawn]"); // w is off the drawn graph
+  autoprogress.push(labelNode(v));
  } else {
-  if (autoprogress[indx]){
+  if (autoprogress.indexOf(labelNode(v))>-1){
    console.log("    ... already done node "+labelNode(v));
   } else {
-   autoprogress[indx] = true;
+   autoprogress.push(labelNode(v));
 
    var w = thenodes[destindx]; // address of the destination node
    if (debug) console.log("AUTOMORPHISM: node "+labelNode(v)+" is moving to "+labelNode(w));
@@ -672,7 +581,7 @@ function processnode(v,valency,debug=false){
      } else {
 
       // only process nodes which were drawn in the original graph
-      if (1|findNode(vif[i],thenodeindex)!=undefined){ // EXTEND HERE
+      if (!onlyDrawDrawnNodes|findNode(vif[i],thenodeindex)!=undefined){
        thenewnodes[neighbourdestindx] = vif[i];
 
        // update the index for the post-automorphism graph (taking care with the root node):
