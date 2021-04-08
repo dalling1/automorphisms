@@ -94,7 +94,7 @@
  const EDGESEP = " -- "; // dot language output separator (-- or ->)
  const ROOTNODE = "\u{d8}"; // capital-O-with-stroke symbol https://graphemica.com/%C3%98
 // const ROOTNODE = "0";
-
+ const colours=["red","blue","green","magenta","cyan","black","yellow"];
 
 // function to provide label characters //////////////////////////////////////////////////////////// fn:label
 function label(n){
@@ -194,7 +194,65 @@ function mkcyto(){
 
 
 // function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
-function mkdot(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],destNeigh=[],localActionNeigh=[]){
+function mkdot(){
+ var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
+ var valency = parseInt(document.getElementById("input_valency").value);
+ var uselabels = true;
+
+ var thisgraph = 'graph {\n';
+ thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
+ thisgraph += '\tedge [penwidth=1, color=black]\n';
+ thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="#88888844", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'
+ thisgraph += '\tranksep=2\n';
+ thisgraph += '\n\t// EDGES\n';
+ for (var i=0;i<theedges.length;i++){
+  var from = thenodes[theedges[i][0]].join("");
+  var to = thenodes[theedges[i][1]].join("");
+  if (uselabels){
+   var fromLabel = labelNode(thenewnodes[theedges[i][0]]);
+   var toLabel = labelNode(thenewnodes[theedges[i][1]]);
+  } else {
+   var fromLabel = from;
+   var toLabel = to;
+   if (fromLabel.length==0) fromLabel = ROOTNODE;
+   if (toLabel.length==0) toLabel = ROOTNODE;
+  }
+
+  // some labels might be missing post-automorphism, so use the index instead
+  if (fromLabel==null) fromLabel = theedges[i][0];
+  if (toLabel==null) toLabel = theedges[i][1];
+
+  thiscolour = colours[to[to.length-1]]
+  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color='+thiscolour+']\n'; // coloured edges
+//  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + '\n'; // no coloured edges
+ }
+
+ thisgraph += '\n\t// POST-AUTOMORPHISM NODES\n';
+ for (var i=0;i<thenewnodes.length;i++){
+  var thislabel = labelNode(thenewnodes[i]);
+  var nodecolour = 'green';
+  var fontcolour = '"#ff0000"';
+  var xlabel = labelNode(thenodes[i]);
+  // if there is an entry in thenewnodes, set the properties of the node
+  if (thislabel!=null){
+   if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
+    nodecolour = 'yellow';
+    fontcolour = 'black';
+   }
+   thisgraph += '\t' + thislabel + ' [fillcolor=' + nodecolour + ', color=black, fontcolor=' + fontcolour + ', xlabel=' + xlabel + ']\n';
+  } else { // otherwise, just add the external label
+   thislabel = i;
+   xlabel = labelNode(thenodes[i]);
+   thisgraph += '\t' + thislabel + ' [xlabel=' + xlabel + ']\n';
+  }
+ }
+
+ thisgraph += '}\n';
+ return thisgraph;
+}
+
+// function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
+function mkdot_old(nodes,edges,uselabels=false,refNode=[],destNode=[],refNeigh=[],destNeigh=[],localActionNeigh=[]){
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
  var valency = parseInt(document.getElementById("input_valency").value);
 
@@ -392,8 +450,8 @@ function run(){
  //
  // define the automorphism: [EVENTUALLY THESE WILL COME FROM USER INPUT]
  //
- autoFrom = [2]; // for example
- autoTo = [1,2,1]; // for example
+ autoFrom = [0]; // for example
+ autoTo = [1]; // for example
  localActionPermutation = permutationCyclic(valencyList,1); // for example
 
 
@@ -411,10 +469,20 @@ function run(){
  }
 
 
+ // the new approach to performing the automorphism:
+ // (for now, only define the local action at the reference node)
+ thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
+ thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
+ thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
+ processnode(autoFrom,valency);
+
+ run2(); // perform the automorphism and draw the Cytoscape graph
+
  // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
 // drawFrom = [autoFrom].concat(autoNeighbours);
 // drawTo = [autoTo].concat(permNeighbours);
- G = mkdot(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
+// G = mkdot(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
+ G = mkdot();
  document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
  // feed it to:
@@ -424,15 +492,6 @@ function run(){
  if (calcSize()<=20000){
   document.getElementById("gvbutton").removeAttribute("disabled");
  }
-
- // the new approach to performing the automorphism:
- // (for now, only define the local action at the reference node)
- thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
- thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
- thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
- processnode(autoFrom,valency);
-
- run2(); // draw the Cytoscape graph
 
  return 0;
 } // end run()
@@ -596,14 +655,6 @@ function processnode(v,valency,debug=false){
    //    -- (constrained) random or
    //    -- same as at the reference node
    // [EVENTUALLY THESE WILL COME FROM USER INPUT]
-
-/*
-   if (indx<10){
-    thelocalaction[indx] = localActionPermutation; // for now, use the reference node's local action everywhere
-   } else {
-    thelocalaction[indx] = null; // don't define a local action on some nodes, so that their post-automorphism neighbours remain undefined
-   }
-*/
    thelocalaction[indx] = localActionPermutation; // for now, use the reference node's local action everywhere
 
    if (thelocalaction[indx]==null){
