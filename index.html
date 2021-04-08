@@ -386,7 +386,7 @@ function run(){
  thenewnodes = [];     // list of nodes by address post-automorphism
  thenewnodeindex = []; // associative array, index by node address, for the post-automorphism graph
  thelocalaction = [];  // list of automorphism permutation at each node (local action)
- autoprogress = [];    // list of flags indicating which nodes have been determined under the automorphism
+ autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
 
  thenodeindex["ROOT"] = 0;
 
@@ -454,21 +454,6 @@ function run(){
  autoTo = [1]; // for example
  localActionPermutation = permutationCyclic(valencyList,1); // for example
 
-
- // get neighbours
- autoNeighbours = findNeighbours(autoFrom,valency);  // these nodes...
- toNeighbours = findNeighbours(autoTo,valency);     // ...map to these nodes
- permNeighbours = localAction(toNeighbours,localActionPermutation,valency);
- 
- console.log("Reference node moves:");
- console.log(labelNode(autoFrom)+" --> "+labelNode(autoTo));
- console.log(" ");
- console.log("Node label --> maps to --> permutes to");
- for (var i=0;i<autoNeighbours.length;i++){
-  console.log(autoNeighbours[i].map(label).toString()+"\t-->\t"+toNeighbours[i].map(label).toString()+"\t-->\t"+permNeighbours[i].map(label).toString());
- }
-
-
  // the new approach to performing the automorphism:
  // (for now, only define the local action at the reference node)
  thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
@@ -479,9 +464,6 @@ function run(){
  run2(); // perform the automorphism and draw the Cytoscape graph
 
  // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
-// drawFrom = [autoFrom].concat(autoNeighbours);
-// drawTo = [autoTo].concat(permNeighbours);
-// G = mkdot(thenodes,theedges,true,autoFrom,autoTo,autoNeighbours,toNeighbours,permNeighbours);
  G = mkdot();
  document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
@@ -636,8 +618,11 @@ function processnode(v,valency,debug=false){
  var destindx = thenewnodeindex[v];
  if (v.length==0) destindx = thenewnodeindex["ROOT"];
 
+ var testnode = 'rgrgr';
+ if (labelNode(v)==testnode) console.log("------------------------------------------------------------- node "+testnode+" at "+indx);
+
  // has this node been drawn within the current extent of the graph?
- if (indx==undefined){
+ if (0&indx==undefined){ // EXTEND HERE
   console.log("    ... stopping at "+labelNode(v)+" [node not drawn]"); // v is off the drawn graph
  } else if (destindx==undefined){
   console.log("    ... stopping at "+labelNode(v)+" [destination not drawn]"); // w is off the drawn graph
@@ -685,17 +670,22 @@ function processnode(v,valency,debug=false){
       if (debug) console.log("   "+labelNode(vi[i])+" node destination "+labelNode(vif[i])+" is outside the drawn graph ");
       console.log("    ... skipping "+labelNode(vif[i])+" [destination not drawn]"); // v is off the drawn graph
      } else {
-      thenewnodes[neighbourdestindx] = vi[i];
 
-      // update the index for the post-automorphism graph (taking care with the root node):
-      var thisnodestring = vi[i].toString();
-      if (thisnodestring.length==0) thisnodestring = "ROOT";
-      thenewnodeindex[thisnodestring] = neighbourdestindx;
+      // only process nodes which were drawn in the original graph
+      if (1|findNode(vif[i],thenodeindex)!=undefined){ // EXTEND HERE
+       thenewnodes[neighbourdestindx] = vif[i];
 
-      if (debug) console.log("   --- setting thenewnodeindex["+vi[i].toString()+"] to "+thenewnodeindex[vi[i].toString()]);
-      // now work on this neighbour's neighbours
-      if (debug) console.log("Calling processnode(["+vi[i]+"],"+valency+"), ie. processnode(["+labelNode(vi[i])+"],"+valency+")");
-      processnode(vi[i],valency);
+       // update the index for the post-automorphism graph (taking care with the root node):
+       var thisnodestring = vif[i].toString();
+       if (thisnodestring.length==0) thisnodestring = "ROOT";
+       thenewnodeindex[thisnodestring] = neighbourdestindx;
+
+       if (debug) console.log("   --- setting thenewnodeindex["+vif[i].toString()+"] to "+thenewnodeindex[vif[i].toString()]);
+       // now work on this neighbour's neighbours
+       if (debug) console.log("Calling processnode(["+vif[i]+"],"+valency+"), ie. processnode(["+labelNode(vif[i])+"],"+valency+")");
+       processnode(vif[i],valency);
+      }
+
      }
     }
    }
