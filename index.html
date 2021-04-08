@@ -189,7 +189,7 @@ function mkdot(){
  var thisgraph = 'graph {\n';
  thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
  thisgraph += '\tedge [penwidth=1, color=black]\n';
- thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="#88888844", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'
+ thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="#f8f8f8", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'; // 88888844
  thisgraph += '\tranksep=2\n';
  thisgraph += '\n\t// EDGES\n';
  for (var i=0;i<theedges.length;i++){
@@ -220,13 +220,29 @@ function mkdot(){
   var nodecolour = 'green';
   var fontcolour = '"#ff0000"';
   var xlabel = labelNode(thenodes[i]);
+  var thisradius = 0.1;
+  var showdist = '';
+
   // if there is an entry in thenewnodes, set the properties of the node
   if (thislabel!=null){
    if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
     nodecolour = 'yellow';
     fontcolour = 'black';
    }
-   thisgraph += '\t' + thislabel + ' [fillcolor=' + nodecolour + ', color=black, fontcolor=' + fontcolour + ', xlabel=' + xlabel + ']\n';
+
+   if (autodistance[thenewnodes[i].toString()]!=undefined){
+    thisradius = 1/autodistance[thenewnodes[i].toString()];
+    showdist = autodistance[thenewnodes[i].toString()];
+   } else { // try the old label instead?
+    if (autodistance[thenodes[i].toString()]!=undefined){
+     thisradius = 5/autodistance[thenodes[i].toString()];
+     showdist = autodistance[thenodes[i].toString()];
+    } else {
+     console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for "+thenewnodes[i].toString());
+    }
+   }
+
+   thisgraph += '\t' + thislabel + ' [fillcolor=' + nodecolour + ', color=black, fontcolor=' + fontcolour + ', xlabel="' + xlabel + ' ('+showdist+')", width=' + thisradius.toFixed(4) + ']\n';
   } else { // otherwise, just add the external label
    thislabel = i;
    xlabel = labelNode(thenodes[i]);
@@ -296,6 +312,7 @@ function run(){
  thenewnodeindex = []; // associative array, index by node address, for the post-automorphism graph
  thelocalaction = [];  // list of automorphism permutation at each node (local action)
  autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
+ autodistance = [];    // compute how far each node has moved
 
  thenodeindex["ROOT"] = 0;
 
@@ -318,7 +335,7 @@ function run(){
 
  // initialise the post-automorphism nodes
  for (var i=0;i<thenodes.length;i++){
-  thenewnodes[i] = null; // Note: empty value is reserved for the root node
+  thenewnodes[i] = null; // Note: empty value is reserved for the root node, so use null for unspecified nodes
  }
 
 /*
@@ -367,9 +384,12 @@ function run(){
  thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
  thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
  thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
+
+ // carry out the automorphism:
  processnode(autoFrom,valency);
 
- drawCytoscapeGraph(); // perform the automorphism and draw the Cytoscape graph
+ // create and draw the Cytoscape graph
+ drawCytoscapeGraph();
 
  // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
  G = mkdot();
@@ -580,7 +600,7 @@ function processnode(v,valency,debug=false){
       console.log("    ... skipping "+labelNode(vif[i])+" [destination not drawn]"); // v is off the drawn graph
      } else {
 
-      // only process nodes which were drawn in the original graph
+      // only process nodes which were drawn in the original graph:
       if (!onlyDrawDrawnNodes|findNode(vif[i],thenodeindex)!=undefined){
        thenewnodes[neighbourdestindx] = vif[i];
 
@@ -589,8 +609,12 @@ function processnode(v,valency,debug=false){
        if (thisnodestring.length==0) thisnodestring = "ROOT";
        thenewnodeindex[thisnodestring] = neighbourdestindx;
 
+       // how far did the node move?
+       autodistance[vif[i].toString()] = nodeDistance(vif[i],wi[i]);
+       if (debug) console.log(" ----------------------------------------------------------------- distance from "+labelNode(vif[i])+" to "+labelNode(wi[i])+" is "+autodistance[wi[i].toString()]);
        if (debug) console.log("   --- setting thenewnodeindex["+vif[i].toString()+"] to "+thenewnodeindex[vif[i].toString()]);
-       // now work on this neighbour's neighbours
+
+       // now work on this neighbour's neighbours:
        if (debug) console.log("Calling processnode(["+vif[i]+"],"+valency+"), ie. processnode(["+labelNode(vif[i])+"],"+valency+")");
        processnode(vif[i],valency);
       }
@@ -610,6 +634,41 @@ function findNode(v,nodeindex){
  } else {
   return nodeindex["ROOT"];
  }
+}
+
+// find the distance between two node labels /////////////////////////////////////////////////////// fn: labelDistance
+function labelDistance(v,w){
+ // inputs are labels (ie. strings)
+ // THIS DOESN'T WORK FOR THE ROOT NODE...
+ // remove common prefix:
+ if (v.length>0 & w.length>0){
+  while (v[0]==w[0]){
+   v=v.substr(1,v.length-1);
+   w=w.substr(1,w.length-1);
+   if (v.length==0 | w.length==0){
+    break;
+   }
+  }
+ }
+ // the count what path length is left
+ var dist = v.length+w.length;
+ return dist;
+}
+function nodeDistance(v,w){
+ // inputs are node addresses, eg. [0,1,2,1]
+ // remove common prefix:
+ if (v.length>0 & w.length>0){
+  while (v[0]==w[0]){
+   v=v.slice(1);
+   w=w.slice(1);
+   if (v.length==0 | w.length==0){
+    break;
+   }
+  }
+ }
+ // the count what path length is left
+ var dist = v.length+w.length;
+ return dist;
 }
 
 </script>
