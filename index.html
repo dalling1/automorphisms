@@ -37,12 +37,17 @@
   }
   label {
    display: inline-block;
-   width: 60px;
-   vertical-align: middle;
+   width: 180px;
+   font-size: 12px;
+   text-align: right;
+   margin-right: 10px;
   }
   input[type=range] {
    vertical-align: middle;
    margin: 4px;
+  }
+  input[type=checkbox] {
+   vertical-align: middle;
   }
   input[type=text] {
    margin: 4px;
@@ -60,8 +65,15 @@
 <form id="theinput" method="POST" oninput="manageControls();">
   <label for="input_valency">Valency:</label><input type="range" id="input_valency" value="3" min="2" max="10" /> <output id="output_valency"></output><br/>
   <label for="input_maxdepth">Depth:</label><input type="range" id="input_maxdepth" value="3" min="0" max="8" /> <output id="output_maxdepth"></output><br/>
-  <label for="input_extent">Drawn nodes only:</label><input type="checkbox" id="input_extent" /> <output id="output_extent"></output><br/>
-  <label for="output_Nnodes">Nodes:</label><output id="output_Nnodes"></output><br/>
+  <span style="font-weight:bold;color:green;"><label for="output_Nnodes">Nodes:</label><output id="output_Nnodes"></output></span><br/>
+
+  <label for="input_extent">Original nodes only:</label><input type="checkbox" id="input_extent" /> <output id="output_extent"></output><br/>
+  <label for="input_labels">Label nodes:</label><input type="checkbox" checked id="input_labels" /> <output id="output_labels"></output><br/>
+<!--  <label for="input_addresses">Use address:</label><input type="checkbox" checked id="input_addresses" /> <output id="output_addresses"></output><br/>-->
+  <label for="input_xlabels">Original labels too:</label><input type="checkbox" id="input_xlabels" /> <output id="output_xlabels"></output><br/>
+  <label for="input_showdists">Show distances:</label><input type="checkbox" id="input_showdists" /> <output id="output_showdists"></output><br/>
+  <label for="input_nodesize">Size nodes by distance:</label><input type="checkbox" checked id="input_nodesize" /> <output id="output_nodesize"></output><br/>
+
   <br/>
 
   <button onclick="run();return false;">Run</button>
@@ -89,7 +101,8 @@
  const thelabels = "rbgmckyabcdefghijklmnopqrstuvwxyz0123456789".split(""); // used for dot language output [using first three colour initials]
  const EDGESEP = " -- "; // dot language output separator (-- or ->)
  const ROOTNODE = "\u{d8}"; // capital-O-with-stroke symbol https://graphemica.com/%C3%98
- const colours=["red","blue","green","magenta","cyan","black","yellow"];
+// const colours=["red","blue","green","magenta","cyan","black","yellow"];
+ const colours=["#ff0000","#0000ff","#00ff00","#ff00ff","#00ffff","#000000","#ffff00"];
 
 // function to provide label characters //////////////////////////////////////////////////////////// fn:label
 function label(n){
@@ -184,18 +197,25 @@ function mkcyto(){
 function mkdot(){
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
  var valency = parseInt(document.getElementById("input_valency").value);
- var uselabels = true;
+
+ var showlabels = document.getElementById("input_labels").checked;
+// var showaddresses = document.getElementById("input_addresses").checked;
+ var showaddresses = true;
+ var showoriglabels = document.getElementById("input_xlabels").checked;
+ var showdists = document.getElementById("input_showdists").checked;
+ var sizebydist = document.getElementById("input_nodesize").checked;
+
 
  var thisgraph = 'graph {\n';
  thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
  thisgraph += '\tedge [penwidth=1, color=black]\n';
- thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="#eaeaea88", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'; // 88888844
+ thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="#eaeaea22", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'; // 88888844
  thisgraph += '\tranksep=2\n';
  thisgraph += '\n\t// EDGES\n';
  for (var i=0;i<theedges.length;i++){
   var from = thenodes[theedges[i][0]].join("");
   var to = thenodes[theedges[i][1]].join("");
-  if (uselabels){
+  if (showaddresses){
    var fromLabel = labelNode(thenewnodes[theedges[i][0]]);
    var toLabel = labelNode(thenewnodes[theedges[i][1]]);
   } else {
@@ -206,12 +226,15 @@ function mkdot(){
   }
 
   // some labels might be missing post-automorphism, so use the index instead
+  var fadeedge = false;
+  if (fromLabel==null || toLabel==null) fadeedge = true;
   if (fromLabel==null) fromLabel = theedges[i][0];
   if (toLabel==null) toLabel = theedges[i][1];
 
   thiscolour = colours[to[to.length-1]]
-  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color='+thiscolour+']\n'; // coloured edges
-//  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + '\n'; // no coloured edges
+//  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + '\n'; // no coloured edges (all black)
+//  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color='+thiscolour+']\n'; // coloured edges
+  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color="'+thiscolour+(fadeedge?'22':'')+'"]\n'; // coloured edges, faded if either end is not defined in the automorphism
  }
 
  thisgraph += '\n\t// POST-AUTOMORPHISM NODES\n';
@@ -241,12 +264,11 @@ function mkdot(){
      console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for "+thenewnodes[i].toString());
     }
    }
-
-   thisgraph += '\t' + thislabel + ' [fillcolor=' + nodecolour + ', color=black, fontcolor=' + fontcolour + ', xlabel="' + xlabel + ' ('+showdist+')", width=' + thisradius.toFixed(4) + ']\n';
+   thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor=' + nodecolour + ', color=black, fontcolor=' + fontcolour + ', '+(showoriglabels?'xlabel="'+xlabel+(showdists?' ('+showdist+')", ':''):(showdists?'label="'+thislabel+' ('+showdist+')", ':'')) + (sizebydist?'width='+thisradius.toFixed(4):'') + ']\n';
   } else { // otherwise, just add the external label
    thislabel = i;
    xlabel = labelNode(thenodes[i]);
-   thisgraph += '\t' + thislabel + ' [xlabel=' + xlabel + ']\n';
+   thisgraph += '\t' + thislabel + ' ['+(showlabels?(showoriglabels?'':(showdists?'label="'+thislabel+' ('+thisdist+')"':'')):'label="", ')+(showoriglabels?'xlabel='+xlabel+', ':'') + ']\n';
   }
  }
 
@@ -557,7 +579,7 @@ function processnode(v,valency,debug=false){
  var onlyDrawDrawnNodes = document.getElementById("input_extent").checked;
 
  // has this node been drawn within the current extent of the graph?
- if (onlyDrawDrawnNodes&indx==undefined){
+ if (onlyDrawDrawnNodes && indx==undefined){
   console.log("    ... stopping at "+labelNode(v)+" [node not drawn]"); // v is off the drawn graph
   autoprogress.push(labelNode(v));
  } else if (destindx==undefined){
