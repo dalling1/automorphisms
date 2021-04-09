@@ -69,9 +69,9 @@
   <button id="gvbutton" disabled="true" onclick="window.open(makeGraphVizLink(G),'_blank');return false;" title="Opens in new tab/window">GraphViz</button>
 
   <select id="input_layout" onchange="drawCytoscapeGraph();return false;">
-   <option value="none">none</option>
+   <option value="none" selected>none</option>
    <option value="null">null</option>
-   <option value="grid" selected>grid</option>
+   <option value="grid">grid</option>
    <option value="random">random</option>
    <option value="cose">cose</option>
 <!--   <option value="euler">euler</option>-->
@@ -189,7 +189,7 @@ function mkdot(){
  var thisgraph = 'graph {\n';
  thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
  thisgraph += '\tedge [penwidth=1, color=black]\n';
- thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="#f8f8f8", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'; // 88888844
+ thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="#eaeaea88", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'; // 88888844
  thisgraph += '\tranksep=2\n';
  thisgraph += '\n\t// EDGES\n';
  for (var i=0;i<theedges.length;i++){
@@ -399,7 +399,7 @@ function run(){
  //		https://dreampuf.github.io/GraphvizOnline/
 
  // turn on the GraphViz button
- if (calcSize()<=20000){
+ if (calcSize()<=5000){
   document.getElementById("gvbutton").removeAttribute("disabled");
  }
 
@@ -516,11 +516,11 @@ function manageControls(){
  document.getElementById("output_Nnodes").classList.remove("red","toobig")
  document.getElementById("gvbutton").classList.remove("toobig")
 
- if (calcSize()>20000){
+ if (calcSize()>5000){
   document.getElementById("gvbutton").setAttribute("disabled","true");
   document.getElementById("output_Nnodes").classList.add("toobig")
   document.getElementById("gvbutton").classList.add("toobig")
- } else if (calcSize()>5000){
+ } else if (calcSize()>2000){
   document.getElementById("output_Nnodes").classList.add("red")
  }
 }
@@ -530,9 +530,17 @@ function calcSize(valency=null,maxdepth=null){
  // get the valency and maxdepth if they were not provided:
  if (valency==null) valency = parseInt(document.getElementById("input_valency").value);
  if (maxdepth==null) maxdepth = parseInt(document.getElementById("input_maxdepth").value);
+ var N = 0;
  var Nnodes = 0;
  for (var d=0;d<=maxdepth;d++){
-  Nnodes += Math.pow(valency,d); // valency^d nodes at each depth
+  if (d==0){
+   N = 1;
+  } else if (d==1){
+   N = valency;
+  } else {
+   N = N*(valency-1);
+  }
+  Nnodes += N;
  }
  return Nnodes;
 }
