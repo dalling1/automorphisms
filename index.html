@@ -5,25 +5,31 @@
  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:Light&display=swap">
  <style>
   #theoutput {
-   width: 45vw;
+   width: 70vh;
+   height: 70vh;
    clear: both;
    float: left;
    border: 1px solid red;
    padding: 5px;
    font-family: monospace, monospace;
    font-size: 8px;
+   overflow: auto;
   }
   #theinput {
    float: left;
    padding: 10px;
   }
   #thegraph {
-   width: 45vw;
-   height: 45vw; /* ie. square */
+   width: 70vh;
+   height: 70vh; /* ie. square */
    border: 1px solid green;
    padding: 5px;
    font-family: monospace, monospace;
    float: left;
+  }
+  #thegraph svg {
+   max-height: 100%;
+   max-width: 100%;
   }
   .red {
    color: red;
@@ -57,19 +63,21 @@
    font-size: 16px;
   }
  </style>
- <script src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.18.1/cytoscape.min.js" integrity="sha512-MgZAJudXekIHKoFtEk1NUwpSSCDt6JlfkUdwgX/1ustAyJltGO82ayHPOyK31xy9q84nGecgtF+D9hdm2OZldg==" crossorigin="anonymous"></script>
- <script src="https://cytoscape.org/cytoscape.js-euler/cytoscape-euler.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
+ <script>
+  var hpccWasm = window["@hpcc-js/wasm"];
+ </script>
+
 </head>
 <body onload="manageControls();">
 
 <form id="theinput" method="POST" oninput="manageControls();">
   <label for="input_valency">Valency:</label><input type="range" id="input_valency" value="3" min="2" max="10" /> <output id="output_valency"></output><br/>
-  <label for="input_maxdepth">Depth:</label><input type="range" id="input_maxdepth" value="3" min="0" max="8" /> <output id="output_maxdepth"></output><br/>
+  <label for="input_maxdepth">Depth:</label><input type="range" id="input_maxdepth" value="3" min="0" max="10" /> <output id="output_maxdepth"></output><br/>
   <span style="font-weight:bold;color:green;"><label for="output_Nnodes">Nodes:</label><output id="output_Nnodes"></output></span><br/>
 
   <label for="input_extent">Original nodes only:</label><input type="checkbox" id="input_extent" /> <output id="output_extent"></output><br/>
   <label for="input_labels">Label nodes:</label><input type="checkbox" checked id="input_labels" /> <output id="output_labels"></output><br/>
-<!--  <label for="input_addresses">Use address:</label><input type="checkbox" checked id="input_addresses" /> <output id="output_addresses"></output><br/>-->
   <label for="input_xlabels">Original labels too:</label><input type="checkbox" id="input_xlabels" /> <output id="output_xlabels"></output><br/>
   <label for="input_showdists">Show distances:</label><input type="checkbox" id="input_showdists" /> <output id="output_showdists"></output><br/>
   <label for="input_nodesize">Size nodes by distance:</label><input type="checkbox" checked id="input_nodesize" /> <output id="output_nodesize"></output><br/>
@@ -78,20 +86,23 @@
 
   <button onclick="run();return false;">Run</button>
   <button onclick="copy('theoutput');return false;">Copy Output</button>
-  <button id="gvbutton" disabled="true" onclick="window.open(makeGraphVizLink(G),'_blank');return false;" title="Opens in new tab/window">GraphViz</button>
 
-  <select id="input_layout" onchange="drawCytoscapeGraph();return false;">
-   <option value="none" selected>none</option>
-   <option value="null">null</option>
-   <option value="grid">grid</option>
-   <option value="random">random</option>
-   <option value="cose">cose</option>
-<!--   <option value="euler">euler</option>-->
+  <select id="input_layout" onchange="drawGraph();return false;">
+   <option value="none">none</option>
+   <option value="dot">dot</option>
+   <option value="neato">neato</option>
+   <option value="circo">circo</option>
+   <option value="twopi" selected>twopi</option>
+  </select>
+
+  <select id="input_format" onchange="drawGraph();return false;">
+   <option value="dot">dot</option>
+   <option value="svg" selected>svg</option>
   </select>
   <br/>
 </form>
 
-<div id="theoutput" title="Click to copy">Dot code will be shown here. GraphViz button opens the result in a new tab/window.</div>
+<div id="theoutput" title="Click to copy">Dot code will be shown here</div>
 <svg id="notthegraph"><g/></svg>
 <div id="thegraph"></div>
 
@@ -120,86 +131,12 @@ function labelNode(node){
  }
 }
 
-// function to turn the nodes and edges into a cytoscape data structure //////////////////////////// fn: mkcyto
-function mkcyto(){
- var thedata = [];
- for (var i=0;i<thenodes.length;i++){
-  // label the nodes:
-  var thislabel = labelNode(thenewnodes[i]); // get the label of the node's destination
-  var thisclass = "";
-  if (thislabel==null){
-   thislabel = i;
-   thisclass = "faded";
-  }
-//  var finallabel = labelNode(thenodes[i])+" -> "+thislabel;
-  var finallabel = thislabel;
-
-  var thisnode = {
-   "data": {
-    "id": "node"+i,
-    "label": finallabel,
-    "weight": 4
-   },
-   "position": {
-// omit pre-computed positions for now
-//    "x": 150,
-//    "y": 45
-   },
-   "group": "nodes",
-   "removed": false,
-   "selected": false,
-   "selectable": true,
-   "locked": false,
-   "grabbable": true,
-   "css": {
-     "color": (thisclass=="faded"?"#bbb":"black"),
-     "background-color": (thisclass=="faded"?"#777":"#3b3"),
-   },
-   "classes": ""
-  };
-  thedata.push(thisnode);
- }
-
-
- for (var i=0;i<theedges.length;i++){
-  var from = thenodes[theedges[i][0]].join("");
-  var to = thenodes[theedges[i][1]].join("");
-  var thiscolour = colours[to[to.length-1]];
-
-  var thisedge = {
-   "data": {
-    "id": "edge"+i,
-    "weight": 12,
-    "source": "node"+theedges[i][0],
-    "target": "node"+theedges[i][1]
-   },
-   "position": {},
-   "group": "edges",
-   "removed": false,
-   "selected": false,
-   "selectable": true,
-   "locked": false,
-   "grabbable": true,
-   "css": {"line-color": thiscolour},
-//   "target-arrow-shape": "none",
-   "classes": ""
-   };
-   thedata.push(thisedge);
-  };
-
-
- // finished, return the object containing the nodes and edges:
- return thedata;
-}
-
-
 // function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
 function mkdot(){
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
  var valency = parseInt(document.getElementById("input_valency").value);
 
  var showlabels = document.getElementById("input_labels").checked;
-// var showaddresses = document.getElementById("input_addresses").checked;
  var showaddresses = true;
  var showoriglabels = document.getElementById("input_xlabels").checked;
  var showdists = document.getElementById("input_showdists").checked;
@@ -277,42 +214,21 @@ function mkdot(){
 }
 
 
-function drawCytoscapeGraph(){
- /* good animation example: https://cytoscape.org/cytoscape.js-cose-bilkent/ */
- 
- // skip this if the Cytoscape layout is "none":
- if (document.getElementById("input_layout").value=="none"){
-  console.log("Skipping Cytoscape graph");
+function drawGraph(){
+ var useformat = document.getElementById("input_format").value;
+ var useengine = document.getElementById("input_layout").value;
+
+ // skip this if the GraphViz engine is "none":
+ if (useengine=="none"){
+  console.log("Skipping GraphViz graph");
  } else {
-  graphData = mkcyto();
-  var cy=cytoscape({
-   container: document.getElementById("thegraph"),
-   elements: graphData,
+  graphData = mkdot();
 
-   style: [ // the stylesheet for the graph
-     {
-       selector: "node",
-       style: {
-         "background-color": "#777",
-         "label": "data(label)" // was "data(id)"
-       }
-     },
-
-     {
-       selector: "edge",
-       style: {
-//         "width": 3,
-//         "line-color": "#ccc",
-//         "target-arrow-color": "#ccc",
-//         "target-arrow-shape": "triangle",
-         "curve-style": "bezier"
-       }
-     }
-   ],
-
-   layout: {name: document.getElementById("input_layout").value},
-
+  hpccWasm.graphviz.layout(graphData, useformat, useengine, ).then(svg => {
+   const div = document.getElementById("thegraph");
+   div.innerHTML = svg;
   });
+
  } // end if "none" loop
 }
 
@@ -360,42 +276,9 @@ function run(){
   thenewnodes[i] = null; // Note: empty value is reserved for the root node, so use null for unspecified nodes
  }
 
-/*
- // now define the automorphism: [THESE WILL COME FROM USER INPUT]
- if (0){
-  autoFrom = [0,1,2];
-  autoTo = [1,2];
-  localActionPermutation = permutationCyclic(valencyList,1); // for example
- }
- if (0){
-  autoFrom = [2];
-  autoTo = [1,2];
-  localActionPermutation = permutationCyclic(valencyList,1); // for example
- }
- if (0){
-  autoFrom = [2,0,1];
-  autoTo = [1,0,2];
-  localActionPermutation = permutationCyclic(valencyList,1); // for example
- }
- if (0){
-  autoFrom = [2,1,2];
-  autoTo = [1,0,2];
-  localActionPermutation = permutationCyclic(valencyList,1); // for example
- }
- if (0){
-  autoFrom = [2,1,2,1];
-  autoTo = [1,0,2];
-  localActionPermutation = permutationCyclic(valencyList,1); // for example
- }
- if (1){
-  autoFrom = [2];
-  autoTo = [1,2,1];
-  localActionPermutation = permutationCyclic(valencyList,1); // for example
- }
-*/
 
  //
- // define the automorphism: [EVENTUALLY THESE WILL COME FROM USER INPUT]
+ // define the automorphism: [EVENTUALLY THIS WILL COME FROM USER INPUT]
  //
  autoFrom = [0]; // for example
  autoTo = [1]; // for example
@@ -410,20 +293,15 @@ function run(){
  // carry out the automorphism:
  processnode(autoFrom,valency);
 
- // create and draw the Cytoscape graph
- drawCytoscapeGraph();
+ // create and draw the graph
+ drawGraph();
 
  // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
  G = mkdot();
  document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
- // feed it to:
+ // alternatively, feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
-
- // turn on the GraphViz button
- if (calcSize()<=5000){
-  document.getElementById("gvbutton").removeAttribute("disabled");
- }
 
  return 0;
 } // end run()
@@ -522,26 +400,24 @@ async function copy(targetId=null){
 }
 
 // create a GraphViz Online link /////////////////////////////////////////////////////////////////// fn: makeGraphVizLink
-function makeGraphVizLink(G){
+/*
+//function makeGraphVizLink(G){
  return "https://dreampuf.github.io/GraphvizOnline/#"+encodeURIComponent(G);
+// return "https://quickchart.io/graphviz?layout=twopi&graph="+encodeURIComponent(G);
 }
+*/
 
 // manage the control values and buttons /////////////////////////////////////////////////////////// fn: manageControls
 function manageControls(){
- document.getElementById("gvbutton").setAttribute("disabled","true");
  document.getElementById("output_valency").value = parseInt(document.getElementById("input_valency").value);
  document.getElementById("output_maxdepth").value = parseInt(document.getElementById("input_maxdepth").value);
  document.getElementById("output_Nnodes").value = calcSize();
 
  document.getElementById("output_Nnodes").classList.remove("toobig")
- document.getElementById("gvbutton").classList.remove("toobig")
  document.getElementById("output_Nnodes").classList.remove("red","toobig")
- document.getElementById("gvbutton").classList.remove("toobig")
 
  if (calcSize()>5000){
-  document.getElementById("gvbutton").setAttribute("disabled","true");
   document.getElementById("output_Nnodes").classList.add("toobig")
-  document.getElementById("gvbutton").classList.add("toobig")
  } else if (calcSize()>2000){
   document.getElementById("output_Nnodes").classList.add("red")
  }
@@ -569,8 +445,8 @@ function calcSize(valency=null,maxdepth=null){
 
 
 // process the automorphism //////////////////////////////////////////////////////////////////////// fn: processnode
-function processnode(v,valency,debug=false){
- console.log("Processing node "+labelNode(v)); // +"                                   ie. "+v.toString()+" (valency="+valency+")");
+function processnode(v,valency,verbose=false,debug=false){
+ if (verbose) console.log("Processing node "+labelNode(v)); // +"                                   ie. "+v.toString()+" (valency="+valency+")");
 
  var indx = findNode(v,thenodeindex);
  var destindx = thenewnodeindex[v];
@@ -580,14 +456,14 @@ function processnode(v,valency,debug=false){
 
  // has this node been drawn within the current extent of the graph?
  if (onlyDrawDrawnNodes && indx==undefined){
-  console.log("    ... stopping at "+labelNode(v)+" [node not drawn]"); // v is off the drawn graph
+  if (verbose) console.log("    ... stopping at "+labelNode(v)+" [node not drawn]"); // v is off the drawn graph
   autoprogress.push(labelNode(v));
  } else if (destindx==undefined){
-  console.log("    ... stopping at "+labelNode(v)+" [destination not drawn]"); // w is off the drawn graph
+  if (verbose) console.log("    ... stopping at "+labelNode(v)+" [destination not drawn]"); // w is off the drawn graph
   autoprogress.push(labelNode(v));
  } else {
   if (autoprogress.indexOf(labelNode(v))>-1){
-   console.log("    ... already done node "+labelNode(v));
+   if (verbose) console.log("    ... already done node "+labelNode(v));
   } else {
    autoprogress.push(labelNode(v));
 
@@ -599,10 +475,11 @@ function processnode(v,valency,debug=false){
    //    -- (constrained) random or
    //    -- same as at the reference node
    // [EVENTUALLY THESE WILL COME FROM USER INPUT]
+   console.log("###\n### NOTE: using reference node's local action everywhere\n###");
    thelocalaction[indx] = localActionPermutation; // for now, use the reference node's local action everywhere
 
    if (thelocalaction[indx]==null){
-    console.log("    ... no local action defined at "+labelNode(v)+", so stopping");
+    if (verbose) console.log("    ... no local action defined at "+labelNode(v)+", so stopping");
    } else {
     // 2. find this node's neighbours, vi
     var vi = findNeighbours(v,valency); // IN THE ORIGINAL GRAPH
@@ -627,7 +504,7 @@ function processnode(v,valency,debug=false){
      // can we draw this destination node?
      if (neighbourdestindx==undefined){
       if (debug) console.log("   "+labelNode(vi[i])+" node destination "+labelNode(vif[i])+" is outside the drawn graph ");
-      console.log("    ... skipping "+labelNode(vif[i])+" [destination not drawn]"); // v is off the drawn graph
+      if (verbose) console.log("    ... skipping "+labelNode(vif[i])+" [destination not drawn]"); // v is off the drawn graph
      } else {
 
       // only process nodes which were drawn in the original graph:
@@ -666,24 +543,7 @@ function findNode(v,nodeindex){
  }
 }
 
-// find the distance between two node labels /////////////////////////////////////////////////////// fn: labelDistance
-function labelDistance(v,w){
- // inputs are labels (ie. strings)
- // THIS DOESN'T WORK FOR THE ROOT NODE...
- // remove common prefix:
- if (v.length>0 & w.length>0){
-  while (v[0]==w[0]){
-   v=v.substr(1,v.length-1);
-   w=w.substr(1,w.length-1);
-   if (v.length==0 | w.length==0){
-    break;
-   }
-  }
- }
- // the count what path length is left
- var dist = v.length+w.length;
- return dist;
-}
+// find the distance between two nodes ///////////////////////////////////////////////////////////// fn: labelDistance
 function nodeDistance(v,w){
  // inputs are node addresses, eg. [0,1,2,1]
  // remove common prefix:
