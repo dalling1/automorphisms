@@ -3,33 +3,79 @@
  <meta charset="utf-8">
  <title>Automorphism</title>
  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:Light&display=swap">
+ <link rel="stylesheet" href="graphControls.css">
  <style>
-  #theoutput {
-   width: 70vh;
-   height: 70vh;
-   clear: both;
-   float: left;
-   border: 1px solid red;
-   padding: 5px;
-   font-family: monospace, monospace;
-   font-size: 8px;
-   overflow: auto;
+  html {
+   overflow: hidden;
+   background: #333;
+/*   font-family: "Open Sans", sans-serif;*/
+   font-family: "Open Sans Condensed", sans-serif;
   }
-  #theinput {
-   float: left;
-   padding: 10px;
+  #graphControls {
+   color: #600;
   }
   #thegraph {
-   width: 70vh;
-   height: 70vh; /* ie. square */
-   border: 1px solid green;
+   border: 2px solid #446;
+   display: block;
+   margin: 0 auto;
+   box-shadow: inset 3px 3px 3px #bbb;
+   background-color: #777;
+   xxxbackground-color: #f5f5f5;
+
+   /* copied from graphControls.css: */
+   border: 2px solid black;
+   box-shadow: inset -4px -4px 6px #666, -3px 3px 5px #222;
+   border-radius: 10px;
+  }
+  #dotContainer {
+   position: relative;
+   xxxwidth: 70vh;
+   height: 70vh;
+   width: 45vw;
+   float: left;
+   margin-right: 20px;
+  }
+  #dotContainer > * {
+   position: absolute;
+  }
+  #dotContainer > button {
+   font-size:12px;
+   top: 12px;
+   right: -10px;
+   right: 5px;
+  }
+  #theoutput {
+   position: absolute;
+   xxxwidth: 70vh;
+   xxxheight: 70vh;
+   xxxclear: both;
+   xxxfloat: left;
+   width: 100%;
+   height: 100%;
+   border: 1px solid red;
    padding: 5px;
+   margin: 5px;
+   box-sizing: content-box;
    font-family: monospace, monospace;
+   font-size: 12px;
+   overflow: auto;
+   color: yellow;
+  }
+  #thegraph {
+   xxxwidth: 70vh;
+   height: 70vh; /* ie. square */
+   width: 45vw;
+   padding: 5px;
+   margin: 5px;
+   box-sizing: content-box;
    float: left;
   }
   #thegraph svg {
    max-height: 100%;
    max-width: 100%;
+  }
+  #thegraph > svg > g > polygon {
+   display: none; /* hide the default background object on the GraphViz graph */
   }
   .red {
    color: red;
@@ -69,42 +115,86 @@
  </script>
 
 </head>
-<body onload="manageControls();">
+<body onload="setOutputValues()">
 
-<form id="theinput" method="POST" oninput="manageControls();">
-  <label for="input_valency">Valency:</label><input type="range" id="input_valency" value="3" min="2" max="10" /> <output id="output_valency"></output><br/>
-  <label for="input_maxdepth">Depth:</label><input type="range" id="input_maxdepth" value="3" min="0" max="10" /> <output id="output_maxdepth"></output><br/>
-  <span style="font-weight:bold;color:green;"><label for="output_Nnodes">Nodes:</label><output id="output_Nnodes"></output></span><br/>
+ <div id="graphControls">
+  <div class="onecontrol">Valency:<br/>
+   <input type="range" id="input_valency" value="3" min="2" max="10" oninput="setOutputValues();"/>
+   <output id="output_valency"></output>
+  </div>
+  <div class="onecontrol">Depth:<br/>
+   <input type="range" id="input_maxdepth" value="3" min="0" max="10" oninput="setOutputValues();"/>
+   <output id="output_maxdepth"></output>
+  </div>
 
-  <label for="input_extent">Original nodes only:</label><input type="checkbox" id="input_extent" /> <output id="output_extent"></output><br/>
-  <label for="input_labels">Label nodes:</label><input type="checkbox" checked id="input_labels" /> <output id="output_labels"></output><br/>
-  <label for="input_xlabels">Original labels too:</label><input type="checkbox" id="input_xlabels" /> <output id="output_xlabels"></output><br/>
-  <label for="input_showdists">Show distances:</label><input type="checkbox" id="input_showdists" /> <output id="output_showdists"></output><br/>
-  <label for="input_nodesize">Size nodes by distance:</label><input type="checkbox" checked id="input_nodesize" /> <output id="output_nodesize"></output><br/>
+  <div class="onecontrol">Nodes:<br/>
+   <output id="output_Nnodes"></output>
+  </div>
 
-  <br/>
+  <div class="onecontrol">Original nodes only:<br/>
+   <label class="switch">
+   <input type="checkbox" checked id="input_extent" />
+   <span class="slider round"></span>
+   </label>
+  </div>
+  <div class="onecontrol">Label nodes:<br/>
+   <label class="switch">
+   <input type="checkbox" checked id="input_labels" />
+   <span class="slider round"></span>
+   </label>
+  </div>
+  <div class="onecontrol">Original labels too:<br/>
+   <label class="switch">
+   <input type="checkbox" id="input_xlabels" />
+   <span class="slider round"></span>
+   </label>
+  </div>
+  <div class="onecontrol">Show distances:<br/>
+   <label class="switch">
+   <input type="checkbox" id="input_showdists" />
+   <span class="slider round"></span>
+   </label>
+  </div>
+  <div class="onecontrol">Size nodes by distance:<br/>
+   <label class="switch">
+   <input type="checkbox" checked id="input_nodesize" />
+   <span class="slider round"></span>
+   </label>
+  </div>
 
-  <button onclick="run();return false;">Run</button>
-  <button onclick="copy('theoutput');return false;">Copy Output</button>
+  <div class="onecontrol controlwrapper">
+   <span class="wrappertext">Engine</span><br/>
+   <select id="input_layout">
+    <option value="none">none</option>
+    <option value="circo">circo</option>
+    <option value="dot">dot</option>
+    <option value="fdp">fdp</option>
+    <option value="sfdp">sfdp</option>
+    <option value="neato" selected>neato</option>
+    <option value="osage">osage</option>
+    <option value="patchwork">patchwork</option>
+    <option value="twopi">twopi</option>
+   </select>
+  </div>
 
-  <select id="input_layout" onchange="drawGraph();return false;">
-   <option value="none">none</option>
-   <option value="dot">dot</option>
-   <option value="neato">neato</option>
-   <option value="circo">circo</option>
-   <option value="twopi" selected>twopi</option>
-  </select>
+  <div class="onecontrol controlwrapper">
+   <span class="wrappertext">Format</span><br/>
+   <select id="input_format">
+    <option value="dot" disabled>dot</option>
+    <option value="svg" selected>svg</option>
+   </select>
+  </div>
 
-  <select id="input_format" onchange="drawGraph();return false;">
-   <option value="dot">dot</option>
-   <option value="svg" selected>svg</option>
-  </select>
-  <br/>
-</form>
+  <button class="onecontrol" style="font-size:2em;" onclick="run();">Run</button>
+<!--  <button class="onecontrol" style="font-size:2em;" onclick="copy('theoutput');">Copy Dot</button>-->
+ </div>
 
-<div id="theoutput" title="Click to copy">Dot code will be shown here</div>
-<svg id="notthegraph"><g/></svg>
+<div id="dotContainer">
+ <div id="theoutput">Dot code will be shown here</div>
+ <button onclick="copy('theoutput');">Copy</button>
+</div>
 <div id="thegraph"></div>
+
 
 <script>
  // set up some constants
@@ -114,6 +204,16 @@
  const ROOTNODE = "\u{d8}"; // capital-O-with-stroke symbol https://graphemica.com/%C3%98
 // const colours=["red","blue","green","magenta","cyan","black","yellow"];
  const colours=["#ff0000","#0000ff","#00ff00","#ff00ff","#00ffff","#000000","#ffff00"];
+
+ // colour set-up of nodes, edges and labels:
+ const thenodecolour = 'orange';
+ const theedgecolour = 'black'; // currently a fall-back (each edge's colour is over-ridden individually)
+ const thefadednodecolour = '#eaeaea22';
+ const thelabelcolour = '#ff0000';
+ const thefadedlabelcolour = '#aaaaaa';
+ const thefadeopacity = '77'; // 2-digit hex code
+ const thereferencenodecolour = 'yellow';
+ const thereferencelabelcolour = 'black';
 
 // function to provide label characters //////////////////////////////////////////////////////////// fn:label
 function label(n){
@@ -145,8 +245,8 @@ function mkdot(){
 
  var thisgraph = 'graph {\n';
  thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
- thisgraph += '\tedge [penwidth=1, color=black]\n';
- thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="#eaeaea22", fontsize=14, fixedsize=true, fontcolor="#aaaaaa"]\n'; // 88888844
+ thisgraph += '\tedge [penwidth=1, color='+theedgecolour+']\n';
+ thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="'+thefadednodecolour+'", fontsize=14, fixedsize=true, fontcolor="'+thefadedlabelcolour+'"]\n';
  thisgraph += '\tranksep=2\n';
  thisgraph += '\n\t// EDGES\n';
  for (var i=0;i<theedges.length;i++){
@@ -171,23 +271,24 @@ function mkdot(){
   thiscolour = colours[to[to.length-1]]
 //  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + '\n'; // no coloured edges (all black)
 //  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color='+thiscolour+']\n'; // coloured edges
-  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color="'+thiscolour+(fadeedge?'22':'')+'"]\n'; // coloured edges, faded if either end is not defined in the automorphism
+  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color="'+thiscolour+(fadeedge?thefadeopacity:'')+'"]\n'; // coloured edges, faded if either end is not defined in the automorphism
  }
 
  thisgraph += '\n\t// POST-AUTOMORPHISM NODES\n';
  for (var i=0;i<thenewnodes.length;i++){
   var thislabel = labelNode(thenewnodes[i]);
-  var nodecolour = 'green';
-  var fontcolour = '"#ff0000"';
+  var nodecolour = thenodecolour;
+  var fontcolour = thelabelcolour;
   var xlabel = labelNode(thenodes[i]);
   var thisradius = 0.1;
   var showdist = '';
 
   // if there is an entry in thenewnodes, set the properties of the node
   if (thislabel!=null){
+   // distinguish the reference node:
    if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
-    nodecolour = 'yellow';
-    fontcolour = 'black';
+    nodecolour = thereferencenodecolour;
+    fontcolour = thereferencelabelcolour;
    }
 
    if (autodistance[thenewnodes[i].toString()]!=undefined){
@@ -201,7 +302,7 @@ function mkdot(){
      console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for "+thenewnodes[i].toString());
     }
    }
-   thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor=' + nodecolour + ', color=black, fontcolor=' + fontcolour + ', '+(showoriglabels?'xlabel="'+xlabel+(showdists?' ('+showdist+')", ':''):(showdists?'label="'+thislabel+' ('+showdist+')", ':'')) + (sizebydist?'width='+thisradius.toFixed(4):'') + ']\n';
+   thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor=' + nodecolour + ', color=black, fontcolor="' + fontcolour + '", '+(showoriglabels?'xlabel="'+xlabel+(showdists?' ('+showdist+')", ':'" '):(showdists?'label="'+thislabel+' ('+showdist+')", ':'')) + (sizebydist?'width='+thisradius.toFixed(4):'') + ']\n';
   } else { // otherwise, just add the external label
    thislabel = i;
    xlabel = labelNode(thenodes[i]);
@@ -561,6 +662,21 @@ function nodeDistance(v,w){
  return dist;
 }
 
+// HTML input labelling function ///////////////////////////////////////////////////////////////////// fn:setOutputValues
+// function which looks for inputs and their labels (containing the input value), and sets the label
+// (only called on page load, to set the initial labels)
+function setOutputValues(){
+ // display the calculated number of nodes that these control choices (valency, depth) will produce:
+ document.getElementById("output_Nnodes").value = calcSize();
+
+ var inputs = document.getElementsByTagName("input"); // get a list of the page inputs
+ for (var i=0;i<inputs.length;i++){ // loop over the inputs
+  outputID = inputs[i].id.replace('input_','output_');
+  if (!!document.getElementById(outputID)){ // does an output tag for this control exist?
+   document.getElementById(outputID).value = inputs[i].value; // set the value of the output to the input
+  }
+ }
+}
 </script>
 
 </body>
