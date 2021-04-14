@@ -281,7 +281,7 @@ function mkdot(){
   var fontcolour = thelabelcolour;
   var xlabel = labelNode(thenodes[i]);
   var thisradius = 0.1;
-  var showdist = '';
+  var showdist = null;
 
   // if there is an entry in thenewnodes, set the properties of the node
   if (thislabel!=null){
@@ -299,14 +299,14 @@ function mkdot(){
      thisradius = 5/autodistance[thenodes[i].toString()];
      showdist = autodistance[thenodes[i].toString()];
     } else {
-     console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for "+thenewnodes[i].toString());
+     console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for node "+thenodes[i].toString());
     }
    }
-   thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor=' + nodecolour + ', color=black, fontcolor="' + fontcolour + '", '+(showoriglabels?'xlabel="'+xlabel+(showdists?' ('+showdist+')", ':'" '):(showdists?'label="'+thislabel+' ('+showdist+')", ':'')) + (sizebydist?'width='+thisradius.toFixed(4):'') + ']\n';
+   thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor=' + nodecolour + ', color=black, fontcolor="' + fontcolour + '", '+(showoriglabels?'xlabel="'+xlabel+((showdists&(showdist!=null))?' ('+showdist+')", ':'" '):((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')", ':'')) + ((sizebydist&(showdist!=null))?'width='+thisradius.toFixed(4):'') + ']\n';
   } else { // otherwise, just add the external label
    thislabel = i;
    xlabel = labelNode(thenodes[i]);
-   thisgraph += '\t' + thislabel + ' ['+(showlabels?(showoriglabels?'':(showdists?'label="'+thislabel+' ('+thisdist+')"':'')):'label="", ')+(showoriglabels?'xlabel='+xlabel+', ':'') + ']\n';
+   thisgraph += '\t' + thislabel + ' ['+(showlabels?(showoriglabels?'':((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')"':'')):'label="", ')+(showoriglabels?'xlabel='+xlabel+', ':'') + ']\n';
   }
  }
 
