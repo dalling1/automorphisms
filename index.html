@@ -108,6 +108,9 @@
    border-radius: 2px;
    font-size: 16px;
   }
+  .node {
+   cursor: pointer;
+  }
  </style>
  <script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
  <script>
@@ -342,7 +345,10 @@ function drawGraph(){
   hpccWasm.graphviz.layout(graphData, useformat, useengine, ).then(svg => {
    const div = document.getElementById("thegraph");
    div.innerHTML = svg;
+   // set the onclick function for the nodes (now that they exist):
+   setupNodes();
   });
+
 
  } // end if "none" loop
 }
@@ -764,6 +770,18 @@ function setOutputValues(){
   outputID = inputs[i].id.replace('input_','output_');
   if (!!document.getElementById(outputID)){ // does an output tag for this control exist?
    document.getElementById(outputID).value = inputs[i].value; // set the value of the output to the input
+  }
+ }
+}
+
+// set the hover/click functionality of nodes ////////////////////////////////////////////////////// fn:setupNodes
+function setupNodes(){
+ var allnodes = document.getElementsByTagName("g");
+ for (var i=0;i<allnodes.length;i++){
+  if (allnodes[i].classList.contains("node")){ // only set onclick for the nodes (not edges)
+   allnodes[i].onclick = function() {
+    console.log("Clicked on node "+this.children[2].innerHTML+" ("+this.id+")");
+   }
   }
  }
 }
