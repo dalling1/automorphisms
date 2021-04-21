@@ -167,7 +167,7 @@
 
   <div class="onecontrol controlwrapper">
    <span class="wrappertext">Engine</span><br/>
-   <select id="input_layout">
+   <select id="input_engine">
     <option value="none">none</option>
     <option value="circo">circo</option>
     <option value="dot">dot</option>
@@ -188,9 +188,8 @@
    </select>
   </div>
 
-  <button class="onecontrol" style="font-size:2em;" onclick="run();">Original</button>
-  <button class="onecontrol" style="font-size:2em;" onclick="runAutomorphism();">Automorph</button>
-<!--  <button class="onecontrol" style="font-size:2em;" onclick="copy('theoutput');">Copy Dot</button>-->
+  <button class="onecontrol" style="font-size:2em;" onclick="run(false);">Original</button>
+  <button class="onecontrol" style="font-size:2em;" onclick="run(true);">Automorph</button>
  </div>
 
 <div id="dotContainer">
@@ -219,7 +218,7 @@
  const thereferencenodecolour = 'yellow';
  const thereferencelabelcolour = 'black';
 
-// function to provide label characters //////////////////////////////////////////////////////////// fn:label
+// function to provide label characters //////////////////////////////////////////////////////////// fn: label
 function label(n){
  return (n>=0 & n<thelabels.length ? thelabels[n] : "X"); // return "X" if n is out of range
 }
@@ -236,7 +235,7 @@ function labelNode(node){
 }
 
 // function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
-function mkdot(dotnodes,dotedges,dotoldnodes=[]){
+function mkdot(){
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
  var valency = parseInt(document.getElementById("input_valency").value);
 
@@ -249,18 +248,16 @@ function mkdot(dotnodes,dotedges,dotoldnodes=[]){
 
  var thisgraph = 'graph {\n';
  thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
- thisgraph += '\tedge [penwidth=1, color="'+theedgecolour+'"]\n';
+ thisgraph += '\tedge [penwidth=1, color='+theedgecolour+']\n';
  thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="'+thefadednodecolour+'", fontsize=14, fixedsize=true, fontcolor="'+thefadedlabelcolour+'"]\n';
  thisgraph += '\tranksep=2\n';
  thisgraph += '\n\t// EDGES\n';
- for (var i=0;i<dotedges.length;i++){
-  var from = dotnodes[dotedges[i][0]].join("");
-  var to = dotnodes[dotedges[i][1]].join("");
+ for (var i=0;i<theedges.length;i++){
+  var from = thenodes[theedges[i][0]].join("");
+  var to = thenodes[theedges[i][1]].join("");
   if (showaddresses){
-//xx   var fromLabel = labelNode(thenewnodes[dotedges[i][0]]);
-//xx   var toLabel = labelNode(thenewnodes[dotedges[i][1]]);
-   var fromLabel = labelNode(dotnodes[dotedges[i][0]]);
-   var toLabel = labelNode(dotnodes[dotedges[i][1]]);
+   var fromLabel = labelNode(thenewnodes[theedges[i][0]]);
+   var toLabel = labelNode(thenewnodes[theedges[i][1]]);
   } else {
    var fromLabel = from;
    var toLabel = to;
@@ -271,165 +268,75 @@ function mkdot(dotnodes,dotedges,dotoldnodes=[]){
   // some labels might be missing post-automorphism, so use the index instead
   var fadeedge = false;
   if (fromLabel==null || toLabel==null) fadeedge = true;
-  if (fromLabel==null) fromLabel = dotedges[i][0];
-  if (toLabel==null) toLabel = dotedges[i][1];
+  if (fromLabel==null) fromLabel = theedges[i][0];
+  if (toLabel==null) toLabel = theedges[i][1];
 
   thiscolour = colours[to[to.length-1]]
 //  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + '\n'; // no coloured edges (all black)
-//  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color="'+thiscolour+'"]\n'; // coloured edges
+//  thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color='+thiscolour+']\n'; // coloured edges
   thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color="'+thiscolour+(fadeedge?thefadeopacity:'')+'"]\n'; // coloured edges, faded if either end is not defined in the automorphism
  }
 
  thisgraph += '\n\t// POST-AUTOMORPHISM NODES\n';
-//xx for (var i=0;i<thenewnodes.length;i++){
- for (var i=0;i<dotnodes.length;i++){
-//xx  var thislabel = labelNode(thenewnodes[i]);
-  var thislabel = labelNode(dotnodes[i]);
+ for (var i=0;i<thenewnodes.length;i++){
+  var thislabel = labelNode(thenewnodes[i]);
   var nodecolour = thenodecolour;
   var fontcolour = thelabelcolour;
-//xx  var xlabel = labelNode(dotnodes[i]);
-  var xlabel = '';
-  if (dotoldnodes[i]!=undefined) xlabel = labelNode(dotoldnodes[i]);
+  var xlabel = labelNode(thenodes[i]);
   var thisradius = 0.1;
+  var showdist = null;
 
   // if there is an entry in thenewnodes, set the properties of the node
   if (thislabel!=null){
    // distinguish the reference node:
-//xx   if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
-   if (labelNode(dotnodes[i])==labelNode(autoFrom)){
+   if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
     nodecolour = thereferencenodecolour;
     fontcolour = thereferencelabelcolour;
    }
 
-  var showdist = null;
-//xx   if (autodistance[thenewnodes[i].toString()]!=undefined){
-//xx    thisradius = 1/autodistance[thenewnodes[i].toString()];
-//xx    showdist = autodistance[thenewnodes[i].toString()];
-   if (autodistance.length){
-    if (autodistance[dotnodes[i].toString()]!=undefined){
-     thisradius = 1/autodistance[dotnodes[i].toString()];
-     showdist = autodistance[dotnodes[i].toString()];
-    } else { // try the old label instead?
-     if (autodistance[dotoldnodes[i].toString()]!=undefined){
-      thisradius = 5/autodistance[dotoldnodes[i].toString()];
-      showdist = autodistance[dotoldnodes[i].toString()];
-     } else {
-      console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for node "+dotnodes[i].toString());
-     }
+   if (autodistance[thenewnodes[i].toString()]!=undefined){
+    thisradius = 1/autodistance[thenewnodes[i].toString()];
+    showdist = autodistance[thenewnodes[i].toString()];
+   } else { // try the old label instead?
+    if (autodistance[thenodes[i].toString()]!=undefined){
+     thisradius = 5/autodistance[thenodes[i].toString()];
+     showdist = autodistance[thenodes[i].toString()];
+    } else {
+     console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for node "+thenodes[i].toString());
     }
    }
    thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor="' + nodecolour + '", color=black, fontcolor="' + fontcolour + '", '+(showoriglabels?'xlabel="'+xlabel+((showdists&(showdist!=null))?' ('+showdist+')", ':'" '):((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')", ':'')) + ((sizebydist&(showdist!=null))?'width='+thisradius.toFixed(4):'') + ']\n';
   } else { // otherwise, just add the external label
    thislabel = i;
-//xx   xlabel = labelNode(dotnodes[i]);
-//   xlabel = labelNode(dotoldnodes[i]); // not needed, still defined from above?
+   xlabel = labelNode(thenodes[i]);
    thisgraph += '\t' + thislabel + ' ['+(showlabels?(showoriglabels?'':((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')"':'')):'label="", ')+(showoriglabels?'xlabel='+xlabel+', ':'') + ']\n';
   }
  }
 
  thisgraph += '}\n';
  return thisgraph;
-}
+} // end mkdot
 
-
-function drawGraph(){
+// function to run the GraphViz engine to draw the graph on screen ///////////////////////////////// fn: drawGraph
+function drawGraph(G=[]){
  var useformat = document.getElementById("input_format").value;
- var useengine = document.getElementById("input_layout").value;
+ var useengine = document.getElementById("input_engine").value;
 
- // skip this if the GraphViz engine is "none":
- if (useengine=="none"){
+ // skip drawing if the GraphViz engine is "none" or the graph is not defined
+ if (useengine=="none" | G.length==0){
   console.log("Skipping GraphViz graph");
  } else {
-  graphData = mkdot(thenodes,theedges);
-
+  graphData = G;
   hpccWasm.graphviz.layout(graphData, useformat, useengine, ).then(svg => {
-   const div = document.getElementById("thegraph");
-   div.innerHTML = svg;
-   // set the onclick function for the nodes (now that they exist):
-   setupNodes();
+   const svgdiv = document.getElementById("thegraph"); // the div where the SVG graph should be attached
+   svgdiv.innerHTML = svg;
+   setupNodes(); // set the onclick function for the nodes (now that they exist)
   });
-
-
- } // end if "none" loop
-}
-
-// function to draw the original graph ///////////////////////////////////////////////////////////////// fn: runAutomorphism
-function run(){
- // get values from the user controls:
- var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
- var valency = parseInt(document.getElementById("input_valency").value);
- var valencyList = [];
- for (var v=0;v<valency;v++){
-  valencyList.push(v);
  }
+} // end drawGraph
 
- // initialise
- thenodes = [];        // list of nodes by address
- thenodes[0] = [];     // root node
- theedges = [];        // pair-wise edges, using indices
- thenodeindex = [];    // associative array, index by node address
-//xx thenewnodes = [];     // list of nodes by address post-automorphism
-//xx thenewnodeindex = []; // associative array, index by node address, for the post-automorphism graph
-//xx thelocalaction = [];  // list of automorphism permutation at each node (local action)
-//xx autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
- autodistance = [];    // compute how far each node has moved
-
- thenodeindex["ROOT"] = 0;
-
- // loop over all nodes and add children to those at the (current) maximum depth
- for (var d=0;d<maxdepth;d++){
-  for (var i=0;i<thenodes.length;i++){
-   if (thenodes[i].length==d){
-    for (var v=0;v<valency;v++){
-     if (thenodes[i][thenodes[i].length-1]!=v){ // but only add this node if it really exists (ie. not doubling back on the path)
-      thenodes[thenodes.length] = thenodes[i].concat(v);
-      // store the index of each node address as well (to aid searching)
-      thenodeindex[thenodes[thenodes.length-1].toString()] = thenodes.length-1; // at this point, this is never the root node (we started there, and are adding children)
-      // and add an edge at the same time
-      theedges.push([i,thenodes.length-1]);
-     }
-    }
-   }
-  }
- }
-
- // initialise the post-automorphism nodes
-//xx for (var i=0;i<thenodes.length;i++){
-//xx  thenewnodes[i] = null; // Note: empty value is reserved for the root node, so use null for unspecified nodes
-//xx }
-
-
- //
- // define the automorphism: [EVENTUALLY THIS WILL COME FROM USER INPUT]
- //
- autoFrom = [0]; // for example
-//xx autoTo = [1]; // for example
-//xx localActionPermutation = permutationCyclic(valencyList,1); // for example
-
- // the new approach to performing the automorphism:
- // (for now, only define the local action at the reference node)
-//xx thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
-//xx thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
-//xx thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
-
- // carry out the automorphism:
-//xx processnode(autoFrom,valency);
-
- // create and draw the graph
- drawGraph();
-
- // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
- G = mkdot(thenodes,theedges);
- document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
- document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
- // alternatively, feed it to:
- //		https://dreampuf.github.io/GraphvizOnline/
-
- return 0;
-} // end run()
-
-// apply the automorphism and draw the resulting graph //////////////////////////////////////////// fn: runAutomorphism
-function runAutomorphism(){
+// function to initiate the original graph and text //////////////////////////////////////////////// fn: run
+function run(doAutomorphism=false){
  // get values from the user controls:
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
  var valency = parseInt(document.getElementById("input_valency").value);
@@ -474,34 +381,42 @@ function runAutomorphism(){
  }
 
 
- //
- // define the automorphism: [EVENTUALLY THIS WILL COME FROM USER INPUT]
- //
- autoFrom = [0]; // for example
- autoTo = [1]; // for example
- localActionPermutation = permutationCyclic(valencyList,1); // for example
+ if (doAutomorphism){
+  console.log("###");
+  console.log("### Automorphism requested, here we should ask the user to define it (select reference node and destination, then local action(s)...)");
+  console.log("###");
 
- // the new approach to performing the automorphism:
- // (for now, only define the local action at the reference node)
- thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
- thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
- thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
+  //
+  // define the automorphism: [EVENTUALLY THIS WILL COME FROM USER INPUT]
+  //
+  autoFrom = [0]; // for example
+  autoTo = [1]; // for example
+  localActionPermutation = permutationCyclic(valencyList,1); // for example
 
- // carry out the automorphism:
- processnode(autoFrom,valency);
+  // the new approach to performing the automorphism:
+  // (for now, only define the local action at the reference node)
+  thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
+  thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
+  thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
 
- // create and draw the graph
- drawGraph();
+  // carry out the automorphism:
+  processnode(autoFrom,valency);
+ }
 
- // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
- G = mkdot(thenodes,theedges);
+ // generate the dot code (for original or automorphed graph)
+ G = mkdot(doAutomorphism);
+ // ...and display it as text:
  document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
+
+ // ...and draw it on the screen:
+ drawGraph(G);
  // alternatively, feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
 
  return 0;
-} // end runAutomorphism()
+} // end run()
+
 
 // random integers ///////////////////////////////////////////////////////////////////////////////// fn: randomInt
 function randomInt(n=1){
@@ -620,7 +535,7 @@ function manageControls(){
  }
 }
 
-// how big is the graph? /////////////////////////////////////////////////////////////////////////// fn: calcSize
+// how many nodes does the graph have? ///////////////////////////////////////////////////////////// fn: calcSize
 function calcSize(valency=null,maxdepth=null){
  // get the valency and maxdepth if they were not provided:
  if (valency==null) valency = parseInt(document.getElementById("input_valency").value);
@@ -758,7 +673,7 @@ function nodeDistance(v,w){
  return dist;
 }
 
-// HTML input labelling function ///////////////////////////////////////////////////////////////////// fn:setOutputValues
+// HTML input labelling function /////////////////////////////////////////////////////////////////// fn:setOutputValues
 // function which looks for inputs and their labels (containing the input value), and sets the label
 // (only called on page load, to set the initial labels)
 function setOutputValues(){
