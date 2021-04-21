@@ -108,6 +108,9 @@
    border-radius: 2px;
    font-size: 16px;
   }
+  .node {
+   cursor: pointer;
+  }
  </style>
  <script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
  <script>
@@ -164,7 +167,7 @@
 
   <div class="onecontrol controlwrapper">
    <span class="wrappertext">Engine</span><br/>
-   <select id="input_layout">
+   <select id="input_engine">
     <option value="none">none</option>
     <option value="circo">circo</option>
     <option value="dot">dot</option>
@@ -185,7 +188,8 @@
    </select>
   </div>
 
-  <button class="onecontrol" style="font-size:2em;" onclick="run();">Run</button>
+  <button class="onecontrol" style="font-size:2em;" onclick="runOriginal(false);">Original</button>
+  <button class="onecontrol" style="font-size:2em;" onclick="runOriginal(true);">Automorph</button>
 <!--  <button class="onecontrol" style="font-size:2em;" onclick="copy('theoutput');">Copy Dot</button>-->
  </div>
 
@@ -215,7 +219,7 @@
  const thereferencenodecolour = 'yellow';
  const thereferencelabelcolour = 'black';
 
-// function to provide label characters //////////////////////////////////////////////////////////// fn:label
+// function to provide label characters //////////////////////////////////////////////////////////// fn: label
 function label(n){
  return (n>=0 & n<thelabels.length ? thelabels[n] : "X"); // return "X" if n is out of range
 }
@@ -312,28 +316,29 @@ function mkdot(){
 
  thisgraph += '}\n';
  return thisgraph;
-}
+} // end mkdot
 
 
-function drawGraph(){
+// function to run the GraphViz engine to draw the graph on screen ///////////////////////////////// fn: drawGraph
+function drawGraph(G=[]){
  var useformat = document.getElementById("input_format").value;
- var useengine = document.getElementById("input_layout").value;
+ var useengine = document.getElementById("input_engine").value;
 
- // skip this if the GraphViz engine is "none":
- if (useengine=="none"){
+ // skip drawing if the GraphViz engine is "none" or the graph is not defined
+ if (useengine=="none" | G.length==0){
   console.log("Skipping GraphViz graph");
  } else {
-  graphData = mkdot();
-
+  graphData = G;
   hpccWasm.graphviz.layout(graphData, useformat, useengine, ).then(svg => {
-   const div = document.getElementById("thegraph");
-   div.innerHTML = svg;
+   const svgdiv = document.getElementById("thegraph"); // the div where the SVG graph should be attached
+   svgdiv.innerHTML = svg;
+   setupNodes(); // set the onclick function for the nodes (now that they exist)
   });
+ }
+} // end drawGraph
 
- } // end if "none" loop
-}
-
-function run(){
+// function to initiate the original graph and text //////////////////////////////////////////////// fn: runOriginal
+function runOriginal(doAutomorphism=false){
  // get values from the user controls:
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
  var valency = parseInt(document.getElementById("input_valency").value);
@@ -377,35 +382,42 @@ function run(){
   thenewnodes[i] = null; // Note: empty value is reserved for the root node, so use null for unspecified nodes
  }
 
+ if (doAutomorphism){
+  console.log("###");
+  console.log("### Automorphism requested, here we should ask the user to define it (select reference node and destination, then local action(s)...)");
+  console.log("###");
 
- //
- // define the automorphism: [EVENTUALLY THIS WILL COME FROM USER INPUT]
- //
- autoFrom = [0]; // for example
- autoTo = [1]; // for example
- localActionPermutation = permutationCyclic(valencyList,1); // for example
+  //
+  // define the automorphism: [EVENTUALLY THIS WILL COME FROM USER INPUT]
+  //
+  autoFrom = [0]; // for example
+  autoTo = [1]; // for example
+  localActionPermutation = permutationCyclic(valencyList,1); // for example
 
- // the new approach to performing the automorphism:
- // (for now, only define the local action at the reference node)
- thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
- thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
- thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
+  // the new approach to performing the automorphism:
+  // (for now, only define the local action at the reference node)
+  thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
+  thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
+  thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
 
- // carry out the automorphism:
- processnode(autoFrom,valency);
+  // carry out the automorphism:
+  processnode(autoFrom,valency);
+ }
 
- // create and draw the graph
- drawGraph();
-
- // create the dot graph ////////////////////////////////////////////////////////////////////////// make the graph
- G = mkdot();
+ // generate the dot code (for original or automorphed graph)
+ G = mkdot(doAutomorphism);
+ // ...and display it as text:
  document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
+
+ // ...and draw it on the screen:
+ drawGraph(G);
  // alternatively, feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
 
  return 0;
-} // end run()
+} // end runOriginal()
+
 
 // random integers ///////////////////////////////////////////////////////////////////////////////// fn: randomInt
 function randomInt(n=1){
@@ -524,7 +536,7 @@ function manageControls(){
  }
 }
 
-// how big is the graph? /////////////////////////////////////////////////////////////////////////// fn: calcSize
+// how many nodes does the graph have? ///////////////////////////////////////////////////////////// fn: calcSize
 function calcSize(valency=null,maxdepth=null){
  // get the valency and maxdepth if they were not provided:
  if (valency==null) valency = parseInt(document.getElementById("input_valency").value);
@@ -662,7 +674,7 @@ function nodeDistance(v,w){
  return dist;
 }
 
-// HTML input labelling function ///////////////////////////////////////////////////////////////////// fn:setOutputValues
+// HTML input labelling function /////////////////////////////////////////////////////////////////// fn:setOutputValues
 // function which looks for inputs and their labels (containing the input value), and sets the label
 // (only called on page load, to set the initial labels)
 function setOutputValues(){
@@ -674,6 +686,18 @@ function setOutputValues(){
   outputID = inputs[i].id.replace('input_','output_');
   if (!!document.getElementById(outputID)){ // does an output tag for this control exist?
    document.getElementById(outputID).value = inputs[i].value; // set the value of the output to the input
+  }
+ }
+}
+
+// set the hover/click functionality of nodes ////////////////////////////////////////////////////// fn:setupNodes
+function setupNodes(){
+ var allnodes = document.getElementsByTagName("g");
+ for (var i=0;i<allnodes.length;i++){
+  if (allnodes[i].classList.contains("node")){ // only set onclick for the nodes (not edges)
+   allnodes[i].onclick = function() {
+    console.log("Clicked on node "+this.children[2].innerHTML+" ("+this.id+")");
+   }
   }
  }
 }
