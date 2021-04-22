@@ -209,13 +209,13 @@
  const colours=["#ff0000","#0000ff","#00ff00","#ff00ff","#00ffff","#000000","#ffff00"];
 
  // colour set-up of nodes, edges and labels:
- const thenodecolour = '#ccaa00'; // was orange
+ const thenodecolour = 'yellow'; // '#ccaa00'; // was orange
  const theedgecolour = 'black'; // currently a fall-back (each edge's colour is over-ridden individually)
  const thefadednodecolour = '#eaeaea22';
  const thelabelcolour = '#000000';
  const thefadedlabelcolour = '#aaaaaa';
  const thefadeopacity = '77'; // 2-digit hex code
- const thereferencenodecolour = 'yellow';
+ const thereferencenodecolour = 'red';
  const thereferencelabelcolour = 'black';
 
 // function to provide label characters //////////////////////////////////////////////////////////// fn: label
@@ -235,7 +235,7 @@ function labelNode(node){
 }
 
 // function to turn nodes and edges into dot output //////////////////////////////////////////////// fn: mkdot
-function mkdot(){
+function mkdot(withAutomorphism=false){
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
  var valency = parseInt(document.getElementById("input_valency").value);
 
@@ -249,18 +249,25 @@ function mkdot(){
  var thisgraph = 'graph {\n';
  thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
  thisgraph += '\tedge [penwidth=1, color='+theedgecolour+']\n';
- thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="'+thefadednodecolour+'", fontsize=14, fixedsize=true, fontcolor="'+thefadedlabelcolour+'"]\n';
+ thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="'+(withAutomorphism?thefadednodecolour:thenodecolour)+'", fontsize=14, fixedsize=true, fontcolor="'+(withAutomorphism?thefadedlabelcolour:thelabelcolour)+'"]\n';
  thisgraph += '\tranksep=2\n';
  thisgraph += '\n\t// EDGES\n';
+ var fromLabel = '';
+ var toLabel = '';
  for (var i=0;i<theedges.length;i++){
   var from = thenodes[theedges[i][0]].join("");
   var to = thenodes[theedges[i][1]].join("");
   if (showaddresses){
-   var fromLabel = labelNode(thenewnodes[theedges[i][0]]);
-   var toLabel = labelNode(thenewnodes[theedges[i][1]]);
+   if (withAutomorphism){
+    fromLabel = labelNode(thenewnodes[theedges[i][0]]);
+    toLabel = labelNode(thenewnodes[theedges[i][1]]);
+   } else {
+    fromLabel = labelNode(thenodes[theedges[i][0]]);
+    toLabel = labelNode(thenodes[theedges[i][1]]);
+   }
   } else {
-   var fromLabel = from;
-   var toLabel = to;
+   fromLabel = from;
+   toLabel = to;
    if (fromLabel.length==0) fromLabel = ROOTNODE;
    if (toLabel.length==0) toLabel = ROOTNODE;
   }
@@ -277,39 +284,51 @@ function mkdot(){
   thisgraph += '\t' + fromLabel + EDGESEP + toLabel + ' [color="'+thiscolour+(fadeedge?thefadeopacity:'')+'"]\n'; // coloured edges, faded if either end is not defined in the automorphism
  }
 
- thisgraph += '\n\t// POST-AUTOMORPHISM NODES\n';
- for (var i=0;i<thenewnodes.length;i++){
-  var thislabel = labelNode(thenewnodes[i]);
-  var nodecolour = thenodecolour;
-  var fontcolour = thelabelcolour;
-  var xlabel = labelNode(thenodes[i]);
-  var thisradius = 0.1;
-  var showdist = null;
+ if (withAutomorphism){
+  thisgraph += '\n\t// POST-AUTOMORPHISM NODES\n';
+  for (var i=0;i<thenewnodes.length;i++){
+   var thislabel = labelNode(thenewnodes[i]);
+   var nodecolour = thenodecolour;
+   var fontcolour = thelabelcolour;
+   var xlabel = labelNode(thenodes[i]);
+   var thisradius = 0.1;
+   var showdist = null;
 
-  // if there is an entry in thenewnodes, set the properties of the node
-  if (thislabel!=null){
-   // distinguish the reference node:
-   if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
-    nodecolour = thereferencenodecolour;
-    fontcolour = thereferencelabelcolour;
-   }
-
-   if (autodistance[thenewnodes[i].toString()]!=undefined){
-    thisradius = 1/autodistance[thenewnodes[i].toString()];
-    showdist = autodistance[thenewnodes[i].toString()];
-   } else { // try the old label instead?
-    if (autodistance[thenodes[i].toString()]!=undefined){
-     thisradius = 5/autodistance[thenodes[i].toString()];
-     showdist = autodistance[thenodes[i].toString()];
-    } else {
-     console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for node "+thenodes[i].toString());
+   // if there is an entry in thenewnodes, set the properties of the node
+   if (thislabel!=null){
+    // distinguish the reference node:
+    if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
+     nodecolour = thereferencenodecolour;
+     fontcolour = thereferencelabelcolour;
     }
+
+    if (autodistance[thenewnodes[i].toString()]!=undefined){
+     thisradius = 1/autodistance[thenewnodes[i].toString()];
+     showdist = autodistance[thenewnodes[i].toString()];
+    } else { // try the old label instead?
+     if (autodistance[thenodes[i].toString()]!=undefined){
+      thisradius = 5/autodistance[thenodes[i].toString()];
+      showdist = autodistance[thenodes[i].toString()];
+     } else {
+      console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for node "+thenodes[i].toString());
+     }
+    }
+    thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor="' + nodecolour + '", color=black, fontcolor="' + fontcolour + '", '+(showoriglabels?'xlabel="'+xlabel+((showdists&(showdist!=null))?' ('+showdist+')", ':'" '):((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')", ':'')) + ((sizebydist&(showdist!=null))?'width='+thisradius.toFixed(4):'') + ']\n';
+   } else { // otherwise, just add the external label
+    thislabel = i;
+    xlabel = labelNode(thenodes[i]);
+    thisgraph += '\t' + thislabel + ' ['+(showlabels?(showoriglabels?'':((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')"':'')):'label="", ')+(showoriglabels?'xlabel='+xlabel+', ':'') + ']\n';
    }
-   thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor="' + nodecolour + '", color=black, fontcolor="' + fontcolour + '", '+(showoriglabels?'xlabel="'+xlabel+((showdists&(showdist!=null))?' ('+showdist+')", ':'" '):((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')", ':'')) + ((sizebydist&(showdist!=null))?'width='+thisradius.toFixed(4):'') + ']\n';
-  } else { // otherwise, just add the external label
-   thislabel = i;
-   xlabel = labelNode(thenodes[i]);
-   thisgraph += '\t' + thislabel + ' ['+(showlabels?(showoriglabels?'':((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')"':'')):'label="", ')+(showoriglabels?'xlabel='+xlabel+', ':'') + ']\n';
+  }
+ } else {
+  // show the original graph: do we want labels on the nodes?
+  if (!showlabels){
+   thisgraph += '\n';
+   thisgraph += '\t// HIDE THE LABELS\n';
+   for (var i=0;i<thenodes.length;i++){
+    thislabel = i;
+    thisgraph += '\t' + labelNode(thenodes[i]) + ' [label=""]\n';
+   }
   }
  }
 
