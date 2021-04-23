@@ -118,7 +118,7 @@
  </script>
 
 </head>
-<body onload="setOutputValues()">
+<body onload="setOutputValues();clearAutomorphism();">
 
  <div id="graphControls">
   <div class="onecontrol">Valency:<br/>
@@ -209,14 +209,15 @@
  const colours=["#ff0000","#0000ff","#00ff00","#ff00ff","#00ffff","#000000","#ffff00"];
 
  // colour set-up of nodes, edges and labels:
- const thenodecolour = 'yellow'; // '#ccaa00'; // was orange
+ const thenodecolour = '#dddd55'; // '#ccaa00'; // was orange, then yellow
  const theedgecolour = 'black'; // currently a fall-back (each edge's colour is over-ridden individually)
  const thefadednodecolour = '#eaeaea22';
  const thelabelcolour = '#000000';
  const thefadedlabelcolour = '#aaaaaa';
  const thefadeopacity = '77'; // 2-digit hex code
- const thereferencenodecolour = 'red';
+ const thereferencenodecolour = '#ff555566';
  const thereferencelabelcolour = 'black';
+ const thedestinationnodecolour = '#55ff5566';
 
 // function to provide label characters //////////////////////////////////////////////////////////// fn: label
 function label(n){
@@ -313,7 +314,7 @@ function mkdot(withAutomorphism=false){
       console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for node "+thenodes[i].toString());
      }
     }
-    thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor="' + nodecolour + '", color=black, fontcolor="' + fontcolour + '", '+(showoriglabels?'xlabel="'+xlabel+((showdists&(showdist!=null))?' ('+showdist+')", ':'" '):((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')", ':'')) + ((sizebydist&(showdist!=null))?'width='+thisradius.toFixed(4):'') + ']\n';
+    thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor="' + nodecolour + '", color=none, fontcolor="' + fontcolour + '", '+(showoriglabels?'xlabel="'+xlabel+((showdists&(showdist!=null))?' ('+showdist+')", ':'" '):((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')", ':'')) + ((sizebydist&(showdist!=null))?'width='+thisradius.toFixed(4):'') + ']\n';
    } else { // otherwise, just add the external label
     thislabel = i;
     xlabel = labelNode(thenodes[i]);
@@ -329,6 +330,12 @@ function mkdot(withAutomorphism=false){
     thislabel = i;
     thisgraph += '\t' + labelNode(thenodes[i]) + ' [label=""]\n';
    }
+  }
+
+  if (autoFrom!=null){
+   thisgraph += '\n';
+   thisgraph += '\t' + labelNode(autoFrom) + ' [fillcolor="'+thereferencenodecolour+'"]\n';
+   thisgraph += '\t' + labelNode(autoTo) + ' [fillcolor="'+thedestinationnodecolour+'"]\n';
   }
  }
 
@@ -719,6 +726,16 @@ function setupNodes(){
   }
  }
 }
+
+// initialise the automorphism ///////////////////////////////////////////////////////////////////// fn: clearAutomorphism
+function clearAutomorphism(){
+ autoFrom = null;
+ autoTo = null;
+ thelocalaction = [];  // list of automorphism permutation at each node (local action)
+ autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
+ autodistance = [];    // compute how far each node has moved
+}
+
 </script>
 
 </body>
