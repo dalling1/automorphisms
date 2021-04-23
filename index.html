@@ -714,7 +714,7 @@ function setupNodes(){
  for (var i=0;i<allnodes.length;i++){
   if (allnodes[i].classList.contains("node")){ // only set onclick for the nodes (not edges)
    allnodes[i].onclick = function() {
-    console.log("Clicked on node "+this.children[2].innerHTML+" ("+this.id+")");
+    console.log("Clicked on node "+this.children[0].textContent+" ("+this.id+")"); // use the node's "title" child (exists even if labels are off)
    }
   }
  }
