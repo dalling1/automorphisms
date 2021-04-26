@@ -111,6 +111,13 @@
   .node {
    cursor: pointer;
   }
+  .node:hover ellipse {
+   stroke: #0009;
+   stroke-width: 2px;
+  }
+  .node:hover text {
+   fill: #000;
+  }
  </style>
  <script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
  <script>
@@ -734,6 +741,15 @@ function clearAutomorphism(){
  thelocalaction = [];  // list of automorphism permutation at each node (local action)
  autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
  autodistance = [];    // compute how far each node has moved
+}
+
+// inverse function from label (string, eg. 'grb') to node (address, eg. [2,0,1]) ////////////////// fn: labelToNode
+function labelToNode(thelabel=''){
+ var thenode = [];
+ for (var i=0;i<thelabel.length;i++){
+  thenode.push(thelabels.indexOf(thelabel[i]));
+ }
+ return thenode;
 }
 
 </script>
