@@ -330,7 +330,8 @@ function mkdot(withAutomorphism=false){
    } else { // otherwise, just add the external label
     thislabel = i;
     xlabel = labelNode(thenodes[i]);
-    thisgraph += '\t' + thislabel + ' ['+(showlabels?(showoriglabels?'':((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')"':'')):'label="", ')+(showoriglabels?'xlabel='+xlabel+', ':'') + ']\n';
+    var dotcontent = (showlabels?(showoriglabels?'':((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')"':'')):'label="", ')+(showoriglabels?'xlabel='+xlabel+', ':'');
+    if (dotcontent.length) thisgraph += '\t' + thislabel + ' ['+ dotcontent + ']\n'; // omit nodes which have no dot style here (ie. "original graph" nodes, post-automorphism)
    }
   }
  } else {
