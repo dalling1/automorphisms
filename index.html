@@ -222,9 +222,10 @@
  const thelabelcolour = '#000000';
  const thefadedlabelcolour = '#aaaaaa';
  const thefadeopacity = '77'; // 2-digit hex code
- const thereferencenodecolour = '#ff555566';
+ const thereferencenodecolour = '#55ff5566';
  const thereferencelabelcolour = 'black';
- const thedestinationnodecolour = '#55ff5566';
+ const thedestinationnodecolour = '#ff555566';
+ const thedestinationlabelcolour = 'black';
 
 // function to provide label characters //////////////////////////////////////////////////////////// fn: label
 function label(n){
@@ -304,10 +305,14 @@ function mkdot(withAutomorphism=false){
 
    // if there is an entry in thenewnodes, set the properties of the node
    if (thislabel!=null){
-    // distinguish the reference node:
+    // distinguish the reference and destination nodes:
     if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
      nodecolour = thereferencenodecolour;
      fontcolour = thereferencelabelcolour;
+    }
+    if (labelNode(thenewnodes[i])==labelNode(autoTo)){
+     nodecolour = thedestinationnodecolour;
+     fontcolour = thedestinationlabelcolour;
     }
 
     if (autodistance[thenewnodes[i].toString()]!=undefined){
@@ -339,8 +344,8 @@ function mkdot(withAutomorphism=false){
    }
   }
 
-  if (autoFrom!=null){
-   thisgraph += '\n';
+  if (autoFrom!=null & autoTo!=null){
+   thisgraph += '\n\t// AUTOMORPHISM DEFINITION\n';
    thisgraph += '\t' + labelNode(autoFrom) + ' [fillcolor="'+thereferencenodecolour+'"]\n';
    thisgraph += '\t' + labelNode(autoTo) + ' [fillcolor="'+thedestinationnodecolour+'"]\n';
   }
@@ -388,6 +393,7 @@ function run(doAutomorphism=false){
  thelocalaction = [];  // list of automorphism permutation at each node (local action)
  autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
  autodistance = [];    // compute how far each node has moved
+ setFrom = true;       // start out by selecting the reference node
 
  thenodeindex["ROOT"] = 0;
 
@@ -414,7 +420,7 @@ function run(doAutomorphism=false){
  }
 
 
- if (doAutomorphism){
+ if (doAutomorphism & autoFrom!=null & autoTo!=null){
   console.log("###");
   console.log("### Automorphism requested, here we should ask the user to define it (select reference node and destination, then local action(s)...)");
   console.log("###");
@@ -422,8 +428,8 @@ function run(doAutomorphism=false){
   //
   // define the automorphism: [EVENTUALLY THIS WILL COME FROM USER INPUT]
   //
-  autoFrom = [0]; // for example
-  autoTo = [1]; // for example
+//  autoFrom = [0]; // for example
+//  autoTo = [1]; // for example
   localActionPermutation = permutationCyclic(valencyList,1); // for example
 
   // the new approach to performing the automorphism:
@@ -728,7 +734,15 @@ function setupNodes(){
  for (var i=0;i<allnodes.length;i++){
   if (allnodes[i].classList.contains("node")){ // only set onclick for the nodes (not edges)
    allnodes[i].onclick = function() {
-    console.log("Clicked on node "+this.children[0].textContent+" ("+this.id+")"); // use the node's "title" child (exists even if labels are off)
+    var thisnode = this.children[0].textContent;
+    if (setFrom){
+     autoFrom = labelToNode(thisnode);
+     console.log("Reference node clicked: "+thisnode+" ("+this.id+") ["+labelToNode(thisnode).toString()+"]"); // use the node's "title" child (exists even if labels are off)
+    } else {
+     autoTo = labelToNode(thisnode);
+     console.log("Destination node clicked: "+thisnode+" ("+this.id+") ["+labelToNode(thisnode).toString()+"]"); // use the node's "title" child (exists even if labels are off)
+    }
+    setFrom = !setFrom; // toggle between setting autoFrom and autoTo
    }
   }
  }
@@ -747,7 +761,8 @@ function clearAutomorphism(){
 function labelToNode(thelabel=''){
  var thenode = [];
  for (var i=0;i<thelabel.length;i++){
-  thenode.push(thelabels.indexOf(thelabel[i]));
+  var indx = thelabels.indexOf(thelabel[i]);
+  if (indx>-1) thenode.push(indx);
  }
  return thenode;
 }
