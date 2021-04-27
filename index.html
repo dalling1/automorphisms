@@ -118,6 +118,12 @@
   .node:hover text {
    fill: #000;
   }
+  .referenceNode ellipse {
+   fill: #f556;
+  }
+  .destinationNode ellipse {
+   fill: #5f56;
+  }
  </style>
  <script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
  <script>
@@ -734,14 +740,32 @@ function setupNodes(){
  var allnodes = document.getElementsByTagName("g");
  for (var i=0;i<allnodes.length;i++){
   if (allnodes[i].classList.contains("node")){ // only set onclick for the nodes (not edges)
+   /*
+      HERE WE DEFINED THE ON-CLICK FUNCTION FOR NODES:
+      - it will register the reference and destination nodes (alternatively)
+      - and add styling to those nodes
+   */
    allnodes[i].onclick = function() {
-    var thisnode = this.children[0].textContent;
+    var thisnodelabel = this.children[0].textContent;
+    var thisnodeid = this.id;
     if (setFrom){
-     autoFrom = labelToNode(thisnode);
-     console.log("Reference node clicked: "+thisnode+" ("+this.id+") ["+labelToNode(thisnode).toString()+"]"); // use the node's "title" child (exists even if labels are off)
+     // set the reference node
+     autoFrom = labelToNode(thisnodelabel);
+     // clear the relevant class from elsewhere and apply it to this node
+     var old = document.getElementsByClassName("referenceNode");
+     for (var j=0;j<old.length;j++) old[j].classList.remove("referenceNode");
+     document.getElementById(thisnodeid).classList.add("referenceNode");
+     // report
+     console.log("Reference node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
     } else {
-     autoTo = labelToNode(thisnode);
-     console.log("Destination node clicked: "+thisnode+" ("+this.id+") ["+labelToNode(thisnode).toString()+"]"); // use the node's "title" child (exists even if labels are off)
+     // set the destination node
+     autoTo = labelToNode(thisnodelabel);
+     // clear the relevant class from elsewhere and apply it to this node
+     var old = document.getElementsByClassName("destinationNode");
+     for (var j=0;j<old.length;j++) old[j].classList.remove("destinationNode");
+     document.getElementById(thisnodeid).classList.add("destinationNode");
+     // report
+     console.log("Destination node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
     }
     setFrom = !setFrom; // toggle between setting autoFrom and autoTo
    }
