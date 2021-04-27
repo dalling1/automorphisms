@@ -754,6 +754,7 @@ function setupNodes(){
      // clear the relevant class from elsewhere and apply it to this node
      var old = document.getElementsByClassName("referenceNode");
      for (var j=0;j<old.length;j++) old[j].classList.remove("referenceNode");
+     document.getElementById(thisnodeid).classList.remove("destinationNode");
      document.getElementById(thisnodeid).classList.add("referenceNode");
      // report
      console.log("Reference node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
@@ -763,6 +764,7 @@ function setupNodes(){
      // clear the relevant class from elsewhere and apply it to this node
      var old = document.getElementsByClassName("destinationNode");
      for (var j=0;j<old.length;j++) old[j].classList.remove("destinationNode");
+     document.getElementById(thisnodeid).classList.remove("referenceNode");
      document.getElementById(thisnodeid).classList.add("destinationNode");
      // report
      console.log("Destination node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
