@@ -27,9 +27,24 @@
    box-shadow: inset -4px -4px 6px #666, -3px 3px 5px #222;
    border-radius: 10px;
   }
+
+  #dotContainer button,
+  #graphContainer button {
+   background-color: #ff3;
+   font-size: 10px;
+   text-transform: uppercase;
+   border: 1px solid red;
+   border-radius: 5px;
+   box-shadow: 1px 1px 3px #ccc;
+   cursor: pointer;
+  }
+  #dotContainer button:active,
+  #graphContainer button:active {
+   box-shadow: 1px 1px 6px #f00;
+  }
+
   #dotContainer {
    position: relative;
-   xxxwidth: 70vh;
    height: 70vh;
    width: 45vw;
    float: left;
@@ -39,17 +54,27 @@
    position: absolute;
   }
   #dotContainer > button {
-   font-size:12px;
    top: 12px;
-   right: -10px;
    right: 5px;
   }
+
+  #graphContainer {
+   position: relative;
+   height: 70vh;
+   width: 45vw;
+   float: left;
+   margin-right: 20px;
+  }
+  #graphContainer > * {
+   position: absolute;
+  }
+  #graphContainer > button {
+   top: 12px;
+   right: -10px;
+  }
+
   #theoutput {
    position: absolute;
-   xxxwidth: 70vh;
-   xxxheight: 70vh;
-   xxxclear: both;
-   xxxfloat: left;
    width: 100%;
    height: 100%;
    border: 1px solid red;
@@ -62,7 +87,6 @@
    color: yellow;
   }
   #thegraph {
-   xxxwidth: 70vh;
    height: 70vh; /* ie. square */
    width: 45vw;
    padding: 5px;
@@ -206,11 +230,13 @@
  </div>
 
 <div id="dotContainer">
- <div id="theoutput">Dot code will be shown here</div>
+ <div id="theoutput" data-copy-text="">Dot code will be shown here</div>
  <button onclick="copy('theoutput');">Copy</button>
 </div>
-<div id="thegraph"></div>
-
+<div id="graphContainer">
+ <div id="thegraph" data-copy-text=""></div>
+ <button onclick="copy('thegraph');">Copy</button>
+</div>
 
 <script>
  // set up some constants
@@ -375,6 +401,7 @@ function drawGraph(G=[]){
   hpccWasm.graphviz.layout(graphData, useformat, useengine, ).then(svg => {
    const svgdiv = document.getElementById("thegraph"); // the div where the SVG graph should be attached
    svgdiv.innerHTML = svg;
+   document.getElementById("thegraph").setAttribute("data-copy-text",svg); // for the clipboard
    setupNodes(); // set the onclick function for the nodes (now that they exist)
   });
  }
@@ -746,8 +773,8 @@ function setupNodes(){
       - and add styling to those nodes
    */
    allnodes[i].onclick = function() {
-    var thisnodelabel = this.children[0].textContent;
     var thisnodeid = this.id;
+    var thisnodelabel = this.children[0].textContent; // this child is actually a <title></title> tag
     if (setFrom){
      // set the reference node
      autoFrom = labelToNode(thisnodelabel);
