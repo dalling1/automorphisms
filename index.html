@@ -30,12 +30,12 @@
 
   #dotContainer button,
   #graphContainer button {
-   background-color: #ff3;
+   background-color: #dd3;
    font-size: 10px;
    text-transform: uppercase;
    border: 1px solid red;
    border-radius: 5px;
-   box-shadow: 1px 1px 3px #ccc;
+   box-shadow: 1px 1px 2px #ccc;
    cursor: pointer;
   }
   #dotContainer button:active,
@@ -70,6 +70,10 @@
   }
   #graphContainer > button {
    top: 12px;
+   right: -10px;
+  }
+  #graphContainer > #thedetails {
+   bottom: -10px;
    right: -10px;
   }
 
@@ -143,10 +147,10 @@
    fill: #000;
   }
   .referenceNode ellipse {
-   fill: #f556;
+   fill: #5f56;
   }
   .destinationNode ellipse {
-   fill: #5f56;
+   fill: #f556;
   }
  </style>
  <script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
@@ -236,6 +240,7 @@
 <div id="graphContainer">
  <div id="thegraph" data-copy-text=""></div>
  <button onclick="copy('thegraph');">Copy</button>
+ <div id="thedetails"></div>
 </div>
 
 <script>
@@ -797,6 +802,10 @@ function setupNodes(){
      console.log("Destination node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
     }
     setFrom = !setFrom; // toggle between setting autoFrom and autoTo
+    // insert the autoFrom and autoTo nodes into the details div
+    fromstring = labelNode(autoFrom);
+    tostring = labelNode(autoTo);
+    document.getElementById("thedetails").innerHTML = (fromstring==null?"?":fromstring)+" &#8614; "+(tostring==null?"?":tostring);
    }
   }
  }
