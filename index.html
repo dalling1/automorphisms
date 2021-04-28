@@ -235,11 +235,11 @@
 
 <div id="dotContainer">
  <div id="theoutput" data-copy-text="">Dot code will be shown here</div>
- <button onclick="copy('theoutput');">Copy</button>
+ <button onclick="copy('theoutput');" title="Copy dot text">Copy</button>
 </div>
 <div id="graphContainer">
  <div id="thegraph" data-copy-text=""></div>
- <button onclick="copy('thegraph');">Copy</button>
+ <button onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
  <div id="thedetails"></div>
 </div>
 
@@ -467,8 +467,6 @@ function run(doAutomorphism=false){
   //
   // define the automorphism: [EVENTUALLY THIS WILL COME FROM USER INPUT]
   //
-//  autoFrom = [0]; // for example
-//  autoTo = [1]; // for example
   localActionPermutation = permutationCyclic(valencyList,1); // for example
 
   // the new approach to performing the automorphism:
@@ -769,6 +767,8 @@ function setOutputValues(){
 
 // set the hover/click functionality of nodes ////////////////////////////////////////////////////// fn:setupNodes
 function setupNodes(){
+ var debug = false;
+
  var allnodes = document.getElementsByTagName("g");
  for (var i=0;i<allnodes.length;i++){
   if (allnodes[i].classList.contains("node")){ // only set onclick for the nodes (not edges)
@@ -779,7 +779,7 @@ function setupNodes(){
    */
    allnodes[i].onclick = function() {
     var thisnodeid = this.id;
-    var thisnodelabel = this.children[0].textContent; // this child is actually a <title></title> tag
+    var thisnodelabel = this.querySelector(Node="title").textContent;
     if (setFrom){
      // set the reference node
      autoFrom = labelToNode(thisnodelabel);
@@ -789,7 +789,7 @@ function setupNodes(){
      document.getElementById(thisnodeid).classList.remove("destinationNode");
      document.getElementById(thisnodeid).classList.add("referenceNode");
      // report
-     console.log("Reference node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
+     if (debug) console.log("Reference node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
     } else {
      // set the destination node
      autoTo = labelToNode(thisnodelabel);
@@ -799,13 +799,15 @@ function setupNodes(){
      document.getElementById(thisnodeid).classList.remove("referenceNode");
      document.getElementById(thisnodeid).classList.add("destinationNode");
      // report
-     console.log("Destination node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
+     if (debug) console.log("Destination node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
     }
     setFrom = !setFrom; // toggle between setting autoFrom and autoTo
     // insert the autoFrom and autoTo nodes into the details div
     fromstring = labelNode(autoFrom);
     tostring = labelNode(autoTo);
     document.getElementById("thedetails").innerHTML = (fromstring==null?"?":fromstring)+" &#8614; "+(tostring==null?"?":tostring);
+    // draw an arrow, if both autoFrom and autoTo are set
+    if (fromstring!=null & tostring!=null) addArrow(fromstring,tostring);
    }
   }
  }
@@ -830,6 +832,129 @@ function labelToNode(thelabel=''){
  return thenode;
 }
 
+// function to find the SVG for a given node, by label /////////////////////////////////////////////// fn: findNode
+function findNode(nodelabel=null){
+ if (nodelabel!=null){
+  var allnodes=document.getElementsByClassName("node");
+  for (var j=0;j<allnodes.length;j++){
+   if (nodelabel==allnodes[j].querySelector(Node="title").textContent){
+    return allnodes[j].id;
+   }
+  }
+ }
+ return null;
+}
+
+// function to get the coordinates (x,y) of an SVG node drawn on the page, by label ////////////////// fn: findCoords
+function findCoords(nodelabel=null){
+ thisnode = findNode(nodelabel);
+ if (thisnode!=null){
+  var x = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.cx.value);
+  var y = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.cy.value);
+  var r = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.rx.value); // assume equal to ry
+ }
+ return [x,y,r];
+}
+
+// calculate the Euclidean distance between two points ///////////////////////////////////////////// fn: euclideanDistance
+function euclideanDistance(p1,p2){
+ return Math.pow(Math.pow(p1[0]-p2[0],2.0)+Math.pow(p1[1]-p2[1],2.0),0.5);
+}
+
+// find the midpoint of two coordinates //////////////////////////////////////////////////////////// fn: lineMidPoint
+function lineMidPoint(start,end,factor=0.5){
+ var alongX = start[0]+factor*(end[0]-start[0]);
+ var alongY = start[1]+factor*(end[1]-start[1]);
+ return [alongX,alongY];
+}
+
+// function to create an arrow between two nodes /////////////////////////////////////////////////// fn: addArrow
+function addArrow(startNode,endNode){
+ // create an SVG path between the given nodes
+ startPosition=findCoords(startNode);
+ endPosition=findCoords(endNode);
+ d=createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],-1); // -1 for default curvature
+
+ // helper variables
+ const ABS_PATH = 0;
+ const RELATIVE_PATH = 1;
+ const USE_OFFSET = -1; // -1 gives default curves in createPath()
+
+ // generate the path that we want to draw:
+ var thepathAbs = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,ABS_PATH);
+ // generate the path that we want the label to follow:
+ var thepathRel = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,RELATIVE_PATH);
+
+ // remove the old one?
+ var oldpath = document.getElementById("thearrow");
+ if (oldpath!=null) oldpath.remove();
+
+ // create a new one:
+ var newpath = document.createElementNS("http://www.w3.org/2000/svg","path");
+ newpath.id = "thearrow";
+ newpath.style.fill = "none";
+ newpath.style.stroke = "#0003";
+ newpath.setAttribute("stroke-width",10);
+ newpath.setAttribute("d",d);
+// "class": "animpath",
+// "fromto": from+" "+to,
+ var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
+ svg.appendChild(newpath);
+}
+
+// function to compute the path between given endpoints [from focusmodels] ///////////////////////// fn: createPath
+function createPath(startX,startY,endX,endY,offset=0,relativePath=0){
+ var startPos = Array(startX,startY);
+ var endPos = Array(endX,endY);
+ // startPos and endPos are two-element positions
+ // offset is the maximum distance from the line between them that the path should reach
+ //  - use offset = -1 for a default curve
+ //  - offset = 0 will be a straight line
+ var debug = false;
+ if (debug) console.log("Making path from "+String(startPos[0])+","+String(startPos[1])+" to "+String(endPos[0])+","+String(endPos[1]));
+
+ if (relativePath){
+  for (var d=0;d<startPos.length;d++){ // loop over each dimension
+   endPos[d] -= startPos[d]; // subtract the starting coordinate to create a relative path
+   startPos[d] = 0;
+  }
+ } else {
+  // else don't subtract the starting point
+ }
+
+
+ // taken from https://stackoverflow.com/a/49286885
+ if (offset==-1){
+  // default offset is 0 but if -1 is given, make a nice "long" curve (ie. put the control point fairly far from the line between start and end)
+  offset = euclideanDistance(startPos,endPos)*0.25;
+ }
+
+ var midpt = lineMidPoint(startPos,endPos);
+
+ var p1x=startPos[0];
+ var p1y=startPos[1];
+ var p2x=endPos[0];
+ var p2y=endPos[1];
+ var mpx=midpt[0];
+ var mpy=midpt[1];
+
+ // angle of the perpendicular to line joining start and end:
+ var theta = -Math.atan2(p2y - p1y, p2x - p1x) - Math.PI / 2;
+
+ // location of control point:
+ var c1x = Math.round(mpx + offset * Math.cos(theta));
+ var c1y = Math.round(mpy - offset * Math.sin(theta)); // fixed
+ p1x = Math.round(p1x);
+ p1y = Math.round(p1y);
+ p2x = Math.round(p2x);
+ p2y = Math.round(p2y);
+
+ // construct the command to draw a quadratic curve
+ var thepath = "M " + p1x + " " + p1y + " Q " + c1x + " " + c1y + " " + p2x + " " + p2y;
+ if (debug) console.log(" PATH: "+thepath);
+
+ return thepath;
+}
 </script>
 
 </body>
