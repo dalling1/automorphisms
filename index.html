@@ -408,6 +408,7 @@ function drawGraph(G=[]){
    svgdiv.innerHTML = svg;
    document.getElementById("thegraph").setAttribute("data-copy-text",svg); // for the clipboard
    setupNodes(); // set the onclick function for the nodes (now that they exist)
+   createArrowMarker(); // attach the SVG code for the arrow head markers
   });
  }
 } // end drawGraph
@@ -832,8 +833,8 @@ function labelToNode(thelabel=''){
  return thenode;
 }
 
-// function to find the SVG for a given node, by label /////////////////////////////////////////////// fn: findNode
-function findNode(nodelabel=null){
+// function to find the SVG for a given node, by label ///////////////////////////////////////////// fn: findSVGNode
+function findSVGNode(nodelabel=null){
  if (nodelabel!=null){
   var allnodes=document.getElementsByClassName("node");
   for (var j=0;j<allnodes.length;j++){
@@ -845,9 +846,9 @@ function findNode(nodelabel=null){
  return null;
 }
 
-// function to get the coordinates (x,y) of an SVG node drawn on the page, by label ////////////////// fn: findCoords
+// function to get the coordinates (x,y) of an SVG node drawn on the page, by label //////////////// fn: findCoords
 function findCoords(nodelabel=null){
- thisnode = findNode(nodelabel);
+ thisnode = findSVGNode(nodelabel);
  if (thisnode!=null){
   var x = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.cx.value);
   var y = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.cy.value);
@@ -894,8 +895,9 @@ function addArrow(startNode,endNode){
  newpath.id = "thearrow";
  newpath.style.fill = "none";
  newpath.style.stroke = "#0003";
- newpath.setAttribute("stroke-width",10);
+ newpath.setAttribute("stroke-width",3);
  newpath.setAttribute("d",d);
+ newpath.setAttribute("marker-end","url(#arrowhead)");
 // "class": "animpath",
 // "fromto": from+" "+to,
  var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
@@ -954,6 +956,32 @@ function createPath(startX,startY,endX,endY,offset=0,relativePath=0){
  if (debug) console.log(" PATH: "+thepath);
 
  return thepath;
+}
+
+// add an SVG marker to the page to use as an arrow-head /////////////////////////////////////////// fn: createArrowMarker()
+function createArrowMarker(){
+ var arrowcolour = "#0003";
+ // insert the marker definition:
+ document.getElementById("graph0").insertAdjacentHTML('afterbegin','\
+<defs>\
+ <marker id="oldarrowhead" markerWidth="10" markerHeight="10" refX="0" refY="3" orient="auto" markerUnits="strokeWidth">\
+  <path d="M0,0 L0,6 L9,3 z" fill="'+arrowcolour+'" />\
+ </marker>\
+ <marker id="arrowhead" markerWidth="9" markerHeight="9" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">\
+  <path d="M0,0 L0,6 L9,3 z" fill="'+arrowcolour+'" />\
+ </marker>\
+</defs>');
+
+// extras, not yet used:
+// <marker id="axesarrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">\
+//  <path d="M0,0 L0,6 L9,3 z" fill="#f00" />\
+// </marker>\
+// <marker id="rayarrow" markerWidth="10" markerHeight="10" refX="2" refY="3" orient="auto" markerUnits="strokeWidth">\
+//  <path d="M0,0 L3,3 L0,6" stroke-width="0.1" fill="none" stroke="#f00" />\
+// </marker>\
+// <path id="rayarrowbase" d="M-'+arrowSize+',0 L0,'+(arrowSize*arrowratio)+' L'+arrowSize+',0'+(filledarrows?' z" fill="'+edgeColour+'"':'"')+' stroke-width="0.5" fill="none" stroke="'+edgeColour+'" />\
+// <path id="rayarrowbasefaded" d="M-'+arrowSize+',0 L0,'+(arrowSize*arrowratio)+' L'+arrowSize+',0'+(filledarrows?' z" fill="'+edgeColour+'55"':'"')+' stroke-width="0.5" fill="none" stroke="'+edgeColour+'55" />\
+
 }
 </script>
 
