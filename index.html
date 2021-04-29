@@ -545,8 +545,8 @@ function localAction(list,perm,valency){
   var out = Array(list.length);
   for (var i=0;i<list.length;i++){
   // permute elements: local action (ie swap the elements of the list around with each other)
-   out[i] = list[perm[i]];
-//   out[perm[i]] = list[i]; // reverse of standard notation
+//   out[i] = list[perm[i]];
+   out[perm[i]] = list[i]; // reverse of standard notation
   }
   return out;
  } else {
