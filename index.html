@@ -701,7 +701,6 @@ function processnode(v,valency,verbose=false,debug=false){
 
        // update the index for the post-automorphism graph (taking care with the root node):
        var thisnodestring = vif[i].toString();
-       if (thisnodestring.length==0) thisnodestring = "ROOT";
        thenewnodeindex[thisnodestring] = neighbourdestindx;
 
        // how far did the node move?
