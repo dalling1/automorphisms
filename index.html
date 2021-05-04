@@ -258,6 +258,7 @@
 </div>
 <div id="graphContainer">
  <div id="thegraph" data-copy-text=""></div>
+ <button style="right:40px;" onclick="clearAutomorphism();" title="Reset automorphism">Reset</button>
  <button onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
  <div id="thedetails"></div>
 </div>
@@ -362,6 +363,7 @@ function mkdot(withAutomorphism=false){
    // if there is an entry in thenewnodes, set the properties of the node
    if (thislabel!=null){
     // distinguish the reference and destination nodes:
+/*
     if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
      nodecolour = thereferencenodecolour;
      fontcolour = thereferencelabelcolour;
@@ -370,6 +372,7 @@ function mkdot(withAutomorphism=false){
      nodecolour = thedestinationnodecolour;
      fontcolour = thedestinationlabelcolour;
     }
+*/
 
     if (autodistance[thenewnodes[i].toString()]!=undefined){
      thisradius = 1/autodistance[thenewnodes[i].toString()];
@@ -400,12 +403,6 @@ function mkdot(withAutomorphism=false){
     thisgraph += '\t' + labelNode(thenodes[i]) + ' [label=""]\n';
    }
   }
-
-  if (autoFrom!=null && autoTo!=null){
-   thisgraph += '\n\t// AUTOMORPHISM DEFINITION\n';
-   thisgraph += '\t' + labelNode(autoFrom) + ' [fillcolor="'+thereferencenodecolour+'"]\n';
-   thisgraph += '\t' + labelNode(autoTo) + ' [fillcolor="'+thedestinationnodecolour+'"]\n';
-  }
  }
 
  thisgraph += '}\n';
@@ -428,7 +425,9 @@ function drawGraph(G=[]){
    document.getElementById("thegraph").setAttribute("data-copy-text",svg); // for the clipboard
    setupNodes(); // set the onclick function for the nodes (now that they exist)
    createArrowMarker(); // attach the SVG code for the arrow head markers
+   decorateNodes();
   });
+  console.log("DRAWING GRAPH");
  }
 } // end drawGraph
 
@@ -497,6 +496,8 @@ function run(doAutomorphism=false){
 
   // carry out the automorphism:
   processnode(autoFrom,valency);
+ } else {
+//  clearAutomorphism();
  }
 
  // generate the dot code (for original or automorphed graph)
@@ -509,6 +510,12 @@ function run(doAutomorphism=false){
  drawGraph(G);
  // alternatively, feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
+
+ // apply the reference and destination node classes
+// var fromNode = findSVGNode(labelNode(autoFrom));
+// var toNode = findSVGNode(labelNode(autoTo));
+// if (fromNode != null) document.getElementById(fromNode).classList.add("referenceNode");
+// if (toNode != null) document.getElementById(toNode).classList.add("destinationNode");
 
  return 0;
 } // end run()
@@ -798,9 +805,6 @@ function setOutputValues(){
   var pickername = "picker"+i;
   if (debug) console.log("Showing "+pickername);
   document.getElementById(pickername).nextSibling.style.display="block";
-//  $("#"+pickername).spectrum({
-//   color: colours[i-1],
-//  });
  }
  for (var j=i;j<=colours.length;j++){ // off
   var pickername = "picker"+j;
@@ -828,34 +832,20 @@ function setupNodes(){
     if (setFrom){
      // set the reference node
      autoFrom = labelToNode(thisnodelabel);
-     // clear the relevant class from elsewhere and apply it to this node
-     var old = document.getElementsByClassName("referenceNode");
-     for (var j=0;j<old.length;j++) old[j].classList.remove("referenceNode");
-     document.getElementById(thisnodeid).classList.remove("destinationNode");
-     document.getElementById(thisnodeid).classList.add("referenceNode");
-     // report
-     if (debug) console.log("Reference node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
     } else {
      // set the destination node
      autoTo = labelToNode(thisnodelabel);
-     // clear the relevant class from elsewhere and apply it to this node
-     var old = document.getElementsByClassName("destinationNode");
-     for (var j=0;j<old.length;j++) old[j].classList.remove("destinationNode");
-     document.getElementById(thisnodeid).classList.remove("referenceNode");
-     document.getElementById(thisnodeid).classList.add("destinationNode");
-     // report
-     if (debug) console.log("Destination node clicked: "+thisnodelabel+" ("+this.id+") ["+labelToNode(thisnodelabel).toString()+"]"); // use the node's "title" child (exists even if labels are off)
     }
     setFrom = !setFrom; // toggle between setting autoFrom and autoTo
     // insert the autoFrom and autoTo nodes into the details div
     fromstring = labelNode(autoFrom);
     tostring = labelNode(autoTo);
     document.getElementById("thedetails").innerHTML = (fromstring==null?"?":fromstring)+" &#8614; "+(tostring==null?"?":tostring);
-    // draw an arrow, if both autoFrom and autoTo are set
-    if (fromstring!=null && tostring!=null) addArrow(fromstring,tostring);
-   }
+    decorateNodes();
+   } // end of node onclick function
   }
  }
+ decorateNodes();
 }
 
 // initialise the automorphism ///////////////////////////////////////////////////////////////////// fn: clearAutomorphism
@@ -865,6 +855,7 @@ function clearAutomorphism(){
  thelocalaction = [];  // list of automorphism permutation at each node (local action)
  autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
  autodistance = [];    // compute how far each node has moved
+ decorateNodes();
 }
 
 // inverse function from label (string, eg. 'grb') to node (address, eg. [2,0,1]) ////////////////// fn: labelToNode
@@ -1052,7 +1043,7 @@ function setupColours(){
  // (note: this is not dynamic, since the colour-pickers are not there to change colours, but rather to specify the local actions)
  for (var i=1;i<=colours.length;i++){
   document.getElementById("valcol"+i).style.backgroundColor = colours[i-1];
-  console.log("labelling valcol"+i);
+  if (debug) console.log("labelling valcol"+i);
  }
 
 }
@@ -1079,11 +1070,32 @@ function setPickers(){
  }
 }
 
+// function to add the reference and destination node classes, and their arrow ///////////////////// fn: decorateNodes
+function decorateNodes(){
+ // remove old decorations
+ var old = document.getElementsByClassName("referenceNode");
+ for (var j=0;j<old.length;j++) old[j].classList.remove("referenceNode");
+ var old = document.getElementsByClassName("destinationNode");
+ for (var j=0;j<old.length;j++) old[j].classList.remove("destinationNode");
+ var oldarrow = document.getElementById("thearrow");
+ if (oldarrow!=null) oldarrow.remove();
+
+ // apply the reference and destination node classes
+ var fromNode = findSVGNode(labelNode(autoFrom));
+ var toNode = findSVGNode(labelNode(autoTo));
+ if (fromNode != null){ document.getElementById(fromNode).classList.add("referenceNode");console.log("ADDING REF CLASS");}
+ if (toNode != null){ document.getElementById(toNode).classList.add("destinationNode");console.log("ADDING DEST CLASS");}
+ if (fromNode!=null && toNode!=null){
+  addArrow(fromstring,tostring);
+ console.log("ADDING ARROW");
+ }
+}
+
 setupColours();
 initPickers();
-setOutputValues();
 clearAutomorphism();
 setPickers();
+setOutputValues();
 
 </script>
 
