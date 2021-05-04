@@ -166,6 +166,21 @@
    background-color: #fff0;
    border-radius: 10px;
   }
+  .autoGraph .radius5:hover ellipse,
+  .autoGraph .radius7:hover ellipse,
+  .autoGraph .radius9:hover ellipse,
+  .autoGraph .radius12:hover ellipse,
+  .autoGraph .radius18:hover ellipse,
+  .autoGraph .radius36:hover ellipse,
+  .autoGraph .radius5:hover ~.radius5 ellipse,
+  .autoGraph .radius7:hover ~.radius7 ellipse,
+  .autoGraph .radius9:hover ~.radius9 ellipse,
+  .autoGraph .radius12:hover ~.radius12 ellipse,
+  .autoGraph .radius18:hover ~.radius18 ellipse,
+  .autoGraph .radius36:hover ~.radius36 ellipse
+ {
+   fill: #0ff;
+  }
  </style>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
@@ -410,7 +425,7 @@ function mkdot(withAutomorphism=false){
 } // end mkdot
 
 // function to run the GraphViz engine to draw the graph on screen ///////////////////////////////// fn: drawGraph
-function drawGraph(G=[]){
+function drawGraph(G=[],doAutomorphism=false){
  var useformat = document.getElementById("input_format").value;
  var useengine = document.getElementById("input_engine").value;
 
@@ -425,7 +440,7 @@ function drawGraph(G=[]){
    document.getElementById("thegraph").setAttribute("data-copy-text",svg); // for the clipboard
    setupNodes(); // set the onclick function for the nodes (now that they exist)
    createArrowMarker(); // attach the SVG code for the arrow head markers
-   decorateNodes();
+   decorateNodes(doAutomorphism);
   });
   console.log("DRAWING GRAPH");
  }
@@ -507,7 +522,7 @@ function run(doAutomorphism=false){
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
 
  // ...and draw it on the screen:
- drawGraph(G);
+ drawGraph(G,doAutomorphism);
  // alternatively, feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
 
@@ -1070,8 +1085,8 @@ function setPickers(){
  }
 }
 
-// function to add the reference and destination node classes, and their arrow ///////////////////// fn: decorateNodes
-function decorateNodes(){
+// function to add stylings to the SVG objects ///////////////////////////////////////////////////// fn: decorateNodes
+function decorateNodes(doAutomorphism=false){
  // remove old decorations
  var old = document.getElementsByClassName("referenceNode");
  for (var j=0;j<old.length;j++) old[j].classList.remove("referenceNode");
@@ -1081,14 +1096,31 @@ function decorateNodes(){
  if (oldarrow!=null) oldarrow.remove();
 
  // apply the reference and destination node classes
- var fromNode = findSVGNode(labelNode(autoFrom));
- var toNode = findSVGNode(labelNode(autoTo));
- if (fromNode != null){ document.getElementById(fromNode).classList.add("referenceNode");console.log("ADDING REF CLASS");}
- if (toNode != null){ document.getElementById(toNode).classList.add("destinationNode");console.log("ADDING DEST CLASS");}
- if (fromNode!=null && toNode!=null){
-  addArrow(fromstring,tostring);
- console.log("ADDING ARROW");
+ if (!doAutomorphism){
+  var fromNode = findSVGNode(labelNode(autoFrom));
+  var toNode = findSVGNode(labelNode(autoTo));
+  if (fromNode != null) document.getElementById(fromNode).classList.add("referenceNode");
+  if (toNode != null) document.getElementById(toNode).classList.add("destinationNode");
+  if (fromNode!=null && toNode!=null){
+   addArrow(fromstring,tostring);
+  }
  }
+
+ // add classes depending on the radius of each node (ie. the distance it has moved)
+ rclasses = [];
+ var allnodes = document.getElementsByTagName("g");
+ for (var i=0;i<allnodes.length;i++){
+  if (allnodes[i].classList.contains("node")){ // only want nodes (not edges)
+   var rr = parseFloat(allnodes[i].querySelector("ellipse").attributes.rx.nodeValue); // get the radius of this node's ellipse
+   allnodes[i].classList.add("radius"+rr);
+   console.log("ADDING RADIUS CLASS radius"+rr+" TO "+allnodes[i].id);
+   if (rclasses.indexOf("radius"+rr)==-1) rclasses.push("radius"+rr);
+  }
+ }
+
+ // add a class to the SVG indicating whether it is the post-automorphism graph
+ if (doAutomorphism) document.getElementsByTagName("svg")[0].classList.add("autoGraph");
+
 }
 
 setupColours();
