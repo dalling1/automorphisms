@@ -836,18 +836,8 @@ function setOutputValues(){
   document.getElementById(pickername).nextSibling.style.display="none";
  }
 
- // turn on and off the appropriate local action editor chits and final positions:
- document.getElementsByClassName("editorwrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
- for (var i=0;i<valency;i++){ // on
-  document.getElementById("chit"+i).style.display = "";
-  document.getElementById("editoredge"+i).style.display = "";
-  document.getElementById("editorfinal"+i).style.display = "";
- }
- for (var j=i;j<colours.length;j++){ // off
-  document.getElementById("chit"+j).style.display = "none";
-  document.getElementById("editoredge"+i).style.display = "none";
-  document.getElementById("editorfinal"+i).style.display = "none";
- }
+ // display the appropriately-sized local action editor
+ showEditor(valency);
 }
 
 // set the hover/click functionality of nodes ////////////////////////////////////////////////////// fn:setupNodes

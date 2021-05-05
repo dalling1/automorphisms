@@ -134,10 +134,31 @@ function getLocalAction(){
   if (place.id.includes("editorfinal")){
    var x = getItemValency(place);
    var y = i;
-   if (x>=valency || y>=valency) console.log("Out-of-range chit has been moved");
+   if (x>=valency || y>=valency) console.log("Out-of-range chit has been moved"); // this can happen when hiding some of the boxes, and is okay
    perm[x] = y;
 //alt:   perm[getItemValency(place)] = parseInt(i);
   }
  }
  return perm;
+}
+
+function showEditor(valency){
+ // turn on and off the appropriate local action editor chits and final positions:
+ document.getElementsByClassName("editorwrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
+ for (var i=0;i<valency;i++){ // on
+  document.getElementById("chit"+i).style.display = "";
+  document.getElementById("editoredge"+i).style.display = "";
+  document.getElementById("editorfinal"+i).style.display = "";
+ }
+ var perm = getLocalAction();
+ for (var j=i;j<colours.length;j++){ // off
+  document.getElementById("chit"+j).style.display = "none";
+  document.getElementById("editoredge"+i).style.display = "none";
+  document.getElementById("editorfinal"+i).style.display = "none";
+  // put hidden chits back "home"
+  moveChit("chit"+j,"editoredge"+i);
+  if (perm[j]!=null){ // is there a chit in this "final" position?
+   moveChit("chit"+perm[j],"editoredge"+perm[j]); // send it home
+  }
+ }
 }
