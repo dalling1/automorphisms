@@ -1,10 +1,3 @@
-// var valency = parseInt(document.getElementById("input_valency").value);
-
-/*  temporary variables which are dealt with on the main page */
-//valency = 4;
-//const colours=["#ff0000","#0000ff","#00ff00","#ff00ff","#00ffff","#000000","#ffff00"];
-
-
 
 function initDrag(){
  var valency = parseInt(document.getElementById("input_valency").value);
@@ -17,8 +10,8 @@ function initDrag(){
  for (var i=0;i<colours.length;i++){
   theeditor += ' <div id="editorfinal'+i+'"class="final dest"'+(i>=valency?' style="display:none;"':'')+'></div>\n';
  }
- document.getElementById("wrapper").innerHTML = theeditor;
- document.getElementsByClassName("wrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
+ document.getElementById("editorwrapper").innerHTML = theeditor;
+ document.getElementsByClassName("editorwrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
 
  // set-up the drag behaviour
  var items = document.getElementsByClassName("dest");

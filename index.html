@@ -263,14 +263,13 @@
    </select>
   </div>
 
-  <div id="wrapper" class="wrapper"></div>
+  <div id="editorwrapper" class="editorwrapper"></div>
+  <button onclick="resetLocalAction();" title="Reset local action">Reset</button>
+
   <table style="display:none;" id="colourtable"></table>
 
   <button class="onecontrol" style="font-size:2em;" onclick="run(false);">Original</button>
   <button class="onecontrol" style="font-size:2em;" onclick="run(true);">Automorph</button>
-
-<!--  <div id="wrapper" class="wrapper"></div>-->
-  <button onclick="resetLocalAction();" title="Reset local action">Reset</button>
 
  </div>
 
@@ -838,7 +837,7 @@ function setOutputValues(){
  }
 
  // turn on and off the appropriate local action editor chits and final positions:
- document.getElementsByClassName("wrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
+ document.getElementsByClassName("editorwrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
  for (var i=0;i<valency;i++){ // on
   document.getElementById("chit"+i).style.display = "";
   document.getElementById("editoredge"+i).style.display = "";

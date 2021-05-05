@@ -1,4 +1,4 @@
-.wrapper {
+.editorwrapper {
  min-width: 0;
  display: inline-grid;
  grid-template-columns: repeat(10,1fr); /* 1fr 1fr 1fr 1fr 1fr;*/
