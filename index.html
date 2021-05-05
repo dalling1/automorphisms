@@ -4,6 +4,7 @@
  <title>Automorphism</title>
  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:Light&display=swap">
  <link rel="stylesheet" href="graphControls.css">
+ <link rel="stylesheet" href="localaction.css">
  <style>
   html {
    overflow: hidden;
@@ -153,9 +154,9 @@
   }
 
   #colourtable {
-   display:inline-block;
+   display: inline-block;
    text-align: center;
-   vertical-align:middle;
+   vertical-align: middle;
   }
   .valencycolour {
    display: inline-block;
@@ -189,6 +190,7 @@
  <script>
   var hpccWasm = window["@hpcc-js/wasm"];
  </script>
+ <script src="localaction.js"></script>
 
 </head>
 <body>
@@ -261,10 +263,15 @@
    </select>
   </div>
 
-  <table id="colourtable"></table>
+  <div id="wrapper" class="wrapper"></div>
+  <table style="display:none;" id="colourtable"></table>
 
   <button class="onecontrol" style="font-size:2em;" onclick="run(false);">Original</button>
   <button class="onecontrol" style="font-size:2em;" onclick="run(true);">Automorph</button>
+
+<!--  <div id="wrapper" class="wrapper"></div>-->
+  <button onclick="resetLocalAction();" title="Reset local action">Reset</button>
+
  </div>
 
 <div id="dotContainer">
@@ -273,6 +280,7 @@
 </div>
 <div id="graphContainer">
  <div id="thegraph" data-copy-text=""></div>
+ <button style="left:10px;" onclick="toggleLabels();" title="Toggle labels">Labels</button>
  <button style="right:40px;" onclick="clearAutomorphism();" title="Reset automorphism">Reset</button>
  <button onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
  <div id="thedetails"></div>
@@ -498,10 +506,12 @@ function run(doAutomorphism=false){
   console.log("### Automorphism requested, here we should ask the user to define it (select reference node and destination, then local action(s)...)");
   console.log("###");
 
+  // set an example local action:
+//  localActionPermutation = permutationCyclic(valencyList,1); // for example
   //
-  // define the automorphism: [EVENTUALLY THIS WILL COME FROM USER INPUT]
+  // get the automorphism from the local action editor (for now, this is just used as the only local action):
   //
-  localActionPermutation = permutationCyclic(valencyList,1); // for example
+  localActionPermutation = getLocalAction();
 
   // the new approach to performing the automorphism:
   // (for now, only define the local action at the reference node)
@@ -827,6 +837,18 @@ function setOutputValues(){
   document.getElementById(pickername).nextSibling.style.display="none";
  }
 
+ // turn on and off the appropriate local action editor chits and final positions:
+ document.getElementsByClassName("wrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
+ for (var i=0;i<valency;i++){ // on
+  document.getElementById("chit"+i).style.display = "";
+  document.getElementById("editoredge"+i).style.display = "";
+  document.getElementById("editorfinal"+i).style.display = "";
+ }
+ for (var j=i;j<colours.length;j++){ // off
+  document.getElementById("chit"+j).style.display = "none";
+  document.getElementById("editoredge"+i).style.display = "none";
+  document.getElementById("editorfinal"+i).style.display = "none";
+ }
 }
 
 // set the hover/click functionality of nodes ////////////////////////////////////////////////////// fn:setupNodes
@@ -1120,13 +1142,25 @@ function decorateNodes(doAutomorphism=false){
 
  // add a class to the SVG indicating whether it is the post-automorphism graph
  if (doAutomorphism) document.getElementsByTagName("svg")[0].classList.add("autoGraph");
+}
 
+// show/hide labels on the SVG graph /////////////////////////////////////////////////////// fn: toggleLabels
+function toggleLabels(){
+ var L=document.querySelectorAll(Node='text');
+ for(var i=0;i<L.length;i++){
+  if (L[i].style.display=="none"){
+   L[i].style.display="";
+  } else {
+   L[i].style.display="none";
+  }
+ }
 }
 
 setupColours();
 initPickers();
 clearAutomorphism();
 setPickers();
+initDrag();
 setOutputValues();
 
 </script>
