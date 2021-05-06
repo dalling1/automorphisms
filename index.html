@@ -182,6 +182,9 @@
  {
    fill: #0ff;
   }
+  button {
+   font-family: "Open Sans", sans-serif;
+  }
  </style>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
@@ -263,9 +266,14 @@
    </select>
   </div>
 
-  <div id="editorwrapper" class="editorwrapper"></div>
-  <button class="onecontrol" style="font-size:0.8em;" onclick="resetLocalAction();" title="Reset local action">Reset</button>
-
+  <div class="onecontrol controlwrapper">
+   <div id="editorwrapper" class="editorwrapper"></div>
+   <div style="float:right;text-align:left;">
+    Local action<br/>
+<!--    <button class="onecontrol" style="font-size:0.8em;" onclick="" title="Reset local action">Info</button><br/>-->
+    <button class="onecontrol" style="font-size:0.8em;" onclick="resetLocalAction();" title="Reset local action">Reset</button>
+   </div>
+  </div>
   <table style="display:none;" id="colourtable"></table>
 
   <button class="onecontrol" style="font-size:2em;" onclick="run(false);">Original</button>
@@ -384,18 +392,6 @@ function mkdot(withAutomorphism=false){
 
    // if there is an entry in thenewnodes, set the properties of the node
    if (thislabel!=null){
-    // distinguish the reference and destination nodes:
-/*
-    if (labelNode(thenewnodes[i])==labelNode(autoFrom)){
-     nodecolour = thereferencenodecolour;
-     fontcolour = thereferencelabelcolour;
-    }
-    if (labelNode(thenewnodes[i])==labelNode(autoTo)){
-     nodecolour = thedestinationnodecolour;
-     fontcolour = thedestinationlabelcolour;
-    }
-*/
-
     if (autodistance[thenewnodes[i].toString()]!=undefined){
      thisradius = 1/autodistance[thenewnodes[i].toString()];
      showdist = autodistance[thenewnodes[i].toString()];
@@ -535,15 +531,8 @@ function run(doAutomorphism=false){
  // alternatively, feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
 
- // apply the reference and destination node classes
-// var fromNode = findSVGNode(labelNode(autoFrom));
-// var toNode = findSVGNode(labelNode(autoTo));
-// if (fromNode != null) document.getElementById(fromNode).classList.add("referenceNode");
-// if (toNode != null) document.getElementById(toNode).classList.add("destinationNode");
-
  return 0;
 } // end run()
-
 
 // random integers ///////////////////////////////////////////////////////////////////////////////// fn: randomInt
 function randomInt(n=1){
@@ -595,8 +584,8 @@ function localAction(list,perm,valency){
   var out = Array(list.length);
   for (var i=0;i<list.length;i++){
   // permute elements: local action (ie swap the elements of the list around with each other)
-//   out[i] = list[perm[i]];
-   out[perm[i]] = list[i]; // reverse of standard notation
+   out[perm[i]] = list[i];
+//   out[i] = list[perm[i]]; // reverse of standard notation
   }
   return out;
  } else {

@@ -134,3 +134,7 @@ input:checked + .slider.round:before {
 #graphControls .controlwrapper .slider:before {
  background-color: white;
 }
+
+button {
+ font-family: inherit;
+}
