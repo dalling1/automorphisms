@@ -1124,6 +1124,16 @@ function decorateNodes(doAutomorphism=false){
  // give the SVG graph an id
  var thesvg = document.getElementsByTagName("svg");
  if (thesvg.length) thesvg[0].id = "thesvg";
+
+ // move the SVG to the centre of the graph box:
+ if (thesvg.length){
+  var thegraph = document.getElementById("thegraph");
+  var thepadding = parseInt(window.getComputedStyle(thegraph)["padding-top"]);
+  var themargin = parseInt(window.getComputedStyle(thegraph)["margin-top"]);
+  var theheight = thegraph.clientHeight;
+  var thesvgheight = thesvg[0].clientHeight;
+  thesvg[0].style.top = parseFloat((theheight-thepadding-themargin-thesvgheight)/2)+"px"
+ }
  // add a class to the SVG indicating whether it is the post-automorphism graph
  if (doAutomorphism) document.getElementsByTagName("svg")[0].classList.add("autoGraph");
 }
