@@ -21,6 +21,7 @@
    margin: 0 auto;
    box-shadow: inset 3px 3px 3px #bbb;
    background-color: #777;
+   text-align: center;
 
    /* copied from graphControls.css: */
    border: 2px solid black;
@@ -30,17 +31,12 @@
 
   #dotContainer button,
   #graphContainer button {
-   background-color: #dd3;
    font-size: 10px;
    text-transform: uppercase;
-   border: 1px solid red;
-   border-radius: 5px;
-   box-shadow: 1px 1px 2px #ccc;
-   cursor: pointer;
-  }
-  #dotContainer button:active,
-  #graphContainer button:active {
-   box-shadow: 1px 1px 6px #f00;
+   background-color: #bbb;
+   padding: 1px 3px;
+   box-shadow: 1px 1px 2px #000;
+   border-radius: 3px;
   }
 
   #dotContainer {
@@ -184,6 +180,10 @@
   }
   button {
    font-family: "Open Sans", sans-serif;
+  }
+
+  #thesvg {
+   position: relative;
   }
  </style>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -345,7 +345,8 @@ function mkdot(withAutomorphism=false){
  var thisgraph = 'graph {\n';
  thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
  thisgraph += '\tedge [penwidth=1, color='+theedgecolour+']\n';
- thisgraph += '\tnode [shape=circle, color=none, style=filled, fillcolor="'+(withAutomorphism?thefadednodecolour:thenodecolour)+'", fontsize=14, fixedsize=true, fontcolor="'+(withAutomorphism?thefadedlabelcolour:thelabelcolour)+'"]\n';
+ thisgraph += '\tnode [shape=circle, fixedsize=true, color=none, style=filled, fillcolor="'+(withAutomorphism?thefadednodecolour:thenodecolour)+'"]\n';
+ thisgraph += '\tnode [fontsize=14, fontcolor="'+(withAutomorphism?thefadedlabelcolour:thelabelcolour)+'"]\n';
  thisgraph += '\tranksep=2\n';
  thisgraph += '\n\t// EDGES\n';
  var fromLabel = '';
@@ -860,6 +861,8 @@ function setupNodes(){
    } // end of node onclick function
   }
  }
+
+ // "decorate" the nodes: show the automorphism
  decorateNodes();
 }
 
@@ -1118,6 +1121,9 @@ function decorateNodes(doAutomorphism=false){
   }
  }
 
+ // give the SVG graph an id
+ var thesvg = document.getElementsByTagName("svg");
+ if (thesvg.length) thesvg[0].id = "thesvg";
  // add a class to the SVG indicating whether it is the post-automorphism graph
  if (doAutomorphism) document.getElementsByTagName("svg")[0].classList.add("autoGraph");
 }
