@@ -129,7 +129,6 @@ function getLocalAction(){
   if (place.id.includes("editorfinal")){
    var x = getItemValency(place);
    var y = i;
-   if (x>=valency || y>=valency) console.log("Out-of-range chit has been moved"); // this can happen when hiding some of the boxes, and is okay
    perm[x] = y;
 //alt:   perm[getItemValency(place)] = parseInt(i);
   }

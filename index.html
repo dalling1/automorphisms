@@ -203,6 +203,10 @@
    color: #fff;
    text-shadow: 1px 1px 4px #000;
   }
+
+  .node.selected ellipse {
+   stroke: #600;
+  }
  </style>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
@@ -465,7 +469,6 @@ function drawGraph(G=[],doAutomorphism=false){
    createArrowMarker(); // attach the SVG code for the arrow head markers
    decorateNodes(doAutomorphism);
   });
-  console.log("DRAWING GRAPH");
  }
 } // end drawGraph
 
@@ -717,8 +720,7 @@ function processnode(v,valency,verbose=false,debug=false){
    //    -- user-given or
    //    -- (constrained) random or
    //    -- same as at the reference node
-   // [EVENTUALLY THESE WILL COME FROM USER INPUT]
-   console.log("###\n### NOTE: using reference node's local action everywhere\n###");
+   console.log("### NOTE: using reference node's local action everywhere");
    thelocalaction[indx] = localActionPermutation; // for now, use the reference node's local action everywhere
 
    if (thelocalaction[indx]==null){
@@ -853,9 +855,10 @@ function setupNodes(){
  for (var i=0;i<allnodes.length;i++){
   if (allnodes[i].classList.contains("node")){ // only set onclick for the nodes (not edges)
    /*
-      HERE WE DEFINED THE ON-CLICK FUNCTION FOR NODES:
+      HERE WE DEFINE THE ON-CLICK FUNCTION FOR NODES:
       - it will register the reference and destination nodes (alternatively)
       - and add styling to those nodes
+      - but how to switch nodes for defining individual local actions?
    */
    allnodes[i].onclick = function() {
     var thisnodeid = this.id;
