@@ -873,6 +873,7 @@ function setupNodes(){
     tostring = labelNode(autoTo);
     document.getElementById("thedetails").innerHTML = (fromstring==null?"?":fromstring)+" &#8614; "+(tostring==null?"?":tostring);
     decorateNodes();
+    testAutomorphism();
    } // end of node onclick function
   }
  }
@@ -1164,7 +1165,7 @@ function toggleLabels(){
  }
 }
 
-// give some information about the local action
+// give some information about the local action //////////////////////////////////////////// fn: showLAinfo
 function showLAinfo(){
  var box = document.getElementById("infobox");
  var txt = "The local action is a permutation of the edge colourings at each node.  There can be a different local action at every node; currently, however, the same local action is applied to all nodes.  The coloured squares in the top row represent the edge colours, with coloured markers which can be dragged into the bottom row. The local action permutation is then defined by the order of the markers.";
@@ -1172,6 +1173,17 @@ function showLAinfo(){
   box.innerHTML = "";
  } else {
   box.innerHTML = txt;
+ }
+}
+
+// check that the automorphism is fully defined //////////////////////////////////////////// fn: testAutomorphism
+function testAutomorphism(){
+ if (testLocalAction() && autoFrom!=null && autoTo!=null){
+  document.getElementById("autobutton").removeAttribute("disabled");
+  return true;
+ } else {
+  document.getElementById("autobutton").setAttribute("disabled","disabled");
+  return false;
  }
 }
 

@@ -38,6 +38,7 @@ function drop(ev){
  ev.preventDefault();
  var thechit = ev.dataTransfer.getData("text");
  moveChit(thechit,ev.target.id);
+ ev.target.classList.remove("over");
 }
 
 function occupied(data){
@@ -91,11 +92,13 @@ function moveChit(from,to){
   target.classList.add("occupied");
  }
 
- if (testLocalAction()){
-  document.getElementById("autobutton").removeAttribute("disabled");
- } else {
-  document.getElementById("autobutton").setAttribute("disabled","disabled");
- }
+ // run a check (will enable the "automorph" button if the conditions are all set)
+ testAutomorphism();
+// if (testLocalAction() && autoFrom!=null && autoTo!=null){
+//  document.getElementById("autobutton").removeAttribute("disabled");
+// } else {
+//  document.getElementById("autobutton").setAttribute("disabled","disabled");
+// }
 
 }
 
