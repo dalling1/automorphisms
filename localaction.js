@@ -162,3 +162,14 @@ function showEditor(valency){
   }
  }
 }
+
+function testLocalAction(){
+ var perm = getLocalAction();
+ console.log(perm);
+ // if there are any "null" entries in the local action, it is not valid (ie. not finished)
+ if (perm.indexOf(null)>-1){
+  return false;
+ } else {
+  return true;
+ }
+}
