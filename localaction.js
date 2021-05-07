@@ -5,7 +5,7 @@ function initDrag(){
  // create the editor elements
  var theeditor = '';
  for (var i=0;i<colours.length;i++){
-  theeditor += ' <div id="editoredge'+i+'" style="background-color:'+colours[i]+';'+(i>=valency?'display:none;':'')+'" class="dest prototype"><span id="chit'+i+'" draggable="true" ondragstart="drag(event)" style="background-color:'+colours[i]+';" class="chit" /></span></div>\n';
+  theeditor += ' <div id="editoredge'+i+'" style="background-color:'+colours[i]+';'+(i>=valency?'display:none;':'')+'" class="dest prototype occupied"><span id="chit'+i+'" draggable="true" ondragstart="drag(event)" style="background-color:'+colours[i]+';" class="chit" /></span></div>\n';
  }
  for (var i=0;i<colours.length;i++){
   theeditor += ' <div id="editorfinal'+i+'"class="final dest"'+(i>=valency?' style="display:none;"':'')+'></div>\n';
@@ -36,30 +36,8 @@ function drag(ev){
 
 function drop(ev){
  ev.preventDefault();
- var data = ev.dataTransfer.getData("text");
- if (ev.target.nodeName=="DIV" && (ev.target.classList.contains("multi") || !occupied(ev.target.id))){
-  // test the proposed target
-  var okayToDrop = matchDrop(document.getElementById(data),ev.target);
-
-  if (okayToDrop){
-   document.getElementById(data).parentElement.classList.remove("occupied");
-   ev.target.appendChild(document.getElementById(data));
-   ev.target.classList.remove("over");
-   ev.target.classList.add("occupied");
-   // update the local action aarray
-   if (ev.target.classList.contains("final")){
-    // placed a "editorfinal" chit:
-    thislocalaction[getItemValency(ev.target)] = parseInt(getItemValency(document.getElementById(data)));
-   } else {
-    // put a chit back in its "prototype" position:
-    thislocalaction[thislocalaction.indexOf(parseInt(getItemValency(document.getElementById(data))))] = null;
-   }
-  } else {
-   ev.target.classList.remove("over");
-  }
-// } else {
-//  console.log(ev.target.id+"... "+(ev.target.nodeName=="DIV"?"occupied":""));
- }
+ var thechit = ev.dataTransfer.getData("text");
+ moveChit(thechit,ev.target.id);
 }
 
 function occupied(data){
@@ -83,13 +61,23 @@ function getItemValency(item){
  return val;
 }
 
-function matchDrop(dropItem,targetItem){
+// test for a suitable target: input is the *id*
+function matchDrop(from,to){
+ var dropItem = document.getElementById(from);
+ var targetItem = document.getElementById(to);
+
  if (targetItem.classList.contains("prototype")){
+  // only allow the right colour to be dropped onto the "edge" row
   var dropN = getItemValency(dropItem);
   var targetN = getItemValency(targetItem);
   return (dropN == targetN);
  } else {
-  return true;
+  if (dropItem!=null){
+   // allow chits to be dropped onto visible, empty "final" spots (or "multi" ones, which we are not using at the moment)
+   return (targetItem.classList.contains("dest") && (targetItem.classList.contains("multi") || !targetItem.classList.contains("occupied")))
+  } else {
+   return false;
+  }
  }
 }
 
@@ -97,30 +85,34 @@ function matchDrop(dropItem,targetItem){
 function moveChit(from,to){
  var chit = document.getElementById(from);
  var target = document.getElementById(to);
- if (matchDrop(chit,target)){
+ if (matchDrop(from,to)){
   chit.parentNode.classList.remove("occupied");
   target.appendChild(chit);
   target.classList.add("occupied");
  }
+
+ if (testLocalAction()){
+  document.getElementById("autobutton").removeAttribute("disabled");
+ } else {
+  document.getElementById("autobutton").setAttribute("disabled","disabled");
+ }
+
 }
 
 function resetLocalAction(){
  var allchits = document.getElementsByClassName("chit");
  for (var i=0;i<allchits.length;i++){
   moveChit("chit"+i,"editoredge"+i);
+  document.getElementById("editorfinal"+i).classList.remove("occupied");
+  document.getElementById("editorfinal"+i).classList.remove("over");
+  document.getElementById("editoredge"+i).classList.add("occupied");
  }
 }
 
 function setLocalAction(perm=[]){
  resetLocalAction();
  for (var i=0;i<perm.length;i++){
-  if (perm[i]!=null){
-   var chit = document.getElementById("chit"+perm[i]);
-   var target = document.getElementById("editorfinal"+i);
-   chit.parentNode.classList.remove("occupied");
-   target.appendChild(chit);
-   target.classList.add("occupied");
-  }
+  moveChit("chit"+perm[i],"editorfinal"+i);
  }
 }
 
@@ -164,12 +156,6 @@ function showEditor(valency){
 }
 
 function testLocalAction(){
- var perm = getLocalAction();
- console.log(perm);
  // if there are any "null" entries in the local action, it is not valid (ie. not finished)
- if (perm.indexOf(null)>-1){
-  return false;
- } else {
-  return true;
- }
+ return (getLocalAction().indexOf(null)==-1);
 }
