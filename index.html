@@ -185,6 +185,24 @@
   #thesvg {
    position: relative;
   }
+
+  #infobox {
+   clear: both;
+   position: relative;
+   top: 30px;
+   background-color: #999;
+   max-width: 98vw;
+   height: 50px;
+   padding: 5px;
+   margin: 8px;
+   margin-left: 3px;
+   margin-top: 3px;
+   border: 2px solid black;
+   box-shadow: inset -4px -4px 6px #666, -3px 3px 5px #222;
+   border-radius: 10px;
+   color: #fff;
+   text-shadow: 1px 1px 4px #000;
+  }
  </style>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
@@ -270,14 +288,14 @@
    <div id="editorwrapper" class="editorwrapper"></div>
    <div style="float:right;text-align:left;">
     Local action<br/>
-<!--    <button class="onecontrol" style="font-size:0.8em;" onclick="" title="Reset local action">Info</button><br/>-->
-    <button class="onecontrol" style="font-size:0.8em;" onclick="resetLocalAction();" title="Reset local action">Reset</button>
+    <button class="onecontrol" style="font-size:9px;" onclick="showLAinfo();" title="Reset local action">Info</button><br/>
+    <button class="onecontrol" style="font-size:9px;" onclick="resetLocalAction();" title="Reset local action">Reset</button>
    </div>
   </div>
   <table style="display:none;" id="colourtable"></table>
 
   <button class="onecontrol" style="font-size:2em;" onclick="run(false);">Original</button>
-  <button class="onecontrol" style="font-size:2em;" onclick="run(true);">Automorph</button>
+  <button class="onecontrol" style="font-size:2em;" onclick="run(true);" id="autobutton" disabled="disabled">Automorph</button>
 
  </div>
 
@@ -288,10 +306,11 @@
 <div id="graphContainer">
  <div id="thegraph" data-copy-text=""></div>
  <button style="left:10px;" onclick="toggleLabels();" title="Toggle labels">Labels</button>
- <button style="right:40px;" onclick="clearAutomorphism();" title="Reset automorphism">Reset</button>
+ <button style="right:30px;" onclick="clearAutomorphism();" title="Reset automorphism">Reset</button>
  <button onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
  <div id="thedetails"></div>
 </div>
+<div id="infobox"></div>
 
 <script>
  // set up some constants
@@ -498,10 +517,6 @@ function run(doAutomorphism=false){
 
 
  if (doAutomorphism && autoFrom!=null && autoTo!=null){
-  console.log("###");
-  console.log("### Automorphism requested, here we should ask the user to define it (select reference node and destination, then local action(s)...)");
-  console.log("###");
-
   // set an example local action:
 //  localActionPermutation = permutationCyclic(valencyList,1); // for example
   //
@@ -1116,7 +1131,6 @@ function decorateNodes(doAutomorphism=false){
   if (allnodes[i].classList.contains("node")){ // only want nodes (not edges)
    var rr = parseFloat(allnodes[i].querySelector("ellipse").attributes.rx.nodeValue); // get the radius of this node's ellipse
    allnodes[i].classList.add("radius"+rr);
-   console.log("ADDING RADIUS CLASS radius"+rr+" TO "+allnodes[i].id);
    if (rclasses.indexOf("radius"+rr)==-1) rclasses.push("radius"+rr);
   }
  }
@@ -1147,6 +1161,17 @@ function toggleLabels(){
   } else {
    L[i].style.display="none";
   }
+ }
+}
+
+// give some information about the local action
+function showLAinfo(){
+ var box = document.getElementById("infobox");
+ var txt = "The local action is a permutation of the edge colourings at each node.  There can be a different local action at every node; currently, however, the same local action is applied to all nodes.  The coloured squares in the top row represent the edge colours, with coloured markers which can be dragged into the bottom row. The local action permutation is then defined by the order of the markers.";
+ if (box.innerHTML.length>0){
+  box.innerHTML = "";
+ } else {
+  box.innerHTML = txt;
  }
 }
 
