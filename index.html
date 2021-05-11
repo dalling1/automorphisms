@@ -866,6 +866,14 @@ function setupNodes(){
     decorateNodes();
     testAutomorphism();
    } // end of node onclick function
+
+   // while we are here, change the font size for the xlabels
+   var nodelabels = allnodes[i].querySelectorAll(Node="text");
+   if (nodelabels.length>1){
+    var xlabel = nodelabels[1]; // the "xlabel" from Graphviz
+    xlabel.style.fontSize="8pt";
+   }
+
   }
  }
 
