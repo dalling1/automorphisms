@@ -138,7 +138,6 @@ function getLocalAction(){
 
 function showEditor(valency){
  // turn on and off the appropriate local action editor chits and final positions:
- document.getElementsByClassName("editorwrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
  for (var i=0;i<valency;i++){ // on
   document.getElementById("chit"+i).style.display = "";
   document.getElementById("editoredge"+i).style.display = "";
@@ -147,14 +146,15 @@ function showEditor(valency){
  var perm = getLocalAction();
  for (var j=i;j<colours.length;j++){ // off
   document.getElementById("chit"+j).style.display = "none";
-  document.getElementById("editoredge"+i).style.display = "none";
-  document.getElementById("editorfinal"+i).style.display = "none";
+  document.getElementById("editoredge"+j).style.display = "none";
+  document.getElementById("editorfinal"+j).style.display = "none";
   // put hidden chits back "home"
-  moveChit("chit"+j,"editoredge"+i);
+  moveChit("chit"+j,"editoredge"+j);
   if (perm[j]!=null){ // is there a chit in this "final" position?
    moveChit("chit"+perm[j],"editoredge"+perm[j]); // send it home
   }
  }
+ document.getElementsByClassName("editorwrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
 }
 
 function testLocalAction(){
