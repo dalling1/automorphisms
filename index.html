@@ -502,7 +502,7 @@ function drawGraph(G=[],doAutomorphism=false){
 } // end drawGraph
 
 // function to initiate the original graph and text //////////////////////////////////////////////// fn: run
-function run(doAutomorphism=false){
+async function run(doAutomorphism=false){
  // get values from the user controls:
  var valency = parseInt(document.getElementById("input_valency").value);
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
@@ -582,6 +582,8 @@ function run(doAutomorphism=false){
  drawGraph(G,doAutomorphism);
  // alternatively, feed it to:
  //		https://dreampuf.github.io/GraphvizOnline/
+
+ document.body.style.cursor = "";
 
  return 0;
 } // end run()
@@ -1256,10 +1258,11 @@ function demo(n=0){
 // demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6]]);  // 6 pretty but too slow
 
  if (n<demos.length){
+  waitCursor();
   document.getElementById("input_valency").value = demos[n-1][0];
   document.getElementById("input_maxdepth").value = demos[n-1][1];
-  manageControls();
   setOutputValues();
+  manageControls();
   autoFrom = labelToNode(demos[n-1][2]);
   autoTo = labelToNode(demos[n-1][3]);
   setLocalAction(demos[n-1][4]);
@@ -1267,6 +1270,10 @@ function demo(n=0){
    run(true);
   }
  }
+}
+
+function waitCursor(){
+ document.body.style.cursor = "wait";
 }
 
 /*
