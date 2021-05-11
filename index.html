@@ -66,7 +66,6 @@
   }
   #graphContainer > button {
    top: 12px;
-   right: -10px;
   }
   #graphContainer > #thedetails {
    bottom: -10px;
@@ -240,18 +239,6 @@
    <span class="slider round"></span>
    </label>
   </div>
-  <div class="onecontrol">Label nodes:<br/>
-   <label class="switch">
-   <input type="checkbox" id="input_labels" />
-   <span class="slider round"></span>
-   </label>
-  </div>
-  <div class="onecontrol">Original labels too:<br/>
-   <label class="switch">
-   <input type="checkbox" id="input_xlabels" />
-   <span class="slider round"></span>
-   </label>
-  </div>
   <div class="onecontrol">Show distances:<br/>
    <label class="switch">
    <input type="checkbox" id="input_showdists" />
@@ -309,9 +296,10 @@
 </div>
 <div id="graphContainer">
  <div id="thegraph" data-copy-text=""></div>
- <button style="left:10px;" onclick="toggleLabels();" title="Toggle labels">Labels</button>
+ <button style="left:10px;" onclick="toggleLabels(1);" title="Toggle labels">Labels</button>
+ <button style="left:60px;" onclick="toggleLabels(2);" title="Toggle external labels">XLabels</button>
  <button style="right:30px;" onclick="clearAutomorphism();" title="Reset automorphism">Reset</button>
- <button onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
+ <button style="right: -10px;" onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
  <div id="thedetails"></div>
 </div>
 <div id="infobox"></div>
@@ -358,9 +346,9 @@ function mkdot(withAutomorphism=false){
  var valency = parseInt(document.getElementById("input_valency").value);
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
 
- var showlabels = document.getElementById("input_labels").checked;
+ var showlabels = true;
  var showaddresses = true;
- var showoriglabels = document.getElementById("input_xlabels").checked;
+ var showoriglabels = true;
  var showdists = document.getElementById("input_showdists").checked;
  var sizebydist = document.getElementById("input_nodesize").checked;
 
@@ -1156,14 +1144,24 @@ function decorateNodes(doAutomorphism=false){
  if (doAutomorphism) document.getElementsByTagName("svg")[0].classList.add("autoGraph");
 }
 
-// show/hide labels on the SVG graph /////////////////////////////////////////////////////// fn: toggleLabels
-function toggleLabels(){
- var L=document.querySelectorAll(Node='text');
- for(var i=0;i<L.length;i++){
-  if (L[i].style.display=="none"){
-   L[i].style.display="";
-  } else {
-   L[i].style.display="none";
+// show/hide the external labels on the SVG graph ////////////////////////////////////////// fn: toggleLabels
+function toggleLabels(type=0){
+ // toggle some labels:  0 all, 1 main, 2 xlabel
+ if (type!=1 && type!=2) type=0;
+ var allnodes = document.getElementsByTagName("g");
+ for (var i=0;i<allnodes.length;i++){
+  if (allnodes[i].classList.contains("node")){ // only look at actual nodes (not the g which is the whole graph, say)
+   var alllabels = allnodes[i].querySelectorAll(Node="text"); // all the node's labels
+   for (var j=0;j<alllabels.length;j++){
+    if (type==0 || type==(j+1)){ // either toggle all labels, or just the ones matching (j+1)
+     thislabel = alllabels[j]; // [0] is the node label, [1] is the "xlabel"
+     if (thislabel.style.display=="none"){
+      thislabel.style.display="";
+     } else {
+      thislabel.style.display="none";
+     }
+    }
+   }
   }
  }
 }
