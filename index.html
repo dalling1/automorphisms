@@ -206,6 +206,25 @@
   .node.selected ellipse {
    stroke: #600;
   }
+
+ .demobuttons {
+  float: right;
+  xxxvertical-align: middle;
+  margin-top: 5px;
+  margin-right: 10px;
+ }
+ .demobuttons td {
+  margin: 2px;
+  padding: 2px;
+  border-radius: 2px;
+  background: #252;
+  color: #fe0;
+  font-size: 10px;
+  text-align: center;
+  width: 12px;
+  height: 14px;
+  cursor: pointer;
+ }
  </style>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
@@ -288,7 +307,29 @@
   <button class="onecontrol" style="font-size:2em;" onclick="run(false);">Original</button>
   <button class="onecontrol" style="font-size:2em;" onclick="run(true);" id="autobutton" disabled="disabled">Automorph</button>
 
+  <div class="demobuttons">
+   <table>
+    <tr>
+     <td onMouseDown="waitCursor();" onMouseUp="demo(1)">1</td>
+     <td onclick="demo(2)">2</td>
+     <td onclick="demo(3)">3</td>
+     <td onclick="demo(4)">4</td>
+     <td onclick="demo(5)">5</td>
+<!--     <td onclick="demo(6)">6</td>
+    </tr>
+    <tr>
+     <td onclick="demo(7)">7</td>
+     <td onclick="demo(8)">8</td>
+     <td onclick="demo(9)">9</td>
+     <td onclick="demo(10)">10</td>
+     <td onclick="demo(11)">11</td>
+     <td onclick="demo(12)">12</td>
+-->
+    </tr>
+  </table>
  </div>
+
+ </div> <!-- end graphControls -->
 
 <div id="dotContainer">
  <div id="theoutput" data-copy-text="">Dot code will be shown here</div>
@@ -522,7 +563,11 @@ function run(doAutomorphism=false){
   thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
 
   // carry out the automorphism:
-  processnode(autoFrom,valency);
+  if (testPermutation(localActionPermutation)){
+   processnode(autoFrom,valency);
+  } else {
+   console.log("Error: invalid permutation specified for local action");
+  }
  } else {
 //  clearAutomorphism();
  }
@@ -566,7 +611,8 @@ function permutationRandom(list){
 }
 
 // test a permutation vector for legality ////////////////////////////////////////////////////////// fn: testPermuation
-function testPermutation(perm,valency){
+function testPermutation(perm,valency=null){
+ if (valency==null) valency = parseInt(document.getElementById("input_valency").value);
  // test for a valid permutation
  if (perm.length==valency){ // right size?
   for (var p=0;p<perm.length;p++){
@@ -860,8 +906,8 @@ function setupNodes(){
     }
     setFrom = !setFrom; // toggle between setting autoFrom and autoTo
     // insert the autoFrom and autoTo nodes into the details div
-    fromstring = labelNode(autoFrom);
-    tostring = labelNode(autoTo);
+    var fromstring = labelNode(autoFrom);
+    var tostring = labelNode(autoTo);
     document.getElementById("thedetails").innerHTML = (fromstring==null?"?":fromstring)+" &#8614; "+(tostring==null?"?":tostring);
     decorateNodes();
     testAutomorphism();
@@ -1120,6 +1166,8 @@ function decorateNodes(doAutomorphism=false){
   if (fromNode != null) document.getElementById(fromNode).classList.add("referenceNode");
   if (toNode != null) document.getElementById(toNode).classList.add("destinationNode");
   if (fromNode!=null && toNode!=null){
+   var fromstring = labelNode(autoFrom);
+   var tostring = labelNode(autoTo);
    addArrow(fromstring,tostring);
   }
  }
@@ -1195,6 +1243,35 @@ function testAutomorphism(){
   return false;
  }
 }
+
+// function to run some demos //////////////////////////////////////////////////////////////////////// fn:demo
+function demo(n=0){
+ var demos = [];
+ // format is [valency, depth, autoFrom, autoTo, localAction]:
+ demos.push([3,3,'','r',[0,1,2]]);                 // 1
+ demos.push([4,3,'bg','b',[1,0,2,3]]);             // 2
+ demos.push([3,7,'g','r',[1,2,0]]);                // 3 translation
+ demos.push([3,7,'gb','r',[1,2,0]]);               // 4 reflection?
+ demos.push([3,7,'g','g',[1,2,0]]);                // 5 rotation
+// demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6]]);  // 6 pretty but too slow
+
+ if (n<demos.length){
+  document.getElementById("input_valency").value = demos[n-1][0];
+  document.getElementById("input_maxdepth").value = demos[n-1][1];
+  manageControls();
+  setOutputValues();
+  autoFrom = labelToNode(demos[n-1][2]);
+  autoTo = labelToNode(demos[n-1][3]);
+  setLocalAction(demos[n-1][4]);
+  if (testPermutation(getLocalAction())){
+   run(true);
+  }
+ }
+}
+
+/*
+   INITIAL FUNCTIONS TO RUN WHEN THE PAGE LOADS:
+*/
 
 setupColours();
 initPickers();
