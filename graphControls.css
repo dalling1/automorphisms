@@ -124,14 +124,15 @@ input:checked + .slider.round:before {
     text-align: center;
 }
 
-/* give some sliders an orange background (mainly for text options, not boolean sliders) */
-#graphControls .controlwrapper .slider,
-#graphControls .controlwrapper input:checked + .slider {
+/* give sliders with the class "optionslider" an orange background (use for options (this/that), not boolean (on/off) sliders) */
+#graphControls .optionslider .slider,
+#graphControls .optionslider input:checked + .slider
+ {
     background-color: #e83;
 }
 
 /* and keep their "button" white */
-#graphControls .controlwrapper .slider:before {
+#graphControls .optionslider .slider:before {
  background-color: white;
 }
 
