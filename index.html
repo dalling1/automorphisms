@@ -334,6 +334,7 @@
 <div id="dotContainer">
  <div id="theoutput" data-copy-text="">Dot code will be shown here</div>
  <button onclick="copy('theoutput');" title="Copy dot text">Copy</button>
+ <button id="gvbutton" style="right:45px;" onclick="window.open(openGraphVizLink(),'_blank');return false;" title="Opens in new tab/window">GraphViz</button>
 </div>
 <div id="graphContainer">
  <div id="thegraph" data-copy-text=""></div>
@@ -682,13 +683,14 @@ async function copy(targetId=null){
  }
 }
 
-// create a GraphViz Online link /////////////////////////////////////////////////////////////////// fn: makeGraphVizLink
-/*
-//function makeGraphVizLink(G){
+// create a GraphViz Online link /////////////////////////////////////////////////////////////////// fn: openGraphVizLink
+function openGraphVizLink(){
+// var G = mkdot();
+ var G = document.getElementById("theoutput").getAttribute("data-copy-text");
+ var useengine = document.getElementById("input_engine").value;
  return "https://dreampuf.github.io/GraphvizOnline/#"+encodeURIComponent(G);
-// return "https://quickchart.io/graphviz?layout=twopi&graph="+encodeURIComponent(G);
+// return "https://quickchart.io/graphviz?layout="+useengine+"&graph="+encodeURIComponent(G);
 }
-*/
 
 // manage the control values and buttons /////////////////////////////////////////////////////////// fn: manageControls
 function manageControls(){
