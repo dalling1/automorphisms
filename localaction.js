@@ -94,12 +94,6 @@ function moveChit(from,to){
 
  // run a check (will enable the "automorph" button if the conditions are all set)
  testAutomorphism();
-// if (testLocalAction() && autoFrom!=null && autoTo!=null){
-//  document.getElementById("autobutton").removeAttribute("disabled");
-// } else {
-//  document.getElementById("autobutton").setAttribute("disabled","disabled");
-// }
-
 }
 
 function resetLocalAction(){
@@ -114,6 +108,13 @@ function resetLocalAction(){
 
 function setLocalAction(perm=[]){
  resetLocalAction();
+ // default is to set the "trivial" local action:
+ if (perm.length==0){
+  var valency = parseInt(document.getElementById("input_valency").value);
+  for (var i=0;i<valency;i++){
+   perm[i] = i;
+  }
+ }
  for (var i=0;i<perm.length;i++){
   moveChit("chit"+perm[i],"editorfinal"+i);
  }

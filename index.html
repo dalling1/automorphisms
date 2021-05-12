@@ -296,11 +296,19 @@
 
   <div class="onecontrol controlwrapper">
    <div id="editorwrapper" class="editorwrapper"></div>
-   <div style="float:right;text-align:left;">
-    Local action<br/>
-    <button class="onecontrol" style="font-size:9px;" onclick="showLAinfo();" title="Reset local action">Info</button><br/>
+   <div style="float:left;text-align:center;">
+    <span style="cursor:help;" onclick="showLAinfo();">Local action</span><br/>
+    <button class="onecontrol" style="font-size:9px;" onclick="setLocalAction()" title="Set the trivial local action">Trivial</button><br/>
     <button class="onecontrol" style="font-size:9px;" onclick="resetLocalAction();" title="Reset local action">Reset</button>
    </div>
+
+   <div class="onecontrol">Universal:<br/>
+    <label class="switch">
+    <input type="checkbox" id="input_useeverywhere" />
+    <span class="slider round"></span>
+    </label>
+   </div>
+
   </div>
   <table style="display:none;" id="colourtable"></table>
 
