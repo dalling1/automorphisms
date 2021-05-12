@@ -304,7 +304,7 @@
 
    <div class="onecontrol">Universal:<br/>
     <label class="switch">
-    <input type="checkbox" id="input_useeverywhere" />
+    <input type="checkbox" id="input_universal" />
     <span class="slider round"></span>
     </label>
    </div>
@@ -766,8 +766,11 @@ function processnode(v,valency,verbose=false,debug=false){
    //    -- user-given or
    //    -- (constrained) random or
    //    -- same as at the reference node
-   console.log("### NOTE: using reference node's local action everywhere");
-   thelocalaction[indx] = localActionPermutation; // for now, use the reference node's local action everywhere
+//   console.log("### NOTE: using reference node's local action everywhere");
+   var universal = document.getElementById("input_universal").checked;
+   if (universal){
+    thelocalaction[indx] = localActionPermutation; // for now, use the reference node's local action everywhere
+   }
 
    if (thelocalaction[indx]==null){
     if (verbose) console.log("    ... no local action defined at "+labelNode(v)+", so stopping");
@@ -856,6 +859,8 @@ function nodeDistance(v,w){
 // (called on page load, to set the initial labels, and when one of the slider controls changes (valency, maxdepth))
 function setOutputValues(){
  var debug = false;
+
+ testAutomorphism();
 
  // display the calculated number of nodes that these control choices (valency, depth) will produce:
  document.getElementById("output_Nnodes").value = calcSize();
