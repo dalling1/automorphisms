@@ -248,7 +248,7 @@
    <output id="output_valency"></output>
   </div>
   <div class="onecontrol">Depth:<br/>
-   <input type="range" id="input_maxdepth" value="7" min="0" max="10" oninput="setOutputValues();"/>
+   <input type="range" id="input_maxdepth" value="5" min="0" max="10" oninput="setOutputValues();"/>
    <output id="output_maxdepth"></output>
   </div>
 
@@ -258,7 +258,19 @@
 
   <div class="onecontrol">Original nodes only:<br/>
    <label class="switch">
-   <input type="checkbox" checked id="input_extent" />
+   <input type="checkbox" id="input_extent" checked />
+   <span class="slider round"></span>
+   </label>
+  </div>
+  <div class="onecontrol">Label nodes:<br/>
+   <label class="switch">
+   <input type="checkbox" id="input_labels" checked />
+   <span class="slider round"></span>
+   </label>
+  </div>
+  <div class="onecontrol">Original labels too:<br/>
+   <label class="switch">
+   <input type="checkbox" id="input_xlabels" checked />
    <span class="slider round"></span>
    </label>
   </div>
@@ -270,7 +282,7 @@
   </div>
   <div class="onecontrol">Size nodes by distance:<br/>
    <label class="switch">
-   <input type="checkbox" checked id="input_nodesize" />
+   <input type="checkbox" id="input_nodesize" checked />
    <span class="slider round"></span>
    </label>
   </div>
@@ -399,9 +411,9 @@ function mkdot(withAutomorphism=false){
  var valency = parseInt(document.getElementById("input_valency").value);
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
 
- var showlabels = true;
+ var showlabels = document.getElementById("input_labels").checked;
  var showaddresses = true;
- var showoriglabels = true;
+ var showoriglabels = document.getElementById("input_xlabels").checked;
  var showdists = document.getElementById("input_showdists").checked;
  var sizebydist = document.getElementById("input_nodesize").checked;
 
