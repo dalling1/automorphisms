@@ -71,6 +71,10 @@
    bottom: -10px;
    right: -10px;
   }
+  #thedetails span {
+   color: #eee;
+  }
+
 
   #theoutput {
    position: absolute;
@@ -348,9 +352,8 @@
  <div id="thegraph" data-copy-text=""></div>
  <button style="left:10px;" onclick="toggleLabels(1);" title="Toggle labels">Labels</button>
  <button style="left:60px;" onclick="toggleLabels(2);" title="Toggle external labels">XLabels</button>
- <button style="right:30px;" onclick="clearAutomorphism();" title="Reset automorphism">Reset</button>
  <button style="right: -10px;" onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
- <div id="thedetails"></div>
+ <div id="thedetails"><span id="fromto"></span><button style="margin-left:10px;" onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Reset</button></div>
 </div>
 <div id="infobox"></div>
 
@@ -854,7 +857,7 @@ function nodeDistance(v,w){
  return dist;
 }
 
-// HTML input labelling function /////////////////////////////////////////////////////////////////// fn:setOutputValues
+// HTML input labelling function /////////////////////////////////////////////////////////////////// fn: setOutputValues
 // function which looks for inputs and their labels (containing the input value), and sets the label
 // (called on page load, to set the initial labels, and when one of the slider controls changes (valency, maxdepth))
 function setOutputValues(){
@@ -898,7 +901,7 @@ function setOutputValues(){
  showEditor(valency);
 }
 
-// set the hover/click functionality of nodes ////////////////////////////////////////////////////// fn:setupNodes
+// set the hover/click functionality of nodes ////////////////////////////////////////////////////// fn: setupNodes
 function setupNodes(){
  var debug = false;
 
@@ -925,7 +928,7 @@ function setupNodes(){
     // insert the autoFrom and autoTo nodes into the details div
     var fromstring = labelNode(autoFrom);
     var tostring = labelNode(autoTo);
-    document.getElementById("thedetails").innerHTML = (fromstring==null?"?":fromstring)+" &#8614; "+(tostring==null?"?":tostring);
+    document.getElementById("fromto").innerHTML = (fromstring==null?"?":fromstring)+" &#8614; "+(tostring==null?"?":tostring);
     decorateNodes();
     testAutomorphism();
    } // end of node onclick function
@@ -951,6 +954,10 @@ function clearAutomorphism(){
  thelocalaction = [];  // list of automorphism permutation at each node (local action)
  autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
  autodistance = [];    // compute how far each node has moved
+
+ // remove the text from the corner of the graph
+ document.getElementById("fromto").innerHTML = "";
+
  decorateNodes();
 }
 
@@ -1217,7 +1224,7 @@ function decorateNodes(doAutomorphism=false){
  if (doAutomorphism) document.getElementsByTagName("svg")[0].classList.add("autoGraph");
 }
 
-// show/hide the external labels on the SVG graph ////////////////////////////////////////// fn: toggleLabels
+// show/hide the external labels on the SVG graph ////////////////////////////////////////////////// fn: toggleLabels
 function toggleLabels(type=0){
  // toggle some labels:  0 all, 1 main, 2 xlabel
  if (type!=1 && type!=2) type=0;
@@ -1239,7 +1246,7 @@ function toggleLabels(type=0){
  }
 }
 
-// give some information about the local action //////////////////////////////////////////// fn: showLAinfo
+// give some information about the local action //////////////////////////////////////////////////// fn: showLAinfo
 function showLAinfo(){
  var box = document.getElementById("infobox");
  var txt = "The local action is a permutation of the edge colourings at each node.  There can be a different local action at every node; currently, however, the same local action is applied to all nodes.  The coloured squares in the top row represent the edge colours, with coloured markers which can be dragged into the bottom row. The local action permutation is then defined by the order of the markers.";
@@ -1250,7 +1257,7 @@ function showLAinfo(){
  }
 }
 
-// check that the automorphism is fully defined //////////////////////////////////////////// fn: testAutomorphism
+// check that the automorphism is fully defined //////////////////////////////////////////////////// fn: testAutomorphism
 function testAutomorphism(){
  if (testLocalAction() && autoFrom!=null && autoTo!=null){
   document.getElementById("autobutton").removeAttribute("disabled");
@@ -1261,7 +1268,7 @@ function testAutomorphism(){
  }
 }
 
-// function to run some demos //////////////////////////////////////////////////////////////////////// fn:demo
+// function to run some demos ////////////////////////////////////////////////////////////////////// fn: demo
 function demo(n=0){
  var demos = [];
  // format is [valency, depth, autoFrom, autoTo, localAction]:
@@ -1287,6 +1294,7 @@ function demo(n=0){
  }
 }
 
+// set the "wait" cursor /////////////////////////////////////////////////////////////////////////// fn: waitCursor
 function waitCursor(){
  document.body.style.cursor = "wait";
 }
