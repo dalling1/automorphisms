@@ -410,8 +410,8 @@ function processnode(v,valency,verbose=false,debug=false){
    //    -- (constrained) random or
    //    -- same as at the reference node
 //   console.log("### NOTE: using reference node's local action everywhere");
-   var universal = document.getElementById("input_universal").checked;
-   if (universal){
+   var constantAuto = document.getElementById("input_constantauto").checked;
+   if (constantAuto){
     thelocalaction[indx] = localActionPermutation; // for now, use the reference node's local action everywhere
    }
 
