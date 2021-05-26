@@ -911,18 +911,19 @@ function testAutomorphism(){
 // function to run some demos ////////////////////////////////////////////////////////////////////// fn: demo
 function demo(n=0){
  var demos = [];
- // format is [valency, depth, autoFrom, autoTo, localAction]:
- demos.push([3,3,'','r',[0,1,2]]);                 // 1
- demos.push([4,3,'bg','b',[1,0,2,3]]);             // 2
- demos.push([3,7,'g','r',[1,2,0]]);                // 3 translation
- demos.push([3,7,'gb','r',[1,2,0]]);               // 4 reflection?
- demos.push([3,7,'g','g',[1,2,0]]);                // 5 rotation
-// demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6]]);  // 6 pretty but too slow
+ // format is [valency, depth, autoFrom, autoTo, localAction, constantLA]:
+ demos.push([3,3,'','r',[0,1,2],true]);                 // 1
+ demos.push([4,3,'bg','b',[1,0,2,3],true]);             // 2
+ demos.push([3,7,'g','r',[1,2,0],true]);                // 3 translation
+ demos.push([3,7,'gb','r',[1,2,0],true]);               // 4 reflection?
+ demos.push([3,7,'g','g',[1,2,0],true]);                // 5 rotation
+// demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6],true]);  // 6 pretty but too slow
 
  if (n<demos.length){
   waitCursor();
-  document.getElementById("input_valency").value = demos[n-1][0];
-  document.getElementById("input_maxdepth").value = demos[n-1][1];
+  document.getElementById("input_valency").value = demos[n-1][0]; // set valency
+  document.getElementById("input_maxdepth").value = demos[n-1][1]; // set depth
+  document.getElementById("input_constantauto").checked = demos[n-1][5]; // turn constantauto on or off
   setOutputValues();
   manageControls();
   autoFrom = labelToNode(demos[n-1][2]);
