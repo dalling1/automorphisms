@@ -56,7 +56,7 @@ function savePNG(){
  // for options see https://github.com/exupero/saveSvgAsPng
 
  // get the transparency option if there is a control for it:
- if (document.getElementById("transparency")!=null){
+ if (document.getElementById("input_transparent")!=null){
   var transparentBG = $("#transparency").prop('checked');
  } else { // default to true if there is no control
   var transparentBG = true;
