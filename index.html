@@ -3,6 +3,7 @@
  <meta charset="utf-8">
  <title>Automorphism</title>
  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans|Open+Sans+Condensed:Light&display=swap">
+ <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.css">
  <link rel="stylesheet" href="graphControls.css">
  <link rel="stylesheet" href="localaction.css">
  <style>
@@ -101,6 +102,7 @@
    max-height: 100%;
    max-width: 100%;
   }
+  /* the spurious polygon is now deleted, so this is obsolete: */
   #thegraph > svg > g > polygon {
    display: none; /* hide the default background object on the GraphViz graph */
   }
@@ -319,8 +321,15 @@
   </div>
   <table style="display:none;" id="colourtable"></table>
 
-  <button class="onecontrol" style="font-size:2em;" onclick="run(false);">Original</button>
-  <button class="onecontrol" style="font-size:2em;" onclick="run(true);" id="autobutton" disabled="disabled">Automorph</button>
+  <div class="controlgroup">
+   <button class="onecontrol" onclick="run(false);">Draw original</button><br/>
+   <button class="onecontrol" onclick="run(true);" id="autobutton" disabled="disabled">Draw transformed</button>
+  </div>
+
+  <div class="controlgroup">
+   <button style="width:100%" class="onecontrol" onclick="savePDF();">Save PDF</button><br/>
+   <button style="width:100%" class="onecontrol" onclick="savePNG();">Save PNG</button>
+  </div>
 
   <div class="demobuttons">
    <table>
@@ -362,11 +371,14 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.css">
 <script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
 <script>var hpccWasm = window["@hpcc-js/wasm"];</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/save-svg-as-png/1.4.17/saveSvgAsPng.js" integrity="sha512-eROF+rLuEUiVuYGmMqhsT8/OwSLcVw5RLjhhJrWLTznvDcwG0WtXrV6w7Ko4Nw7LyWzDZOGlQjfzQd7kUYLQcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js" referrerpolicy="no-referrer"></script>
+<script src="svg2pdf.min.js"></script>
 <script src="localaction.js"></script>
 <script src="automorphisms.js"></script>
+<script src="savemechanisms.js"></script>
 
 </body>
 </html>
