@@ -146,6 +146,7 @@ function drawGraph(G=[],doAutomorphism=false){
    const svgdiv = document.getElementById("thegraph"); // the div where the SVG graph should be attached
    svgdiv.innerHTML = svg;
    document.getElementById("thegraph").setAttribute("data-copy-text",svg); // for the clipboard
+   document.getElementById("thegraph").querySelector("polygon").remove(); // remove the spurious background polygon
    setupNodes(); // set the onclick function for the nodes (now that they exist)
    createArrowMarker(); // attach the SVG code for the arrow head markers
    decorateNodes(doAutomorphism);
@@ -950,4 +951,3 @@ clearAutomorphism();
 setPickers();
 initDrag();
 setOutputValues();
-
