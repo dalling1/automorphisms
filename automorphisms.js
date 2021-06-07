@@ -581,9 +581,6 @@ function setupNodes(){
 
   }
  }
-
- // "decorate" the nodes: show the automorphism
- decorateNodes();
 }
 
 // list the reference and destination nodes in the corner of the graph ///////////////////////////// fn: showFromTo
