@@ -184,17 +184,19 @@ function enableLocalAction(node){
  if (node!=null){ // eg. [0,1,0]
   var thislabel = labelNode(node); // eg. 'rbr'
   var thisID = findSVGNode(thislabel); // eg. node18
-  if (document.getElementById(thisID).classList.contains("haslocalaction")){
-   // nothing to do
-   if (debug) console.log("Local action already set on node ID: "+thisID);
-  } else if (document.getElementById(thisID).classList.contains("canhavelocalaction")){
-   // nothing to do
-   if (debug) console.log("Local action already enabled on node ID: "+thisID);
-  } else {
-   if (debug) console.log("Enabling local action on node ID: "+thisID);
-   document.getElementById(thisID).classList.add("canhavelocalaction");
-   thelocalaction[node.toString()] = []; // initialise the local action permutation for this node
-  } // end if...
+  if (thisID != null){ // test that the SVG object actually exists (the node might be outside the drawn graph)
+   if (document.getElementById(thisID).classList.contains("haslocalaction")){
+    // nothing to do
+    if (debug) console.log("Local action already set on node ID: "+thisID);
+   } else if (document.getElementById(thisID).classList.contains("canhavelocalaction")){
+    // nothing to do
+    if (debug) console.log("Local action already enabled on node ID: "+thisID);
+   } else {
+    if (debug) console.log("Enabling local action on node ID: "+thisID);
+    document.getElementById(thisID).classList.add("canhavelocalaction");
+    thelocalaction[node.toString()] = []; // initialise the local action permutation for this node
+   } // end if...
+  }
  } // end not null
 }
 
