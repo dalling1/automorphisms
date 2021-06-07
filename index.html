@@ -231,6 +231,31 @@
   height: 14px;
   cursor: pointer;
  }
+
+ .canhavelocalaction ellipse {
+  stroke: #f00;
+  stroke-width: 5px;
+  transition: all ease 0.25s;
+ }
+ .canhavelocalaction:hover ellipse {
+  stroke: #f009;
+  stroke-width: 8px;
+  transition: all ease 0.25s;
+ }
+ .haslocalaction ellipse {
+  stroke: #5d5;
+  stroke-width: 5px;
+  transition: all ease 0.25s;
+ }
+ .haslocalaction:hover ellipse {
+  stroke: #5d59;
+  stroke-width: 5px;
+  transition: all ease 0.25s;
+ }
+ .setLAnode {
+  color: white;
+  text-shadow: 1px 1px 2px black;
+ }
  </style>
 </head>
 <body>
@@ -307,11 +332,14 @@
    <div id="editorwrapper" class="editorwrapper"></div>
    <div style="float:left;text-align:center;">
     <span style="cursor:help;" onclick="showLAinfo();">Local action</span><br/>
-    <button class="onecontrol" style="font-size:9px;" onclick="setLocalAction()" title="Set the trivial local action">Trivial</button><br/>
+    <button class="onecontrol" style="font-size:9px;" onclick="setTrivialLocalAction()" title="Set the trivial local action">Trivial</button><br/>
     <button class="onecontrol" style="font-size:9px;" onclick="resetLocalAction();" title="Reset local action">Reset</button>
    </div>
 
-   <div class="onecontrol">Constant:<br/>
+   <div class="onecontrol">
+    <button id="actionbutton" class="onecontrol" style="font-size:9px;" onclick="saveLocalAction()" title="Set the local action for a node" disabled="disabled">Set for node</button><br/>
+    <span id="actionnode" class="setLAnode" data-use-node="">[no node selected]</span><br/>
+    Constant:
     <label class="switch">
      <input type="checkbox" id="input_constantauto" />
      <span class="slider round"></span>
@@ -378,14 +406,14 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm/dist/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@hpcc-js/wasm@1.5.2/dist/index.min.js"></script>
 <script>var hpccWasm = window["@hpcc-js/wasm"];</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/save-svg-as-png/1.4.17/saveSvgAsPng.js" integrity="sha512-eROF+rLuEUiVuYGmMqhsT8/OwSLcVw5RLjhhJrWLTznvDcwG0WtXrV6w7Ko4Nw7LyWzDZOGlQjfzQd7kUYLQcQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js" referrerpolicy="no-referrer"></script>
 <script src="svg2pdf.min.js"></script>
 <script src="localaction.js"></script>
-<script src="automorphisms.js"></script>
 <script src="savemechanisms.js"></script>
+<script src="automorphisms.js"></script>
 
 </body>
 </html>

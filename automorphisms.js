@@ -138,7 +138,7 @@ function drawGraph(G=[],doAutomorphism=false){
  var useengine = document.getElementById("input_engine").value;
 
  // skip drawing if the GraphViz engine is "none" or the graph is not defined
- if (useengine=="none" | G.length==0){
+ if (useengine=="none" || G.length==0){
   console.log("Skipping GraphViz graph");
  } else {
   graphData = G;
@@ -159,10 +159,6 @@ async function run(doAutomorphism=false){
  // get values from the user controls:
  var valency = parseInt(document.getElementById("input_valency").value);
  var maxdepth = parseInt(document.getElementById("input_maxdepth").value);
- var valencyList = [];
- for (var v=0;v<valency;v++){
-  valencyList.push(v);
- }
 
  // initialise
  thenodes = [];        // list of nodes by address
@@ -171,11 +167,8 @@ async function run(doAutomorphism=false){
  thenodeindex = [];    // associative array, index by node address
  thenewnodes = [];     // list of nodes by address post-automorphism
  thenewnodeindex = []; // associative array, index by node address, for the post-automorphism graph
- thelocalaction = [];  // list of automorphism permutation at each node (local action)
  autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
  autodistance = [];    // compute how far each node has moved
- setFrom = true;       // start out by selecting the reference node
-
  thenodeindex["ROOT"] = 0;
 
  // loop over all nodes and add children to those at the (current) maximum depth
@@ -202,21 +195,12 @@ async function run(doAutomorphism=false){
 
 
  if (doAutomorphism && autoFrom!=null && autoTo!=null){
-  // set an example local action:
-//  localActionPermutation = permutationCyclic(valencyList,1); // for example
-  //
-  // get the automorphism from the local action editor (for now, this is just used as the only local action):
-  //
-  localActionPermutation = getLocalAction();
-
   // the new approach to performing the automorphism:
-  // (for now, only define the local action at the reference node)
   thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
   thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
-  thelocalaction[findNode(autoFrom,thenodeindex)] = localActionPermutation;
 
   // carry out the automorphism:
-  if (testPermutation(localActionPermutation)){
+  if (testPermutation(thelocalaction[autoFrom.toString()])){
    processnode(autoFrom,valency);
   } else {
    console.log("Error: invalid permutation specified for local action");
@@ -382,7 +366,10 @@ function calcSize(valency=null,maxdepth=null){
 
 
 // process the automorphism //////////////////////////////////////////////////////////////////////// fn: processnode
-function processnode(v,valency,verbose=false,debug=false){
+function processnode(v,valency){
+ // note that v (the node to be processed) is an address, eg. [1,0,1,1]
+ var verbose = false;
+ var debug = false;
  if (verbose) console.log("Processing node "+labelNode(v)); // +"                                   ie. "+v.toString()+" (valency="+valency+")");
 
  var indx = findNode(v,thenodeindex);
@@ -407,22 +394,21 @@ function processnode(v,valency,verbose=false,debug=false){
    if (debug) console.log("AUTOMORPHISM: node "+labelNode(v)+" is moving to "+labelNode(w));
 
    // 1. retrieve the local action, f_v, at this node
-   //    -- user-given or
-   //    -- (constrained) random or
-   //    -- same as at the reference node
-//   console.log("### NOTE: using reference node's local action everywhere");
    var constantAuto = document.getElementById("input_constantauto").checked;
    if (constantAuto){
-    thelocalaction[indx] = localActionPermutation; // for now, use the reference node's local action everywhere
+    thelocalaction[v.toString()] = thelocalaction[autoFrom.toString()]; // use the reference node's local action everywhere
    }
 
-   if (thelocalaction[indx]==null){
+   var thislocalaction = thelocalaction[v.toString()];
+   if (thislocalaction==null || thislocalaction==undefined || thislocalaction.length==0){ // want the last option to be ==[] but that doesn't work, use ==0 instead
+//old   if (thislocalaction==null || thislocalaction==undefined){
     if (verbose) console.log("    ... no local action defined at "+labelNode(v)+", so stopping");
    } else {
     // 2. find this node's neighbours, vi
     var vi = findNeighbours(v,valency); // IN THE ORIGINAL GRAPH
     // 3. permute them according to the local action to give vif (remember that localAction() takes a list of nodes as its input, not a single node)
-    var vif = localAction(vi,thelocalaction[indx],valency);
+//old    var vif = localAction(vi,thelocalaction[v.toString()],valency);
+    var vif = localAction(vi,thislocalaction,valency);
     // 4. find the node's destination's neighbours, wi
     var wi = findNeighbours(w,valency); // POST-MOVE
 
@@ -459,7 +445,7 @@ function processnode(v,valency,verbose=false,debug=false){
        if (debug) console.log("   --- setting thenewnodeindex["+vif[i].toString()+"] to "+thenewnodeindex[vif[i].toString()]);
 
        // now work on this neighbour's neighbours:
-       if (debug) console.log("Calling processnode(["+vif[i]+"],"+valency+"), ie. processnode(["+labelNode(vif[i])+"],"+valency+")");
+       if (debug) console.log("Calling processnode(["+vif[i]+"],"+valency+"), ie. processnode(\""+labelNode(vif[i])+"\","+valency+")");
        processnode(vif[i],valency);
       }
 
@@ -480,7 +466,7 @@ function findNode(v,nodeindex){
  }
 }
 
-// find the distance between two nodes ///////////////////////////////////////////////////////////// fn: labelDistance
+// find the distance between two nodes ///////////////////////////////////////////////////////////// fn: nodeDistance
 function nodeDistance(v,w){
  // inputs are node addresses, eg. [0,1,2,1]
  // remove common prefix:
@@ -551,25 +537,37 @@ function setupNodes(){
   if (allnodes[i].classList.contains("node")){ // only set onclick for the nodes (not edges)
    /*
       HERE WE DEFINE THE ON-CLICK FUNCTION FOR NODES:
-      - it will register the reference and destination nodes (alternatively)
+      - it will register the reference and destination nodes (previously alternatively, now once each)
       - and add styling to those nodes
-      - but how to switch nodes for defining individual local actions?
+      - but how to switch nodes for defining individual local actions? select ref/dest then click for LA
    */
    allnodes[i].onclick = function() {
     var thisnodeid = this.id;
     var thisnodelabel = this.querySelector(Node="title").textContent;
-    if (setFrom){
-     // set the reference node
-     autoFrom = labelToNode(thisnodelabel);
-    } else {
+    var thisnode = labelToNode(thisnodelabel);
+    if (setTo){
      // set the destination node
      autoTo = labelToNode(thisnodelabel);
+     setTo = false;
+     showFromTo();
+    } else if (setFrom){
+     // set the reference node
+     autoFrom = labelToNode(thisnodelabel);
+     setFrom = false;
+     setTo = true;
+     showFromTo();
+     enableLocalAction(autoFrom); // turn on the local action editing for the reference node
+     // show it in the local action editor
+     loadNodeAction(autoFrom);
+    } else {
+     // some other click behaviour... like selecting nodes for defining their local action permutation
+     if (debug) console.log("Clicked on node: "+thisnodeid);
+     // test if a local action (even an empty one) exists for this node, and if so show it in the editor
+     if (thelocalaction[thisnode.toString()]!=undefined){
+      loadNodeAction(thisnode);
+     }
     }
-    setFrom = !setFrom; // toggle between setting autoFrom and autoTo
-    // insert the autoFrom and autoTo nodes into the details div
-    var fromstring = labelNode(autoFrom);
-    var tostring = labelNode(autoTo);
-    document.getElementById("fromto").innerHTML = (fromstring==null?"?":fromstring)+" &#8614; "+(tostring==null?"?":tostring);
+
     decorateNodes();
     testAutomorphism();
    } // end of node onclick function
@@ -588,6 +586,14 @@ function setupNodes(){
  decorateNodes();
 }
 
+// list the reference and destination nodes in the corner of the graph ///////////////////////////// fn: showFromTo
+function showFromTo(){
+ // insert the autoFrom and autoTo nodes into the details div
+ var fromstring = labelNode(autoFrom);
+ var tostring = labelNode(autoTo);
+ document.getElementById("fromto").innerHTML = (fromstring==null?"?":fromstring)+" &#8614; "+(tostring==null?"?":tostring);
+}
+
 // initialise the automorphism ///////////////////////////////////////////////////////////////////// fn: clearAutomorphism
 function clearAutomorphism(){
  autoFrom = null;
@@ -595,6 +601,16 @@ function clearAutomorphism(){
  thelocalaction = [];  // list of automorphism permutation at each node (local action)
  autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
  autodistance = [];    // compute how far each node has moved
+
+ // go back to click-to-set-reference-node
+ setFrom = true;
+
+ // remove local actions
+ var allnodes=document.getElementsByClassName("node");
+ for (var i=0;i<allnodes.length;i++){
+  document.getElementById(allnodes[i].id).classList.remove("canhavelocalaction");
+  document.getElementById(allnodes[i].id).classList.remove("haslocalaction");
+ }
 
  // remove the text from the corner of the graph
  document.getElementById("fromto").innerHTML = "";
@@ -824,7 +840,8 @@ function decorateNodes(doAutomorphism=false){
  var oldarrow = document.getElementById("thearrow");
  if (oldarrow!=null) oldarrow.remove();
 
- // apply the reference and destination node classes
+ // if not drawing the post-automorphism graph, apply the reference and destination node classes
+ // and mark the nodes with local action functions
  if (!doAutomorphism){
   var fromNode = findSVGNode(labelNode(autoFrom));
   var toNode = findSVGNode(labelNode(autoTo));
@@ -834,6 +851,18 @@ function decorateNodes(doAutomorphism=false){
    var fromstring = labelNode(autoFrom);
    var tostring = labelNode(autoTo);
    addArrow(fromstring,tostring);
+  }
+  // add local action decorations where warranted:
+  for (thenodestr in thelocalaction){
+   var thenode = thenodestr.split(","); // turn the string back into an array
+   var thenodeid = findSVGNode(labelNode(thenode)); // find the corresponding node on the screen
+   if (thenodeid != null){ // make sure the node exists
+    if (thelocalaction[thenode].length==0){ // if the saved local action is empty, mark the node for "can have"
+     document.getElementById(thenodeid).classList.add("canhavelocalaction");
+    } else { // if the local action is not empty, it has been set for this node, so mark it as such:
+     document.getElementById(thenodeid).classList.add("haslocalaction");
+    }
+   }
   }
  }
 
@@ -944,6 +973,10 @@ function waitCursor(){
 /*
    INITIAL FUNCTIONS TO RUN WHEN THE PAGE LOADS:
 */
+
+thelocalaction = [];  // list of automorphism permutation at each node (local action)
+setFrom = true;       // initial clicks on nodes will select the reference node
+setTo = false;        // after that the clicks will select the destination node
 
 setupColours();
 initPickers();

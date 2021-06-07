@@ -92,7 +92,14 @@ function moveChit(from,to){
   target.classList.add("occupied");
  }
 
- // run a check (will enable the "automorph" button if the conditions are all set)
+ // run a check (will enable the "Set for node" button if this is a valid (ie. complete) permutation)
+ if (testLocalAction()){
+  document.getElementById("actionbutton").removeAttribute("disabled");
+ } else {
+  document.getElementById("actionbutton").setAttribute("disabled","disabled");
+ }
+
+ // run a check (will enable the "Draw transformed" button if the conditions are all set)
  testAutomorphism();
 }
 
@@ -108,16 +115,20 @@ function resetLocalAction(){
 
 function setLocalAction(perm=[]){
  resetLocalAction();
- // default is to set the "trivial" local action:
- if (perm.length==0){
-  var valency = parseInt(document.getElementById("input_valency").value);
-  for (var i=0;i<valency;i++){
-   perm[i] = i;
-  }
- }
+ // default is to not set a local action at all
  for (var i=0;i<perm.length;i++){
   moveChit("chit"+perm[i],"editorfinal"+i);
  }
+}
+
+function setTrivialLocalAction(){
+ // create the "trivial" local action permutation and put it into the editor
+ var perm = [];
+ var valency = parseInt(document.getElementById("input_valency").value);
+ for (var i=0;i<valency;i++){
+  perm[i] = i;
+ }
+ setLocalAction(perm);
 }
 
 function getLocalAction(){
@@ -161,4 +172,66 @@ function showEditor(valency){
 function testLocalAction(){
  // if there are any "null" entries in the local action, it is not valid (ie. not finished)
  return (getLocalAction().indexOf(null)==-1);
+}
+
+// mark a node as having a local action and prep its neighbours //////////////////////////////////// fn: enableLocalAction
+function enableLocalAction(node){
+ var valency = parseInt(document.getElementById("input_valency").value);
+ var debug = false;
+
+ // NEED TO TEST IF THE NODE EXISTS IN THE SVG OBJECT (for neighbours of leaf nodes...)
+
+ if (node!=null){ // eg. [0,1,0]
+  var thislabel = labelNode(node); // eg. 'rbr'
+  var thisID = findSVGNode(thislabel); // eg. node18
+  if (document.getElementById(thisID).classList.contains("haslocalaction")){
+   // nothing to do
+   if (debug) console.log("Local action already set on node ID: "+thisID);
+  } else if (document.getElementById(thisID).classList.contains("canhavelocalaction")){
+   // nothing to do
+   if (debug) console.log("Local action already enabled on node ID: "+thisID);
+  } else {
+   if (debug) console.log("Enabling local action on node ID: "+thisID);
+   document.getElementById(thisID).classList.add("canhavelocalaction");
+   thelocalaction[node.toString()] = []; // initialise the local action permutation for this node
+  } // end if...
+ } // end not null
+}
+
+// when clicked, show the node label and action in the local action editor ///////////////////////// fn: loadNodeAction
+function loadNodeAction(thisnode){
+ // test whether the requested node is allowed to have its local action edited
+ if (thelocalaction[thisnode.toString()]!=undefined){
+  // okay to edit, so set up the editor for this node
+  document.getElementById("actionnode").innerHTML = "'"+labelNode(thisnode)+"'"; // show the node in the LA editor
+  document.getElementById("actionnode").setAttribute("data-use-node",labelNode(thisnode)); // store the node address
+  setLocalAction(thelocalaction[thisnode.toString()]);
+// UNDER CONSTRUCTION also need to:
+//    - set up the permutation constraints (should that be done elsewhere?)
+ }
+}
+
+// function to put the local action (from the editor) into the nodes' local action array /////////// fn: saveLocalAction
+function saveLocalAction(){
+ var valency = parseInt(document.getElementById("input_valency").value);
+ var debug = false;
+
+ // find out which node we are saving the local action for (as an address, eg. [1,0,1,1])
+ var thenode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
+ if (debug) console.log("Saving local action for node "+labelNode(thenode));
+
+ // get the permutation from the editor and store it
+ thelocalaction[thenode.toString()] = getLocalAction();
+
+ // change the SVG node's style
+ var thenodeid = findSVGNode(labelNode(thenode));
+ document.getElementById(thenodeid).classList.remove("canhavelocalaction");
+ document.getElementById(thenodeid).classList.add("haslocalaction");
+
+ // enable local action editing for the node's neighbours
+ var thisneighbours = findNeighbours(thenode,valency);
+ for (var i=0;i<thisneighbours.length;i++){
+  if (debug) console.log("Enabling local action for neighbour: "+labelNode(thisneighbours[i]));
+  enableLocalAction(thisneighbours[i]); // only recurse once (don't add neighbours of neighbours)
+ }
 }
