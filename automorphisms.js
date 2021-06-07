@@ -379,10 +379,10 @@ function processnode(v,valency){
 
  // has this node been drawn within the current extent of the graph?
  if (onlyDrawDrawnNodes && indx==undefined){
-  if (verbose) console.log("    ... stopping at "+labelNode(v)+" [node not drawn]"); // v is off the drawn graph
+  if (verbose) console.log("    ... stopping at "+labelNode(v)+" [node not drawn]"); // v is outside the drawn graph
   autoprogress.push(labelNode(v));
  } else if (destindx==undefined){
-  if (verbose) console.log("    ... stopping at "+labelNode(v)+" [destination not drawn]"); // w is off the drawn graph
+  if (verbose) console.log("    ... stopping at "+labelNode(v)+" [destination not drawn]"); // w is outside the drawn graph
   autoprogress.push(labelNode(v));
  } else {
   if (autoprogress.indexOf(labelNode(v))>-1){
@@ -394,12 +394,14 @@ function processnode(v,valency){
    if (debug) console.log("AUTOMORPHISM: node "+labelNode(v)+" is moving to "+labelNode(w));
 
    // 1. retrieve the local action, f_v, at this node
+   var thislocalaction = thelocalaction[v.toString()];
+   // but check if we are using the "constant" local action option
    var constantAuto = document.getElementById("input_constantauto").checked;
    if (constantAuto){
-    thelocalaction[v.toString()] = thelocalaction[autoFrom.toString()]; // use the reference node's local action everywhere
+//    thelocalaction[v.toString()] = thelocalaction[autoFrom.toString()]; // use the reference node's local action everywhere // this changes the stored local actions, we we don't actually want to do
+    thislocalaction = thelocalaction[autoFrom.toString()]; // use the reference node's local action everywhere
    }
 
-   var thislocalaction = thelocalaction[v.toString()];
    if (thislocalaction==null || thislocalaction==undefined || thislocalaction.length==0){ // want the last option to be ==[] but that doesn't work, use ==0 instead
 //old   if (thislocalaction==null || thislocalaction==undefined){
     if (verbose) console.log("    ... no local action defined at "+labelNode(v)+", so stopping");
