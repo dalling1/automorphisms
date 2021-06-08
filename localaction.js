@@ -172,9 +172,10 @@ function showEditor(valency){
  document.getElementsByClassName("editorwrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
 }
 
-function testLocalAction(){
+function testLocalAction(thislocalaction=null){
+ if (thislocalaction==null) thislocalaction = getLocalAction();
  // if there are any "null" entries in the local action, it is not valid (ie. not finished)
- return (getLocalAction().indexOf(null)==-1);
+ return (thislocalaction.indexOf(null)==-1);
 }
 
 // mark a node as having a local action and prep its neighbours //////////////////////////////////// fn: enableLocalAction
