@@ -611,6 +611,9 @@ function clearAutomorphism(){
   document.getElementById(allnodes[i].id).classList.remove("haslocalaction");
  }
 
+ // reset the local action editor
+ resetLocalAction();
+
  // remove the text from the corner of the graph
  document.getElementById("fromto").innerHTML = "";
 
