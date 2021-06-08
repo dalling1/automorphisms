@@ -245,9 +245,74 @@ function saveLocalAction(){
  }
 
  // enable local action editing for the node's neighbours
- var thisneighbours = findNeighbours(thenode,valency);
+ var thisneighbours = findNeighbours(thenode);
  for (var i=0;i<thisneighbours.length;i++){
   if (debug) console.log("Enabling local action for neighbour: "+labelNode(thisneighbours[i]));
   enableLocalAction(thisneighbours[i]);
  }
 }
+
+/*
+ Permutation-related functions
+*/
+// cyclically permute a given list (by a specified "distance") ///////////////////////////////////// fn: permutationCyclic
+function permutationCyclic(list,dist=0){
+ var out = Array(list.length); // initialise
+ while (dist>list.length) dist-=list.length; // avoid winding
+ while (dist<0) dist+=list.length; // avoid winding
+ for (var i=0;i<(list.length-dist);i++) out[i]=list[i+dist]; // 0 ... dist
+ for (var i=list.length-dist;i<list.length;i++) out[i]=list[i+dist-list.length]; // dist+1 ... end
+ return out;
+}
+
+// randomly permute a given list /////////////////////////////////////////////////////////////////// fn: permutationRandom
+function permutationRandom(list){
+ var inlist = Array(list.length); // initialise
+ var out = Array(list.length); // initialise
+ for (var i=0;i<list.length;i++) inlist[i] = list[i]; // make a copy
+ for (var i=0;i<list.length;i++) out[i] = inlist.splice(randomInt(inlist.length),1); // extract the elements in random order
+ return out;
+}
+
+// test a permutation vector for legality ////////////////////////////////////////////////////////// fn: testPermuation
+function testPermutation(perm){
+ var valency = parseInt(document.getElementById("input_valency").value);
+ var debug = false;
+
+ // test for a valid permutation
+ if (perm.length==valency){ // right size?
+  for (var p=0;p<perm.length;p++){
+   if (perm[p]<0 || perm[p] >= valency){   // look for out-of-range entries
+    if (debug) console.log("ERROR: invalid permutation (out-of-range entries)");
+    return false;
+   }
+   if (perm.indexOf(perm[p])!=p){   // look for repeated entries
+    if (debug) console.log("ERROR: invalid permutation (repeated entries)");
+    return false;
+   }
+  }
+ } else {
+  if (debug) console.log("WARNING: permutation length ("+perm.length+") is not equal to the valency ("+valency+") in "+perm.toString());
+  return false;
+ }
+ return true;
+}
+
+// permute a given list using the provided permutation ///////////////////////////////////////////// fn: permute
+function permuteList(list,perm){
+ // takes a list of a node's neighbours (ie. list length = valency) and permutes them
+
+ if (testPermutation(perm)){
+  // legal permutation, so perform the operation
+  var out = Array(list.length);
+  for (var i=0;i<list.length;i++){
+  // permute elements: local action (ie swap the elements of the list around with each other)
+   out[perm[i]] = list[i];
+//   out[i] = list[perm[i]]; // reverse of standard notation
+  }
+  return out;
+ } else {
+  return undefined;
+ }
+}
+
