@@ -1,3 +1,6 @@
+/*
+ Functions relating to the local action editor and its interaction with nodes (saving, loading, etc.)
+*/
 
 function initDrag(){
  var valency = parseInt(document.getElementById("input_valency").value);
@@ -179,8 +182,6 @@ function enableLocalAction(node){
  var valency = parseInt(document.getElementById("input_valency").value);
  var debug = false;
 
- // NEED TO TEST IF THE NODE EXISTS IN THE SVG OBJECT (for neighbours of leaf nodes...)
-
  if (node!=null){ // eg. [0,1,0]
   var thislabel = labelNode(node); // eg. 'rbr'
   var thisID = findSVGNode(thislabel); // eg. node18
@@ -227,13 +228,15 @@ function saveLocalAction(){
 
  // change the SVG node's style
  var thenodeid = findSVGNode(labelNode(thenode));
- document.getElementById(thenodeid).classList.remove("canhavelocalaction");
- document.getElementById(thenodeid).classList.add("haslocalaction");
+ if (thenodeid!=null){ // check that it exists
+  document.getElementById(thenodeid).classList.remove("canhavelocalaction");
+  document.getElementById(thenodeid).classList.add("haslocalaction");
+ }
 
  // enable local action editing for the node's neighbours
  var thisneighbours = findNeighbours(thenode,valency);
  for (var i=0;i<thisneighbours.length;i++){
   if (debug) console.log("Enabling local action for neighbour: "+labelNode(thisneighbours[i]));
-  enableLocalAction(thisneighbours[i]); // only recurse once (don't add neighbours of neighbours)
+  enableLocalAction(thisneighbours[i]);
  }
 }

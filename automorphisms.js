@@ -201,7 +201,7 @@ async function run(doAutomorphism=false){
 
   // carry out the automorphism:
   if (testPermutation(thelocalaction[autoFrom.toString()])){
-   processnode(autoFrom,valency);
+   processnode(autoFrom);
   } else {
    console.log("Error: invalid permutation specified for local action");
   }
@@ -250,8 +250,8 @@ function permutationRandom(list){
 }
 
 // test a permutation vector for legality ////////////////////////////////////////////////////////// fn: testPermuation
-function testPermutation(perm,valency=null){
- if (valency==null) valency = parseInt(document.getElementById("input_valency").value);
+function testPermutation(perm){
+ var valency = parseInt(document.getElementById("input_valency").value);
  // test for a valid permutation
  if (perm.length==valency){ // right size?
   for (var p=0;p<perm.length;p++){
@@ -268,10 +268,10 @@ function testPermutation(perm,valency=null){
 }
 
 // permute a given list using the provided permutation ///////////////////////////////////////////// fn: permute
-function localAction(list,perm,valency){
+function localAction(list,perm){
  // takes a list of a node's neighbours (ie. list length = valency) and permutes them
 
- if (testPermutation(perm,valency)){
+ if (testPermutation(perm)){
   // legal permutation, so perform the operation
   var out = Array(list.length);
   for (var i=0;i<list.length;i++){
@@ -286,8 +286,10 @@ function localAction(list,perm,valency){
 }
 
 // find the neighbours of a given node, for a given valency //////////////////////////////////////// fn: findNeighbours
-function findNeighbours(node,valency){
+function findNeighbours(node){
+ var valency = parseInt(document.getElementById("input_valency").value);
  neighbours = Array(valency); // initialise
+
  for (var v=0;v<valency;v++){
   if (v==node[node.length-1]){ // check for the "parent" node
    // add the neighbour towards the root node
@@ -366,8 +368,9 @@ function calcSize(valency=null,maxdepth=null){
 
 
 // process the automorphism //////////////////////////////////////////////////////////////////////// fn: processnode
-function processnode(v,valency){
+function processnode(v){
  // note that v (the node to be processed) is an address, eg. [1,0,1,1]
+ var valency = parseInt(document.getElementById("input_valency").value);
  var verbose = false;
  var debug = false;
  if (verbose) console.log("Processing node "+labelNode(v)); // +"                                   ie. "+v.toString()+" (valency="+valency+")");
@@ -407,12 +410,12 @@ function processnode(v,valency){
     if (verbose) console.log("    ... no local action defined at "+labelNode(v)+", so stopping");
    } else {
     // 2. find this node's neighbours, vi
-    var vi = findNeighbours(v,valency); // IN THE ORIGINAL GRAPH
+    var vi = findNeighbours(v); // IN THE ORIGINAL GRAPH
     // 3. permute them according to the local action to give vif (remember that localAction() takes a list of nodes as its input, not a single node)
-//old    var vif = localAction(vi,thelocalaction[v.toString()],valency);
-    var vif = localAction(vi,thislocalaction,valency);
+//old    var vif = localAction(vi,thelocalaction[v.toString()]);
+    var vif = localAction(vi,thislocalaction);
     // 4. find the node's destination's neighbours, wi
-    var wi = findNeighbours(w,valency); // POST-MOVE
+    var wi = findNeighbours(w); // POST-MOVE
 
 
     if (debug) console.log(" +++ The neighbours of "+labelNode(v)+" are "+vi.map(labelNode).toString());
@@ -447,8 +450,8 @@ function processnode(v,valency){
        if (debug) console.log("   --- setting thenewnodeindex["+vif[i].toString()+"] to "+thenewnodeindex[vif[i].toString()]);
 
        // now work on this neighbour's neighbours:
-       if (debug) console.log("Calling processnode(["+vif[i]+"],"+valency+"), ie. processnode(\""+labelNode(vif[i])+"\","+valency+")");
-       processnode(vif[i],valency);
+       if (debug) console.log("Calling processnode(["+vif[i]+"]), ie. processnode(\""+labelNode(vif[i])+"\")");
+       processnode(vif[i]);
       }
 
      }
