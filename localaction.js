@@ -103,6 +103,7 @@ function moveChit(from,to){
  }
 
  // run a check (will enable the "Draw transformed" button if the conditions are all set)
+ // Note: on load this will be triggered (and fail) multiple times, as the chits are put into place for the first time)
  testAutomorphism();
 }
 
@@ -173,9 +174,18 @@ function showEditor(valency){
 }
 
 function testLocalAction(thislocalaction=null){
- if (thislocalaction==null) thislocalaction = getLocalAction();
- // if there are any "null" entries in the local action, it is not valid (ie. not finished)
- return (thislocalaction.indexOf(null)==-1);
+ var debug = false;
+ if (thislocalaction==null){
+  if (debug) console.log("Using editor's local action");
+  thislocalaction = getLocalAction();
+ }
+ if (testPermutation(thislocalaction)){
+  // if there are any "null" entries in the local action, it is not valid (ie. not finished)
+  return (thislocalaction.indexOf(null)==-1);
+ } else {
+  // permutation failed (wrong number of entries, out-of-range entries, etc.)
+  return false;
+ }
 }
 
 // mark a node as having a local action and prep its neighbours //////////////////////////////////// fn: enableLocalAction

@@ -252,16 +252,22 @@ function permutationRandom(list){
 // test a permutation vector for legality ////////////////////////////////////////////////////////// fn: testPermuation
 function testPermutation(perm){
  var valency = parseInt(document.getElementById("input_valency").value);
+ var debug = false;
+
  // test for a valid permutation
  if (perm.length==valency){ // right size?
   for (var p=0;p<perm.length;p++){
-   if (perm.indexOf(perm[p])!=p){ // repeated entries?
-    console.log("ERROR: invalid permutation (repeated entries)");
+   if (perm[p]<0 || perm[p] >= valency){   // look for out-of-range entries
+    if (debug) console.log("ERROR: invalid permutation (out-of-range entries)");
+    return false;
+   }
+   if (perm.indexOf(perm[p])!=p){   // look for repeated entries
+    if (debug) console.log("ERROR: invalid permutation (repeated entries)");
     return false;
    }
   }
  } else {
-  console.log("ERROR: permutation length ("+perm.length+") is not equal to the valency ("+valency+")");
+  if (debug) console.log("WARNING: permutation length ("+perm.length+") is not equal to the valency ("+valency+") in "+perm.toString());
   return false;
  }
  return true;
@@ -397,17 +403,17 @@ function processnode(v){
    if (debug) console.log("AUTOMORPHISM: node "+labelNode(v)+" is moving to "+labelNode(w));
 
    // 1. retrieve the local action, f_v, at this node
+   //    The current method is to use the user-defined local action at each node UNLESS the "constant" switch is on
+   //    In that case, the reference node's local action is used at every node.
    var thislocalaction = thelocalaction[v.toString()];
    // but check if we are using the "constant" local action option
    var constantAuto = document.getElementById("input_constantauto").checked;
    if (constantAuto){
-//    thelocalaction[v.toString()] = thelocalaction[autoFrom.toString()]; // use the reference node's local action everywhere // this changes the stored local actions, we we don't actually want to do
     thislocalaction = thelocalaction[autoFrom.toString()]; // use the reference node's local action everywhere
    }
 
-   if (thislocalaction==null || thislocalaction==undefined || thislocalaction.length==0){ // want the last option to be ==[] but that doesn't work, use ==0 instead
-//old   if (thislocalaction==null || thislocalaction==undefined){
-    if (verbose) console.log("    ... no local action defined at "+labelNode(v)+", so stopping");
+   if (thislocalaction==null || thislocalaction==undefined || !testLocalAction(thislocalaction)){
+    if (verbose) console.log("    ... no valid local action defined at "+labelNode(v)+", so stopping");
    } else {
     // 2. find this node's neighbours, vi
     var vi = findNeighbours(v); // IN THE ORIGINAL GRAPH
@@ -494,8 +500,6 @@ function nodeDistance(v,w){
 // (called on page load, to set the initial labels, and when one of the slider controls changes (valency, maxdepth))
 function setOutputValues(){
  var debug = false;
-
- testAutomorphism();
 
  // display the calculated number of nodes that these control choices (valency, depth) will produce:
  document.getElementById("output_Nnodes").value = calcSize();
@@ -989,3 +993,4 @@ clearAutomorphism();
 setPickers();
 initDrag();
 setOutputValues();
+testAutomorphism();
