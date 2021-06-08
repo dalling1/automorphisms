@@ -7,7 +7,8 @@
  const colours=["#ff0000","#0000ff","#00ff00","#ff00ff","#00ffff","#000000","#ffff00"];
 
  // colour set-up of nodes, edges and labels:
- const thenodecolour = '#dddd55'; // '#ccaa00'; // was orange, then yellow
+ const thenodecolour = '#999999';  // '#dddd55'; // '#ccaa00'; // was orange, then yellow
+ const theautonodecolour = '#dddd55'; // post-automorphism node colour
  const theedgecolour = 'black'; // currently a fall-back (each edge's colour is over-ridden individually)
  const thefadednodecolour = '#eaeaea22';
  const thelabelcolour = '#000000';
@@ -89,7 +90,7 @@ function mkdot(withAutomorphism=false){
   thisgraph += '\n\t// POST-AUTOMORPHISM NODES\n';
   for (var i=0;i<thenewnodes.length;i++){
    var thislabel = labelNode(thenewnodes[i]);
-   var nodecolour = thenodecolour;
+   var nodecolour = theautonodecolour;
    var fontcolour = thelabelcolour;
    var xlabel = labelNode(thenodes[i]);
    var thisradius = 0.1;
