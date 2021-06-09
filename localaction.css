@@ -56,3 +56,14 @@
 .chit:hover {
  box-shadow: 1px 1px 3px #000,3px 3px 4px #222;
 }
+/* style for editor destinations which are constrained by neighbouring local actions (they cannot be changed) */
+.dest.constrained {
+ border: 1px solid #fff;
+ padding: 3px;
+ cursor: not-allowed;
+}
+/*
+.chit.constrained {
+  border: 4px solid #cc9;
+}
+*/

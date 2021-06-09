@@ -173,18 +173,34 @@ function showEditor(valency){
  document.getElementsByClassName("editorwrapper")[0].style.gridTemplateColumns = "repeat("+valency+",1fr)";
 }
 
-function testLocalAction(thislocalaction=null){
+function testLocalAction(thislocalaction=null,thisconstraint=null){
  var debug = false;
  if (thislocalaction==null){
   if (debug) console.log("Using editor's local action");
   thislocalaction = getLocalAction();
  }
- if (testPermutation(thislocalaction)){
-  // if there are any "null" entries in the local action, it is not valid (ie. not finished)
-  return (thislocalaction.indexOf(null)==-1);
+
+ // we could add code here to get the node being tested (from the editor) and find its constraints using that
+ // this would allow us to avoid enabling the "set for node" button by testing constraints when moving chits
+ // as well as when clicking the button
+
+ var constraintokay = true;
+ // first, test the constraint, if any
+ if (thisconstraint!=null && thisconstraint!=undefined){
+  constraintokay = (thislocalaction[thisconstraint[0]] == thisconstraint[1])
+ }
+
+ if (constraintokay){
+  if (testPermutation(thislocalaction)){
+   // if there are any "null" entries in the local action, it is not valid (ie. not finished)
+   return (thislocalaction.indexOf(null)==-1);
+  } else {
+   // permutation failed (wrong number of entries, out-of-range entries, etc.)
+   return false;
+  }
  } else {
-  // permutation failed (wrong number of entries, out-of-range entries, etc.)
-  return false;
+  alert("The proposed local action does not meet the required constraint");
+  console.log("WARNING: proposed local action failed constraint");
  }
 }
 
@@ -252,31 +268,35 @@ function saveLocalAction(){
  var debug = false;
 
  // find out which node we are saving the local action for (as an address, eg. [1,0,1,1])
- var thenode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
- if (debug) console.log("Saving local action for node "+labelNode(thenode));
+ var thisnode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
+ var nodestr = thisnode.toString();
 
- // get the permutation from the editor and store it (it will also be used for constraint-setting)
+ // get the permutation from the editor
  savelocalaction = getLocalAction();
- /*
-   to add here: test the local action against its constraints (if any)
- */
 
- thelocalaction[thenode.toString()] = savelocalaction;
+ // test the constraint (for completeness, validity and against any constraints)
+ if (testLocalAction(savelocalaction,thelocalconstraint[nodestr])){
+  if (debug) console.log("Saving local action for node "+labelNode(thisnode));
+  thelocalaction[nodestr] = savelocalaction;
 
- // change the SVG node's style
- var thenodeid = findSVGNode(labelNode(thenode));
- if (thenodeid!=null){ // check that it exists
-  document.getElementById(thenodeid).classList.remove("canhavelocalaction");
-  document.getElementById(thenodeid).classList.add("haslocalaction");
- }
+  // change the SVG node's style
+  var thenodeid = findSVGNode(labelNode(thisnode));
+  if (thenodeid!=null){ // check that it exists
+   document.getElementById(thenodeid).classList.remove("canhavelocalaction");
+   document.getElementById(thenodeid).classList.add("haslocalaction");
+  }
 
- // enable local action editing for the node's neighbours
- var thisneighbours = findNeighbours(thenode);
- for (var i=0;i<thisneighbours.length;i++){
-  if (debug) console.log("Enabling local action for neighbour: "+labelNode(thisneighbours[i]));
-  // findNeighbours returns a list in thelabels (alphabet) order (although really we should test this)
-  // thus, the ith neighbour is constrained by the ith element of the local action:
-  enableLocalAction(thisneighbours[i],i,savelocalaction[i]); // zzz
+  // enable local action editing for the node's neighbours
+  var thisneighbours = findNeighbours(thisnode);
+  for (var i=0;i<thisneighbours.length;i++){
+   if (debug) console.log("Enabling local action for neighbour: "+labelNode(thisneighbours[i]));
+   // findNeighbours returns a list in thelabels (alphabet) order (although really we should test this)
+   // thus, the ith neighbour is constrained by the ith element of the local action:
+   enableLocalAction(thisneighbours[i],i,savelocalaction[i]); // zzz
+  }
+ } else {
+  // the local action in the editor failed the test
+  console.log("WARNING: proposed local action is not valid and was not saved");
  }
 }
 
