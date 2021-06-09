@@ -189,9 +189,10 @@ function testLocalAction(thislocalaction=null){
 }
 
 // mark a node as having a local action and prep its neighbours //////////////////////////////////// fn: enableLocalAction
-function enableLocalAction(node){
+function enableLocalAction(node,constraintElement=null,constraintValue=null){
  var valency = parseInt(document.getElementById("input_valency").value);
  var debug = false;
+ var setconstraint = false;
 
  if (node!=null){ // eg. [0,1,0]
   var thislabel = labelNode(node); // eg. 'rbr'
@@ -201,27 +202,47 @@ function enableLocalAction(node){
     // nothing to do
     if (debug) console.log("Local action already set on node ID: "+thisID);
    } else if (document.getElementById(thisID).classList.contains("canhavelocalaction")){
-    // nothing to do
     if (debug) console.log("Local action already enabled on node ID: "+thisID);
+    // update the local action constraint
+    var setconstraint = true;
    } else {
     if (debug) console.log("Enabling local action on node ID: "+thisID);
     document.getElementById(thisID).classList.add("canhavelocalaction");
     thelocalaction[node.toString()] = []; // initialise the local action permutation for this node
+    // set the local action constraint
+    var setconstraint = true;
    } // end if...
+
+   // set the constraint if required
+   if (setconstraint){
+    if (constraintElement!=null){ // a constraint has been passed, set it up for the node
+     if (constraintElement<valency && constraintValue<valency){ // sanity check
+      thelocalconstraint[node.toString()] = [constraintElement,constraintValue];
+     } else {
+      console.log("ERROR: an out-of-range value was passed to the local action constraint");
+     }
+    }
+   }
+
   }
  } // end not null
 }
 
 // when clicked, show the node label and action in the local action editor ///////////////////////// fn: loadNodeAction
 function loadNodeAction(thisnode){
- // test whether the requested node is allowed to have its local action edited
- if (thelocalaction[thisnode.toString()]!=undefined){
+ var nodestr = thisnode.toString();
+ // test whether the requested node is allowed to have its local action edited (it will have an array or empty placeholder)
+ tmpaction = thelocalaction[nodestr];
+ if (tmpaction!=undefined){
+  // okay to edit, enforce any constraint which exists
+  if (thelocalconstraint[nodestr]!=undefined){
+   tmpaction[thelocalconstraint[nodestr][0]] = thelocalconstraint[nodestr][1];
+  }
+
   // okay to edit, so set up the editor for this node
   document.getElementById("actionnode").innerHTML = "'"+labelNode(thisnode)+"'"; // show the node in the LA editor
   document.getElementById("actionnode").setAttribute("data-use-node",labelNode(thisnode)); // store the node address
-  setLocalAction(thelocalaction[thisnode.toString()]);
-// UNDER CONSTRUCTION also need to:
-//    - set up the permutation constraints (should that be done elsewhere?)
+  setLocalAction(tmpaction);
  }
 }
 
@@ -234,8 +255,13 @@ function saveLocalAction(){
  var thenode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
  if (debug) console.log("Saving local action for node "+labelNode(thenode));
 
- // get the permutation from the editor and store it
- thelocalaction[thenode.toString()] = getLocalAction();
+ // get the permutation from the editor and store it (it will also be used for constraint-setting)
+ savelocalaction = getLocalAction();
+ /*
+   to add here: test the local action against its constraints (if any)
+ */
+
+ thelocalaction[thenode.toString()] = savelocalaction;
 
  // change the SVG node's style
  var thenodeid = findSVGNode(labelNode(thenode));
@@ -248,7 +274,9 @@ function saveLocalAction(){
  var thisneighbours = findNeighbours(thenode);
  for (var i=0;i<thisneighbours.length;i++){
   if (debug) console.log("Enabling local action for neighbour: "+labelNode(thisneighbours[i]));
-  enableLocalAction(thisneighbours[i]);
+  // findNeighbours returns a list in thelabels (alphabet) order (although really we should test this)
+  // thus, the ith neighbour is constrained by the ith element of the local action:
+  enableLocalAction(thisneighbours[i],i,savelocalaction[i]); // zzz
  }
 }
 

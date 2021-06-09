@@ -233,6 +233,7 @@ function randomInt(n=1){
 
 // find the neighbours of a given node, for a given valency //////////////////////////////////////// fn: findNeighbours
 function findNeighbours(node){
+ // input is an address, eg. [0,1,0]
  var valency = parseInt(document.getElementById("input_valency").value);
  neighbours = Array(valency); // initialise
 
@@ -358,7 +359,6 @@ function processnode(v){
     // 2. find this node's neighbours, vi
     var vi = findNeighbours(v); // IN THE ORIGINAL GRAPH
     // 3. permute them according to the local action to give vif (remember that permuteList() takes a list of nodes as its input, not a single node)
-//old    var vif = permuteList(vi,thelocalaction[v.toString()]);
     var vif = permuteList(vi,thislocalaction);
     // 4. find the node's destination's neighbours, wi
     var wi = findNeighbours(w); // POST-MOVE
@@ -545,6 +545,7 @@ function clearAutomorphism(){
  autoFrom = null;
  autoTo = null;
  thelocalaction = [];  // list of automorphism permutation at each node (local action)
+ thelocalconstraint = []; // list of constraints imposed by neighbouring local actions
  autoprogress = [];    // list of flags indicating which nodes have been determined (processed) under the automorphism
  autodistance = [];    // compute how far each node has moved
 
@@ -806,10 +807,10 @@ function decorateNodes(doAutomorphism=false){
    var thenode = thenodestr.split(","); // turn the string back into an array
    var thenodeid = findSVGNode(labelNode(thenode)); // find the corresponding node on the screen
    if (thenodeid != null){ // make sure the node exists
-    if (thelocalaction[thenode].length==0){ // if the saved local action is empty, mark the node for "can have"
-     document.getElementById(thenodeid).classList.add("canhavelocalaction");
-    } else { // if the local action is not empty, it has been set for this node, so mark it as such:
+    if (testLocalAction(thelocalaction[thenode])){ // if the saved local action is valid, mark the node as "has"
      document.getElementById(thenodeid).classList.add("haslocalaction");
+    } else { // if the local action is not valid, mark it as "can have"
+     document.getElementById(thenodeid).classList.add("canhavelocalaction");
     }
    }
   }
@@ -927,6 +928,7 @@ function waitCursor(){
 */
 
 thelocalaction = [];  // list of automorphism permutation at each node (local action)
+thelocalconstraint = []; // list of constraints imposed by neighbouring local actions
 setFrom = true;       // initial clicks on nodes will select the reference node
 setTo = false;        // after that the clicks will select the destination node
 
