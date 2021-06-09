@@ -826,18 +826,21 @@ function decorateNodes(doAutomorphism=false){
   }
  }
 
- // give the SVG graph an id
- var thesvg = document.getElementsByTagName("svg");
- if (thesvg.length) thesvg[0].id = "thesvg";
+ // give the SVG graph an id (find all SVG elements and then choose the one whose parent is "thegraph"
+ var allsvg = document.getElementsByTagName("svg");
+ for (var i=0;i<allsvg.length;i++){
+  if (allsvg[i].parentElement.id=="thegraph") allsvg[0].id = "thesvg";
+  var thesvg = document.getElementById("thesvg");
+ }
 
  // move the SVG to the centre of the graph box:
- if (thesvg.length){
+ if (thesvg!=undefined){
   var thegraph = document.getElementById("thegraph");
   var thepadding = parseInt(window.getComputedStyle(thegraph)["padding-top"]);
   var themargin = parseInt(window.getComputedStyle(thegraph)["margin-top"]);
   var theheight = thegraph.clientHeight;
-  var thesvgheight = thesvg[0].clientHeight;
-  thesvg[0].style.top = parseFloat((theheight-thepadding-themargin-thesvgheight)/2)+"px"
+  var thesvgheight = thesvg.clientHeight;
+  thesvg.style.top = parseFloat((theheight-thepadding-themargin-thesvgheight)/2)+"px"
  }
  // add a class to the SVG indicating whether it is the post-automorphism graph
  if (doAutomorphism) document.getElementsByTagName("svg")[0].classList.add("autoGraph");
@@ -868,7 +871,7 @@ function toggleLabels(type=0){
 // give some information about the local action //////////////////////////////////////////////////// fn: showLAinfo
 function showLAinfo(){
  var box = document.getElementById("infobox");
- var txt = "The local action is a permutation of the edge colourings at each node.  There can be a different local action at every node; currently, however, the same local action is applied to all nodes.  The coloured squares in the top row represent the edge colours, with coloured markers which can be dragged into the bottom row. The local action permutation is then defined by the order of the markers.";
+ var txt = "The local action is a permutation of the edge colourings at each vertex. If the \"constant\" switch is turned on, the local action at the reference vertex is applied at all vertices. Red and green borders mark vertices at which the local action can be and has been defined, respectively. The coloured squares in the top row represent the edge colours, with markers which can be dragged into the bottom row. The local action permutation is then defined by the order of the markers.";
  if (box.innerHTML.length>0){
   box.innerHTML = "";
  } else {
