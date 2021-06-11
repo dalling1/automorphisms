@@ -40,7 +40,10 @@ function drag(ev){
 function drop(ev){
  ev.preventDefault();
  var thechit = ev.dataTransfer.getData("text");
- moveChit(thechit,ev.target.id);
+ // check if this chit is constrained: in that case, do not move it
+ if (!(document.getElementById(thechit).classList.contains("constrained"))){
+  moveChit(thechit,ev.target.id);
+ }
  ev.target.classList.remove("over");
 }
 
@@ -247,8 +250,17 @@ function enableLocalAction(node,constraintElement=null,constraintValue=null){
 // when clicked, show the node label and action in the local action editor ///////////////////////// fn: loadNodeAction
 function loadNodeAction(thisnode){
  var nodestr = thisnode.toString();
+
+ // remove "constrained" class from the editor elements
+ var allconstrained = document.getElementsByClassName("constrained");
+ for (var i=0;i<allconstrained.length;i++){
+  document.getElementById(allconstrained[i].id).classList.remove("constrained");
+ }
+ console.log("Warning: not all elements are having the class removed...");
+
  // test whether the requested node is allowed to have its local action edited (it will have an array or empty placeholder)
  tmpaction = thelocalaction[nodestr];
+
  if (tmpaction!=undefined){
   // okay to edit, enforce any constraint which exists
   if (thelocalconstraint[nodestr]!=undefined){
@@ -259,6 +271,17 @@ function loadNodeAction(thisnode){
   document.getElementById("actionnode").innerHTML = "'"+labelNode(thisnode)+"'"; // show the node in the LA editor
   document.getElementById("actionnode").setAttribute("data-use-node",labelNode(thisnode)); // store the node address
   setLocalAction(tmpaction);
+
+  // and, finally, set the "constrained" class on chits so-limited
+  if (thelocalconstraint[nodestr]!=undefined){
+   tmpaction[thelocalconstraint[nodestr][0]] = thelocalconstraint[nodestr][1];
+
+   var destid = "editorfinal"+thelocalconstraint[nodestr][0]; // eg. "editorfinal3", the destination for chits which should not be changed
+   document.getElementById(destid).classList.add("constrained");
+
+   var chitid = "chit"+thelocalconstraint[nodestr][1]; // eg. "chit0"
+   document.getElementById(chitid).classList.add("constrained");
+  }
  }
 }
 
