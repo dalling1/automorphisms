@@ -253,10 +253,10 @@ function loadNodeAction(thisnode){
 
  // remove "constrained" class from the editor elements
  var allconstrained = document.getElementsByClassName("constrained");
- for (var i=0;i<allconstrained.length;i++){
-  document.getElementById(allconstrained[i].id).classList.remove("constrained");
+ // the search result object is dynamic, so work backwards from the end when removing classes (the length changes as we go)
+ for (var i=allconstrained.length;i>0;i--){
+  document.getElementById(allconstrained[i-1].id).classList.remove("constrained");
  }
- console.log("Warning: not all elements are having the class removed...");
 
  // test whether the requested node is allowed to have its local action edited (it will have an array or empty placeholder)
  tmpaction = thelocalaction[nodestr];
