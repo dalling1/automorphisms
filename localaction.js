@@ -135,13 +135,30 @@ function setLocalAction(perm=[]){
 }
 
 function setTrivialLocalAction(){
- // create the "trivial" local action permutation and put it into the editor
- var perm = [];
- var valency = parseInt(document.getElementById("input_valency").value);
- for (var i=0;i<valency;i++){
-  perm[i] = i;
+ var proceed = true;
+ // if the node being edited has a constraint, do nothing
+ var thisnode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
+ var nodestr = thisnode.toString();
+ if (thelocalconstraint[nodestr] != undefined){
+  if (thelocalconstraint[nodestr][0] == thelocalconstraint[nodestr][1]){
+   // okay, constraint allows the trivial LA
+   proceed = true; // still
+  } else {
+   proceed = false;
+  }
  }
- setLocalAction(perm);
+
+ if (proceed){
+  // create the "trivial" local action permutation and put it into the editor
+  var perm = [];
+  var valency = parseInt(document.getElementById("input_valency").value);
+  for (var i=0;i<valency;i++){
+   perm[i] = i;
+  }
+  setLocalAction(perm);
+ } else {
+  console.log("Cannot set the trivial local action due to constraints");
+ }
 }
 
 function getLocalAction(){
@@ -208,8 +225,8 @@ function testLocalAction(thislocalaction=null,thisconstraint=null){
    return false;
   }
  } else {
-  alert("The proposed local action does not meet the required constraint");
   console.log("WARNING: proposed local action failed constraint");
+  alert("The proposed local action does not meet the required constraint");
  }
 }
 
@@ -321,7 +338,7 @@ function saveLocalAction(){
    if (debug) console.log("Enabling local action for neighbour: "+labelNode(thisneighbours[i]));
    // findNeighbours returns a list in thelabels (alphabet) order (although really we should test this)
    // thus, the ith neighbour is constrained by the ith element of the local action:
-   enableLocalAction(thisneighbours[i],i,savelocalaction[i]); // zzz
+   enableLocalAction(thisneighbours[i],i,savelocalaction[i]);
   }
  } else {
   // the local action in the editor failed the test
