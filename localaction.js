@@ -118,6 +118,12 @@ function resetLocalAction(){
   document.getElementById("editorfinal"+i).classList.remove("over");
   document.getElementById("editoredge"+i).classList.add("occupied");
  }
+ // if there is a constraint in place for the node being edited, apply it:
+ var thisnode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
+ var nodestr = thisnode.toString();
+ if (thelocalconstraint[nodestr] != undefined){
+  moveChit("chit"+thelocalconstraint[nodestr][1],"editorfinal"+thelocalconstraint[nodestr][0]);
+ }
 }
 
 function setLocalAction(perm=[]){
