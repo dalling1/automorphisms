@@ -158,6 +158,7 @@ function setTrivialLocalAction(){
   setLocalAction(perm);
  } else {
   console.log("Cannot set the trivial local action due to constraints");
+  alert("Cannot set the trivial local action due to constraints");
  }
 }
 
