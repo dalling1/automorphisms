@@ -593,7 +593,7 @@ function findSVGNode(nodelabel=null){
 
 // function to get the coordinates (x,y) of an SVG node drawn on the page, by label //////////////// fn: findCoords
 function findCoords(nodelabel=null){
- thisnode = findSVGNode(nodelabel);
+ var thisnode = findSVGNode(nodelabel);
  if (thisnode!=null){
   var x = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.cx.value);
   var y = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.cy.value);
