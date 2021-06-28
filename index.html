@@ -263,6 +263,19 @@
   color: white;
   text-shadow: 1px 1px 2px black;
  }
+
+ .flashy {
+  animation: highlightevent 1s 1 ease;
+ }
+ @keyframes highlighteventold {
+  from { background-color:#ff7; border-radius: 8px;}
+    to { background-color:#eee; border-radius: 2px;}
+ }
+ @keyframes highlightevent {
+    0% { background-color:#999; }
+   50% { background-color:#f00; }
+  100% { background-color:#999; }
+ }
  </style>
 </head>
 <body>

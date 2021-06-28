@@ -569,7 +569,7 @@ function clearAutomorphism(){
 }
 
 // inverse function from label (string, eg. 'grb') to node (address, eg. [2,0,1]) ////////////////// fn: labelToNode
-function labelToNode(thelabel=''){
+function labelToNode(thelabel=""){
  var thenode = [];
  for (var i=0;i<thelabel.length;i++){
   var indx = thelabels.indexOf(thelabel[i]);
@@ -877,6 +877,10 @@ function showLAinfo(){
   box.innerHTML = "";
  } else {
   box.innerHTML = txt;
+  box.classList.add("flashy");
+  setTimeout(function(){
+   box.classList.remove("flashy");
+  }, 1500);
  }
 }
 
