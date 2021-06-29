@@ -109,11 +109,14 @@ function mkdot(withAutomorphism=false){
       console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for node "+thenodes[i].toString());
      }
     }
+    // ("thislabel" not null: these are the transformed nodes)
     thisgraph += '\t' + thislabel + ' ['+(showlabels?'':'label="", ')+'fillcolor="' + nodecolour + '", color=none, fontcolor="' + fontcolour + '", '+(showoriglabels?'xlabel="'+xlabel+((showdists&(showdist!=null))?' ('+showdist+')", ':'" '):((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')", ':'')) + ((sizebydist&(showdist!=null))?'width='+thisradius.toFixed(4):'') + ']\n';
    } else { // otherwise, just add the external label
+    // ("thislabel" is null: these are the non-transformed nodes (ie. outside the original graph and not automorphed))
     thislabel = i;
     xlabel = labelNode(thenodes[i]);
-    var dotcontent = (showlabels?(showoriglabels?'':((showdists&(showdist!=null))?'label="'+thislabel+' ('+showdist+')"':'')):'label="", ')+(showoriglabels?'xlabel='+xlabel+', ':'');
+    // change the next line to label the unused nodes (eg. with simply a number; there is no "proper" label)
+    var dotcontent = 'label=""'+(showoriglabels?', xlabel ='+xlabel:'');
     if (dotcontent.length) thisgraph += '\t' + thislabel + ' ['+ dotcontent + ']\n'; // omit nodes which have no dot style here (ie. "original graph" nodes, post-automorphism)
    }
   }
