@@ -13,7 +13,7 @@
  const thefadednodecolour = '#eaeaea22';
  const thelabelcolour = '#000000';
  const thefadedlabelcolour = '#aaaaaa';
- const thefadeopacity = '77'; // 2-digit hex code
+ const thefadeopacity = '22'; // 2-digit hex code
  const thereferencenodecolour = '#55ff5566';
  const thereferencelabelcolour = 'black';
  const thedestinationnodecolour = '#ff555566';
@@ -836,7 +836,7 @@ function decorateNodes(doAutomorphism=false){
  rclasses = [];
  var allnodes = document.getElementsByTagName("g");
  for (var i=0;i<allnodes.length;i++){
-  if (allnodes[i].classList.contains("node")){ // only want nodes (not edges)
+  if (allnodes[i].classList.contains("node") && allnodes[i].childElementCount==4){ // only want nodes (not edges), and only nodes with a label (4 children instead of 3) (ie. don't add radius class to non-transformed nodes)
    var rr = parseFloat(allnodes[i].querySelector("ellipse").attributes.rx.nodeValue); // get the radius of this node's ellipse
    allnodes[i].classList.add("radius"+rr);
    if (rclasses.indexOf("radius"+rr)==-1) rclasses.push("radius"+rr);
