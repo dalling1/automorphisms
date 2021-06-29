@@ -912,7 +912,7 @@ function testAutomorphism(){
 function demo(n=0){
  var demos = [];
  // format is [valency, depth, autoFrom, autoTo, localAction, constantLA]:
- demos.push([3,3,'','r',[0,1,2],true]);                 // 1
+ demos.push([3,3,'Ø','r',[0,1,2],true]);                // 1
  demos.push([4,3,'bg','b',[1,0,2,3],true]);             // 2
  demos.push([3,7,'g','r',[1,2,0],true]);                // 3 translation
  demos.push([3,7,'gb','r',[1,2,0],true]);               // 4 reflection?
@@ -928,7 +928,8 @@ function demo(n=0){
   manageControls();
   autoFrom = labelToNode(demos[n-1][2]);
   autoTo = labelToNode(demos[n-1][3]);
-  setLocalAction(demos[n-1][4]);
+  thelocalaction[autoFrom.toString()] = demos[n-1][4];
+  setLocalAction(thelocalaction[autoFrom.toString()]);
   if (testPermutation(getLocalAction())){
    run(true);
   }
