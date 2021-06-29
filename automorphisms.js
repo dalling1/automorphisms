@@ -650,7 +650,7 @@ function addArrow(startNode,endNode){
 }
 
 // function to compute the path between given endpoints [from focusmodels] ///////////////////////// fn: createPath
-function createPath(startX,startY,endX,endY,offset=0,relativePath=0){
+function createPath(startX,startY,endX,endY,offset=0,relativePath=false){
  var startPos = Array(startX,startY);
  var endPos = Array(endX,endY);
  // startPos and endPos are two-element positions
@@ -691,6 +691,19 @@ function createPath(startX,startY,endX,endY,offset=0,relativePath=0){
  // location of control point:
  var c1x = Math.round(mpx + offset * Math.cos(theta));
  var c1y = Math.round(mpy - offset * Math.sin(theta)); // fixed
+
+ // location of alternative control point:
+ var c1xALT = Math.round(mpx - offset * Math.cos(theta));
+ var c1yALT = Math.round(mpy + offset * Math.sin(theta)); // fixed
+
+ // we want arrows to curve away from the centre, so test which side of the arrow the control point is
+ if (euclideanDistance(findCoords(labelNode([])),[c1x,c1y])<euclideanDistance(findCoords(labelNode([])),[c1xALT,c1yALT])){
+  // swap
+  c1x = c1xALT;
+  c1y = c1yALT;
+ }
+
+ // end points:
  p1x = Math.round(p1x);
  p1y = Math.round(p1y);
  p2x = Math.round(p2x);
