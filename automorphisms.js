@@ -924,6 +924,7 @@ function demo(n=1){
 // demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6],true]);  // 6 pretty but too slow
 
  if (n<demos.length){
+  clearAutomorphism();
   console.log("Requested demo #"+String(n+1));
   waitCursor();
   document.getElementById("input_valency").value = demos[n][0]; // set valency
@@ -934,9 +935,12 @@ function demo(n=1){
   manageControls();
   autoFrom = labelToNode(demos[n][2]);
   autoTo = labelToNode(demos[n][3]);
+  setTo = false;
+  setFrom = false;
   thelocalaction[autoFrom.toString()] = demos[n][4];
-  setLocalAction(thelocalaction[autoFrom.toString()]);
-  if (testPermutation(getLocalActionFromEditor())){
+  loadNodeAction(autoFrom);
+//  setLocalAction(thelocalaction[autoFrom.toString()]);
+  if (testPermutation(thelocalaction[autoFrom.toString()])){
    run(true);
   }
  }
