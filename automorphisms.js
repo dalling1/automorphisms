@@ -912,28 +912,31 @@ function testAutomorphism(){
 }
 
 // function to run some demos ////////////////////////////////////////////////////////////////////// fn: demo
-function demo(n=0){
+function demo(n=1){
+ n = n-1; // call the function using values 1, 2, etc., but internally use zero-indexing: demos[0], demos[1], etc.
  var demos = [];
- // format is [valency, depth, autoFrom, autoTo, localAction, constantLA]:
- demos.push([3,3,'Ø','r',[0,1,2],true]);                // 1
- demos.push([4,3,'bg','b',[1,0,2,3],true]);             // 2
- demos.push([3,7,'g','r',[1,2,0],true]);                // 3 translation
- demos.push([3,7,'gb','r',[1,2,0],true]);               // 4 reflection?
- demos.push([3,7,'g','g',[1,2,0],true]);                // 5 rotation
+ // format is [valency, depth, autoFrom, autoTo, localAction, constantLA, originalNodesOnly]:
+ demos.push([3,3,'Ø','r',[0,1,2],true,false]);               // 1
+ demos.push([4,3,'bg','b',[1,0,2,3],true,true]);             // 2
+ demos.push([3,7,'g','r',[1,2,0],true,true]);                // 3 translation
+ demos.push([3,7,'gb','r',[1,2,0],true,true]);               // 4 reflection?
+ demos.push([3,7,'g','g',[1,2,0],true,true]);                // 5 rotation
 // demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6],true]);  // 6 pretty but too slow
 
  if (n<demos.length){
+  console.log("Requested demo #"+String(n+1));
   waitCursor();
-  document.getElementById("input_valency").value = demos[n-1][0]; // set valency
-  document.getElementById("input_maxdepth").value = demos[n-1][1]; // set depth
-  document.getElementById("input_constantauto").checked = demos[n-1][5]; // turn constantauto on or off
+  document.getElementById("input_valency").value = demos[n][0]; // set valency
+  document.getElementById("input_maxdepth").value = demos[n][1]; // set depth
+  document.getElementById("input_constantauto").checked = demos[n][5]; // turn constantauto on or off
+  document.getElementById("input_extent").checked = demos[n][6]; // turn "original nodes only" on or off
   setOutputValues();
   manageControls();
-  autoFrom = labelToNode(demos[n-1][2]);
-  autoTo = labelToNode(demos[n-1][3]);
-  thelocalaction[autoFrom.toString()] = demos[n-1][4];
+  autoFrom = labelToNode(demos[n][2]);
+  autoTo = labelToNode(demos[n][3]);
+  thelocalaction[autoFrom.toString()] = demos[n][4];
   setLocalAction(thelocalaction[autoFrom.toString()]);
-  if (testPermutation(getLocalAction())){
+  if (testPermutation(getLocalActionFromEditor())){
    run(true);
   }
  }

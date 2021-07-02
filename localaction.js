@@ -162,7 +162,7 @@ function setTrivialLocalAction(){
  }
 }
 
-function getLocalAction(){
+function getLocalActionFromEditor(){
  var valency = parseInt(document.getElementById("input_valency").value);
  var allchits = document.getElementsByClassName("chit");
  var perm = Array(valency).fill(null);
@@ -186,7 +186,7 @@ function showEditor(valency){
   document.getElementById("editoredge"+i).style.display = "";
   document.getElementById("editorfinal"+i).style.display = "";
  }
- var perm = getLocalAction();
+ var perm = getLocalActionFromEditor();
  for (var j=i;j<colours.length;j++){ // off
   document.getElementById("chit"+j).style.display = "none";
   document.getElementById("editoredge"+j).style.display = "none";
@@ -202,9 +202,11 @@ function showEditor(valency){
 
 function testLocalAction(thislocalaction=null,thisconstraint=null){
  var debug = false;
+ var showalert = false;
  if (thislocalaction==null){
+  showalert = true; // show a pop-up alert if we are testing the local action in the editor (not one passed in to this function)
   if (debug) console.log("Using editor's local action");
-  thislocalaction = getLocalAction();
+  thislocalaction = getLocalActionFromEditor();
  }
 
  // we could add code here to get the node being tested (from the editor) and find its constraints using that
@@ -226,8 +228,10 @@ function testLocalAction(thislocalaction=null,thisconstraint=null){
    return false;
   }
  } else {
-  console.log("WARNING: proposed local action failed constraint");
-  alert("The proposed local action does not meet the required constraint");
+  if (showalert){
+   console.log("WARNING: proposed local action failed constraint");
+   alert("The proposed local action does not meet the required constraint");
+  }
  }
 }
 
@@ -238,22 +242,26 @@ function enableLocalAction(node,constraintElement=null,constraintValue=null){
  var setconstraint = false;
 
  if (node!=null){ // eg. [0,1,0]
+  var nodestr = node.toString();
   var thislabel = labelNode(node); // eg. 'rbr'
   var thisID = findSVGNode(thislabel); // eg. node18
   if (thisID != null){ // test that the SVG object actually exists (the node might be outside the drawn graph)
    if (document.getElementById(thisID).classList.contains("haslocalaction")){
     // nothing to do
     if (debug) console.log("Local action already set on node ID: "+thisID);
+    if (!testLocalAction(thelocalaction[nodestr],thelocalconstraint[nodestr])){
+     setconstraint = true;
+    }
    } else if (document.getElementById(thisID).classList.contains("canhavelocalaction")){
     if (debug) console.log("Local action already enabled on node ID: "+thisID);
     // update the local action constraint
-    var setconstraint = true;
+    setconstraint = true;
    } else {
     if (debug) console.log("Enabling local action on node ID: "+thisID);
     document.getElementById(thisID).classList.add("canhavelocalaction");
     thelocalaction[node.toString()] = []; // initialise the local action permutation for this node
     // set the local action constraint
-    var setconstraint = true;
+    setconstraint = true;
    } // end if...
 
    // set the constraint if required
@@ -283,22 +291,16 @@ function loadNodeAction(thisnode){
  }
 
  // test whether the requested node is allowed to have its local action edited (it will have an array or empty placeholder)
- tmpaction = thelocalaction[nodestr];
-
- if (tmpaction!=undefined){
-  // okay to edit, enforce any constraint which exists
-  if (thelocalconstraint[nodestr]!=undefined){
-   tmpaction[thelocalconstraint[nodestr][0]] = thelocalconstraint[nodestr][1];
-  }
-
+ if (thelocalaction[nodestr]!=undefined){
   // okay to edit, so set up the editor for this node
   document.getElementById("actionnode").innerHTML = "'"+labelNode(thisnode)+"'"; // show the node in the LA editor
   document.getElementById("actionnode").setAttribute("data-use-node",labelNode(thisnode)); // store the node address
-  setLocalAction(tmpaction);
+  resetLocalAction();
+  setLocalAction(thelocalaction[nodestr]);
 
   // and, finally, set the "constrained" class on chits so-limited
   if (thelocalconstraint[nodestr]!=undefined){
-   tmpaction[thelocalconstraint[nodestr][0]] = thelocalconstraint[nodestr][1];
+   moveChit("chit"+thelocalconstraint[nodestr][0],"editorfinal"+thelocalconstraint[nodestr][1]);
 
    var destid = "editorfinal"+thelocalconstraint[nodestr][0]; // eg. "editorfinal3", the destination for chits which should not be changed
    document.getElementById(destid).classList.add("constrained");
@@ -319,7 +321,7 @@ function saveLocalAction(){
  var nodestr = thisnode.toString();
 
  // get the permutation from the editor
- savelocalaction = getLocalAction();
+ savelocalaction = getLocalActionFromEditor();
 
  // test the constraint (for completeness, validity and against any constraints)
  if (testLocalAction(savelocalaction,thelocalconstraint[nodestr])){
