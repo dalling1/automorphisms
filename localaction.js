@@ -217,8 +217,11 @@ function testLocalAction(thislocalaction=null,thisconstraint=null){
  // first, test the constraint, if any
  if (thisconstraint!=null && thisconstraint!=undefined){
   constraintokay = (thislocalaction[thisconstraint[0]] == thisconstraint[1])
+ } else {
+  if (debug) console.log("Constraint is missing or undefined");
  }
 
+ // note that if the constraint is not given then the only test of the local action is whether it is a valid permutation
  if (constraintokay){
   if (testPermutation(thislocalaction)){
    // if there are any "null" entries in the local action, it is not valid (ie. not finished)
@@ -232,6 +235,7 @@ function testLocalAction(thislocalaction=null,thisconstraint=null){
    console.log("WARNING: proposed local action failed constraint");
    alert("The proposed local action does not meet the required constraint");
   }
+  return false;
  }
 }
 
