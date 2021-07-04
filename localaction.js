@@ -110,13 +110,10 @@ function moveChit(from,to){
  testAutomorphism();
 }
 
-function resetLocalAction(){
+function resetLocalActionEditor(){
  var allchits = document.getElementsByClassName("chit");
  for (var i=0;i<allchits.length;i++){
   moveChit("chit"+i,"editoredge"+i);
-  document.getElementById("editorfinal"+i).classList.remove("occupied");
-  document.getElementById("editorfinal"+i).classList.remove("over");
-  document.getElementById("editoredge"+i).classList.add("occupied");
  }
  // if there is a constraint in place for the node being edited, apply it:
  var thisnode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
@@ -127,7 +124,7 @@ function resetLocalAction(){
 }
 
 function setLocalAction(perm=[]){
- resetLocalAction();
+ resetLocalActionEditor();
  // default is to not set a local action at all
  for (var i=0;i<perm.length;i++){
   moveChit("chit"+perm[i],"editorfinal"+i);
@@ -299,7 +296,7 @@ function loadNodeAction(thisnode){
   // okay to edit, so set up the editor for this node
   document.getElementById("actionnode").innerHTML = "'"+labelNode(thisnode)+"'"; // show the node in the LA editor
   document.getElementById("actionnode").setAttribute("data-use-node",labelNode(thisnode)); // store the node address
-  resetLocalAction();
+  resetLocalActionEditor();
   setLocalAction(thelocalaction[nodestr]);
 
   // and, finally, set the "constrained" class on chits so-limited

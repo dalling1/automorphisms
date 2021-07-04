@@ -563,7 +563,7 @@ function clearAutomorphism(){
  }
 
  // reset the local action editor
- resetLocalAction();
+ resetLocalActionEditor();
 
  // remove the text from the corner of the graph
  document.getElementById("fromto").innerHTML = "";
@@ -939,7 +939,7 @@ function demo(n=1){
   setFrom = false;
   thelocalaction[autoFrom.toString()] = demos[n][4];
   loadNodeAction(autoFrom);
-//  setLocalAction(thelocalaction[autoFrom.toString()]);
+  saveLocalAction(); // this should be reworked in the future, but use it now to enable local action editing on the neighbours
   if (testPermutation(thelocalaction[autoFrom.toString()])){
    run(true);
   }
