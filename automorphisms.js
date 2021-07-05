@@ -922,10 +922,11 @@ function demo(n=1){
  var demos = [];
  // format is [valency, depth, autoFrom, autoTo, localAction, constantLA, originalNodesOnly]:
  demos.push([3,3,'Ø','r',[0,1,2],true,false]);               // 1
- demos.push([4,3,'bg','b',[1,0,2,3],true,true]);             // 2
- demos.push([3,7,'g','r',[1,2,0],true,true]);                // 3 translation
- demos.push([3,7,'gb','r',[1,2,0],true,true]);               // 4 reflection?
- demos.push([3,7,'g','g',[1,2,0],true,true]);                // 5 rotation
+ demos.push([3,3,'Ø','r',[2,0,1],true,false]);               // 2 as for 1 but with cyclic LA
+ demos.push([4,3,'bg','b',[1,0,2,3],true,true]);             // 3
+ demos.push([3,7,'g','r',[1,2,0],true,true]);                // 4 translation
+ demos.push([3,7,'gb','r',[1,2,0],true,true]);               // 5 reflection?
+ demos.push([3,7,'g','g',[1,2,0],true,true]);                // 6 rotation
 // demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6],true]);  // 6 pretty but too slow
 
  if (n<demos.length){
