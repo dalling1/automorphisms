@@ -100,14 +100,10 @@ function moveChit(from,to){
 
  // run a check (will enable the "Set for node" button if this is a valid (ie. complete) permutation)
  if (testLocalAction()){
-  document.getElementById("actionbutton").removeAttribute("disabled");
+  document.getElementById("setactionbutton").removeAttribute("disabled");
  } else {
-  document.getElementById("actionbutton").setAttribute("disabled","disabled");
+  document.getElementById("setactionbutton").setAttribute("disabled","disabled");
  }
-
- // run a check (will enable the "Draw transformed" button if the conditions are all set)
- // Note: on load this will be triggered (and fail) multiple times, as the chits are put into place for the first time)
- testAutomorphism();
 }
 
 function resetLocalActionEditor(){
@@ -119,7 +115,7 @@ function resetLocalActionEditor(){
  }
 }
 
-function setLocalAction(perm=[],node=null){
+function putLocalAction(perm=[],node=null){
  // default is to not set a local action at all
  for (var i=0;i<perm.length;i++){
   moveChit("chit"+perm[i],"editorfinal"+i);
@@ -152,7 +148,7 @@ function setTrivialLocalAction(){
   for (var i=0;i<valency;i++){
    perm[i] = i;
   }
-  setLocalAction(perm);
+  putLocalAction(perm);
  } else {
   console.log("Cannot set the trivial local action due to constraints");
   alert("Cannot set the trivial local action due to constraints");
@@ -312,7 +308,7 @@ function loadNodeAction(thisnode=null){
    if (thelocalaction[nodestr]!=undefined){
     // okay to edit, so set up the editor for this node
     resetLocalActionEditor(); // also sets the chits according to any constraint that exists for this node
-    setLocalAction(thelocalaction[nodestr],thisnode);
+    putLocalAction(thelocalaction[nodestr],thisnode);
 
     // if there is a constraint in place for the node being edited, apply it:
     if (thelocalconstraint[nodestr]!=undefined){
@@ -374,6 +370,9 @@ function saveLocalAction(thisnode=null,thisaction=null){
 
  // decorate the SVG nodes according to their local action status:
  styleActions();
+
+ // run a check (will enable the "Draw transformed" button if the conditions are all set)
+ testAutomorphism();
 }
 
 /*
@@ -512,6 +511,7 @@ function styleActions(){
     // remove styles:
      document.getElementById(thisID).classList.remove("canhavelocalaction");
      document.getElementById(thisID).classList.remove("haslocalaction");
+     document.getElementById(thisID).classList.remove("disablelocalaction");
 
     // add styles:
     switch (status){
@@ -530,7 +530,8 @@ function styleActions(){
       document.getElementById(thisID).classList.add("canhavelocalaction");
      break;
      case "unenabled":
-      // not set, not using constant local action or not enabled and so nothing to do
+      // not set, not using constant local action or not enabled and so nothing to do (but only if we are NOT setting the from/to nodes)
+      if (autoFrom!=null && autoTo!=null) document.getElementById(thisID).classList.add("disablelocalaction");
      break;
      case "valid":
       document.getElementById(thisID).classList.add("haslocalaction");

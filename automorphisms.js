@@ -821,12 +821,12 @@ function decorateNodes(doAutomorphism=false){
    var tostring = labelNode(autoTo);
    addArrow(fromstring,tostring);
   }
-  // add local action decorations where warranted:
+  // add local action decorations where warranted: [remove, now done by styleActions]
   for (thenodestr in thelocalaction){
    var thenode = thenodestr.split(","); // turn the string back into an array
    var thenodeid = findSVGNode(labelNode(thenode)); // find the corresponding node on the screen
    if (thenodeid != null){ // make sure the node exists
-    if (testLocalAction(thelocalaction[thenode])){ // if the saved local action is valid, mark the node as "has"
+    if (testLocalAction(thelocalaction[thenodestr])){ // if the saved local action is valid, mark the node as "has"
      document.getElementById(thenodeid).classList.add("haslocalaction");
     } else { // if the local action is not valid, mark it as "can have"
      document.getElementById(thenodeid).classList.add("canhavelocalaction");
@@ -908,13 +908,35 @@ function showLAinfo(){
 
 // check that the automorphism is fully defined //////////////////////////////////////////////////// fn: testAutomorphism
 function testAutomorphism(){
- if (testLocalAction() && autoFrom!=null && autoTo!=null){
-  document.getElementById("autobutton").removeAttribute("disabled");
-  return true;
+ // the conditions for a valid automorphism are:
+ //   i. reference and destination nodes are set
+ //  ii. at least the reference node has a valid local action defined
+ // iii. any local actions defined for other nodes are valid
+ var debug = false;
+ var pass = false;
+ if (autoFrom!=null && autoTo!=null && testPermutation(thelocalaction[autoFrom.toString()])){
+  // i and ii pass, now check iii (all local actions are valid or empty)
+  pass = true; // okay so far
+  for (thenodestr in thelocalaction){
+   if (!testPermutation(thelocalaction[thenodestr])){
+    if (thelocalaction[thenodestr].length>0){
+     if (debug) console.log("Permutation "+thelocalaction[thenodestr].toString()+" failed for node "+thenodestr);
+     pass=false; // but fail if any NON-EMPTY local action is invalid
+    }
+   }
+  }
  } else {
-  document.getElementById("autobutton").setAttribute("disabled","disabled");
-  return false;
+  pass=false;
  }
+
+ // enable or disable the "Draw transformed" button according to the results:
+ if (pass){
+  document.getElementById("drawtransformedbutton").removeAttribute("disabled");
+ } else {
+  document.getElementById("drawtransformedbutton").setAttribute("disabled","disabled");
+ }
+
+ return pass;
 }
 
 // function to run some demos ////////////////////////////////////////////////////////////////////// fn: demo
