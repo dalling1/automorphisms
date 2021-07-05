@@ -562,8 +562,13 @@ function clearAutomorphism(){
   document.getElementById(allnodes[i].id).classList.remove("haslocalaction");
  }
 
- // reset the local action editor
+ // reset the local action editor and clear the node being worked on
  resetLocalActionEditor();
+ document.getElementById("actionnode").innerHTML = "[no node selected]";
+ document.getElementById("actionnode").setAttribute("data-use-node","");
+
+ // turn off the "constant" local action switch
+ document.getElementById("input_constantauto").checked = false;
 
  // remove the text from the corner of the graph
  document.getElementById("fromto").innerHTML = "";
