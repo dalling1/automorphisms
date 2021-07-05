@@ -942,11 +942,10 @@ function demo(n=1){
   autoTo = labelToNode(demos[n][3]);
   setTo = false;
   setFrom = false;
-  thelocalaction[autoFrom.toString()] = demos[n][4];
-  loadNodeAction(autoFrom);
-  saveLocalAction(); // this should be reworked in the future, but use it now to enable local action editing on the neighbours
+  saveLocalAction(autoFrom,demos[n][4]); // set the local action for the reference node
+  loadNodeAction(autoFrom); // show the reference node's local action in the editor as well
   if (testPermutation(thelocalaction[autoFrom.toString()])){
-   run(true);
+   run(true); // draw the transformed graph
   }
  }
 }
