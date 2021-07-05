@@ -238,46 +238,55 @@ function testLocalAction(thislocalaction=null,thisconstraint=null){
 
 // mark a node as having a local action and prep its neighbours //////////////////////////////////// fn: enableLocalAction
 function enableLocalAction(node,constraintElement=null,constraintValue=null){
- var valency = parseInt(document.getElementById("input_valency").value);
  var debug = false;
  var setconstraint = false;
 
- if (node!=null){ // eg. [0,1,0]
-  var nodestr = node.toString();
-  var thislabel = labelNode(node); // eg. 'rbr'
-  var thisID = findSVGNode(thislabel); // eg. node18
-  if (thisID != null){ // test that the SVG object actually exists (the node might be outside the drawn graph)
-   if (document.getElementById(thisID).classList.contains("haslocalaction")){
-    // nothing to do
-    if (debug) console.log("Local action already set on node ID: "+thisID);
-    if (!testLocalAction(thelocalaction[nodestr],thelocalconstraint[nodestr])){
-     setconstraint = true;
-    }
-   } else if (document.getElementById(thisID).classList.contains("canhavelocalaction")){
-    if (debug) console.log("Local action already enabled on node ID: "+thisID);
-    // update the local action constraint
-    setconstraint = true;
-   } else {
-    if (debug) console.log("Enabling local action on node ID: "+thisID);
-    document.getElementById(thisID).classList.add("canhavelocalaction");
-    thelocalaction[node.toString()] = []; // initialise the local action permutation for this node
-    // set the local action constraint
-    setconstraint = true;
-   } // end if...
+ var nodestr = node.toString();
+ var thislabel = labelNode(node); // eg. 'rbr'
+ var thisID = findSVGNode(thislabel); // eg. node18
 
-   // set the constraint if required
-   if (setconstraint){
-    if (constraintElement!=null){ // a constraint has been passed, set it up for the node
-     if (constraintElement<valency && constraintValue<valency){ // sanity check
-      thelocalconstraint[node.toString()] = [constraintElement,constraintValue];
-     } else {
-      console.log("ERROR: an out-of-range value was passed to the local action constraint");
-     }
-    }
-   }
+ var status = examineLocalActions([node]); // input must be an array of arrays, hence the [...]
+ if (debug) console.log("Node \""+thislabel+"\" status: "+status);
 
+ switch (status){
+  case "constant":
+   // the reference node's local action will be used everywhere, but initialise this node's local action in case that changes
+   thelocalaction[nodestr] = [];
+  break;
+  case "unenabled":
+   // enable it!
+   thelocalaction[nodestr] = [];
+   break;
+  case "empty":
+   // already enabled, nothing to do
+  break;
+  case "valid":
+   // already enabled and already set, check the constraint
+  break;
+  case "invalid":
+   // already enabled, nothing to do
+  break;
+  default:
+   // the only other option is "error":
+   console.log("ERROR: local action status not examined");
+ }
+
+ // now add or update the constraint (if any) and take appropriate action:
+ // - if the constraint has changed, recurse [put this in the addConstraint() function]
+ updateConstraint(node,constraintElement,constraintValue);
+}
+
+// set or update the local action constraint on a node ///////////////////////////////////////////// fn: updateConstraint
+function updateConstraint(node,el=null,val=null){
+ var valency = parseInt(document.getElementById("input_valency").value);
+ // set the constraint if required
+ if (el!=null){ // a constraint has been passed, set it up for the node
+  if (el<valency && val<valency){ // sanity check
+   thelocalconstraint[node.toString()] = [el,val];
+  } else {
+   console.log("ERROR: an out-of-range value was passed to the local action constraint");
   }
- } // end not null
+ }
 }
 
 // when clicked, show the node label and action in the local action editor ///////////////////////// fn: loadNodeAction
@@ -354,6 +363,9 @@ function saveLocalAction(thisnode=null,thisaction=null){
   // the local action in the editor failed the test
   console.log("WARNING: proposed local action is not valid and was not saved");
  }
+
+ // decorate the SVG nodes according to their local action status:
+ styleActions();
 }
 
 /*
@@ -420,3 +432,105 @@ function permuteList(list,perm){
  }
 }
 
+
+// examine status of each node ///////////////////////////////////////////////////////////////////// fn: examineLocalActions
+function examineLocalActions(nodelist=[],ignoreConstant=false){
+ var debug = false;
+
+ if (nodelist.length==0){ // use all nodes if a list is not provided
+  for (var i=0;i<thenodes.length;i++) nodelist.push(thenodes[i]);
+ }
+ if (debug) console.log(String(nodelist.length)+" node(s) presented for examination:");
+
+ // loop over the nodelist and test the local action status for each one:
+ for (var i=0;i<nodelist.length;i++){
+  var nodestr = nodelist[i].toString();
+
+  // LA can be: constant, not enabled (undefined), empty, incomplete, invalid, complete
+  var la = thelocalaction[nodestr];
+  var con = thelocalconstraint[nodestr];
+  var localactionStatus = "error"; // initialise the message
+
+  if (constantActionEnabled() && !ignoreConstant){
+   localactionStatus = "constant"; // the "constant" switch is on
+   // BUT, if the switch is on AND this is the reference node, test it separately:
+   if (autoFrom!=null){
+    if (nodestr==autoFrom.toString()){
+     localactionStatus = examineLocalActions([autoFrom],true);
+    }
+   } else {
+    // autoFrom is not set (and so no local actions should be saved yet)
+    examineLocalActions([thenodes[i]],true);
+   }
+  } else {
+   if (la==undefined){
+    localactionStatus = "unenabled"; // can't have a local action set
+   } else {
+    if (la.length==0){
+     localactionStatus = "empty"; // exists but awaiting editing
+    } else {
+     if (testLocalAction(la,con)){
+      localactionStatus = "valid"; // exists and valid
+     } else {
+      localactionStatus = "invalid"; // exists and invalid (including incomplete)
+     }
+    }
+   }
+  }
+
+  if (debug) console.log(" Node "+labelNode(nodelist[i])+" local action status: "+localactionStatus);
+ }
+
+ // if a single node was examined, return its local action status:
+ if (nodelist.length==1){
+  return localactionStatus;
+ }
+}
+
+// test whether the "constant local action" switch is turned on or not ///////////////////////////// fn: constantActionEnabled
+function constantActionEnabled(){
+ return document.getElementById("input_constantauto").checked;
+}
+
+// add borders to nodes according to their local action status ///////////////////////////////////// fn: styleActions
+function styleActions(){
+ if (thenodes!=undefined){
+  for (var i=0;i<thenodes.length;i++){
+   var thislabel = labelNode(thenodes[i]); // eg. 'rbr'
+   var thisID = findSVGNode(thislabel); // eg. node18
+   if (thisID!=null){ // the SVG node exists
+    var status = examineLocalActions([thenodes[i]]); // input must be an array of arrays, hence the [...]
+    // remove styles:
+     document.getElementById(thisID).classList.remove("canhavelocalaction");
+     document.getElementById(thisID).classList.remove("haslocalaction");
+
+    // add styles:
+    switch (status){
+     case "constant":
+      // using constant local action, need to test whether it is set or not:
+      if (examineLocalActions([autoFrom])=="valid"){
+       // set, so apply the "has" style:
+       document.getElementById(thisID).classList.add("haslocalaction");
+      } else {
+       // not (validly) set, so apply the "canhave" style:
+       document.getElementById(thisID).classList.add("canhavelocalaction");
+      }
+     break;
+     case "empty":
+     case "invalid":
+      document.getElementById(thisID).classList.add("canhavelocalaction");
+     break;
+     case "unenabled":
+      // not set, not using constant local action or not enabled and so nothing to do
+     break;
+     case "valid":
+      document.getElementById(thisID).classList.add("haslocalaction");
+     break;
+     default:
+      // the only other option is "error":
+      console.log("ERROR: local action status not examined");
+    }
+   }
+  }
+ }
+}

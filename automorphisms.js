@@ -863,9 +863,12 @@ function decorateNodes(doAutomorphism=false){
   var theheight = thegraph.clientHeight;
   var thesvgheight = thesvg.clientHeight;
   thesvg.style.top = parseFloat((theheight-thepadding-themargin-thesvgheight)/2)+"px"
+  // if we are not drawing the transformed graph, style nodes according to their local action status
+  if (!doAutomorphism) styleActions();
  }
  // add a class to the SVG indicating whether it is the post-automorphism graph
  if (doAutomorphism) document.getElementsByTagName("svg")[0].classList.add("autoGraph");
+
 }
 
 // show/hide the external labels on the SVG graph ////////////////////////////////////////////////// fn: toggleLabels
@@ -939,6 +942,7 @@ function demo(n=1){
   document.getElementById("input_extent").checked = demos[n][6]; // turn "original nodes only" on or off
   setOutputValues();
   manageControls();
+  run(false); // create the original (non-transformed) graph
   autoFrom = labelToNode(demos[n][2]);
   autoTo = labelToNode(demos[n][3]);
   setTo = false;
