@@ -116,7 +116,7 @@ function mkdot(withAutomorphism=false){
     thislabel = i;
     xlabel = labelNode(thenodes[i]);
     // change the next line to label the unused nodes (eg. with simply a number; there is no "proper" label)
-    var dotcontent = 'label=""'+(showoriglabels?', xlabel ='+xlabel:'');
+    var dotcontent = 'label=""'+(showoriglabels?', xlabel="'+xlabel+'"':'');
     if (dotcontent.length) thisgraph += '\t' + thislabel + ' ['+ dotcontent + ']\n'; // omit nodes which have no dot style here (ie. "original graph" nodes, post-automorphism)
    }
   }
