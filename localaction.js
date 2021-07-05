@@ -313,21 +313,27 @@ function loadNodeAction(thisnode){
 }
 
 // function to put the local action (from the editor) into the nodes' local action array /////////// fn: saveLocalAction
-function saveLocalAction(){
+function saveLocalAction(thisnode=null,thisaction=null){
  var valency = parseInt(document.getElementById("input_valency").value);
  var debug = false;
 
- // find out which node we are saving the local action for (as an address, eg. [1,0,1,1])
- var thisnode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
+ if (thisnode==null){
+  // fetch the node we are saving the local action for (as an address, eg. [1,0,1,1]) from the editor:
+  var thisnode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
+ }
+ if (thisaction==null){
+  // get the permutation from the editor
+  thisaction = getLocalActionFromEditor();
+ }
+
  var nodestr = thisnode.toString();
 
- // get the permutation from the editor
- savelocalaction = getLocalActionFromEditor();
+ if (debug) console.log("Saving action "+thisaction.toString()+" for node "+thisnode.toString());
 
  // test the constraint (for completeness, validity and against any constraints)
- if (testLocalAction(savelocalaction,thelocalconstraint[nodestr])){
+ if (testLocalAction(thisaction,thelocalconstraint[nodestr])){
   if (debug) console.log("Saving local action for node "+labelNode(thisnode));
-  thelocalaction[nodestr] = savelocalaction;
+  thelocalaction[nodestr] = thisaction;
 
   // change the SVG node's style
   var thenodeid = findSVGNode(labelNode(thisnode));
@@ -342,7 +348,7 @@ function saveLocalAction(){
    if (debug) console.log("Enabling local action for neighbour: "+labelNode(thisneighbours[i]));
    // findNeighbours returns a list in thelabels (alphabet) order (although really we should test this)
    // thus, the ith neighbour is constrained by the ith element of the local action:
-   enableLocalAction(thisneighbours[i],i,savelocalaction[i]);
+   enableLocalAction(thisneighbours[i],i,thisaction[i]);
   }
  } else {
   // the local action in the editor failed the test
