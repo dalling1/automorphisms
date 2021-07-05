@@ -445,7 +445,7 @@ function permuteList(list,perm){
 
 // examine status of each node ///////////////////////////////////////////////////////////////////// fn: examineLocalActions
 function examineLocalActions(nodelist=[],ignoreConstant=false){
- var debug = true;
+ var debug = false;
 
  if (nodelist.length==0){ // use all nodes if a list is not provided
   for (var i=0;i<thenodes.length;i++) nodelist.push(thenodes[i]);
