@@ -564,8 +564,6 @@ function clearAutomorphism(){
 
  // reset the local action editor and clear the node being worked on
  resetLocalActionEditor();
- document.getElementById("actionnode").innerHTML = "[no node selected]";
- document.getElementById("actionnode").setAttribute("data-use-node","");
 
  // turn off the "constant" local action switch
  document.getElementById("input_constantauto").checked = false;

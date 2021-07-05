@@ -111,23 +111,23 @@ function moveChit(from,to){
 }
 
 function resetLocalActionEditor(){
+ document.getElementById("actionnode").innerHTML = "[no node selected]";
+ document.getElementById("actionnode").setAttribute("data-use-node","");
  var allchits = document.getElementsByClassName("chit");
  for (var i=0;i<allchits.length;i++){
   moveChit("chit"+i,"editoredge"+i);
  }
- // if there is a constraint in place for the node being edited, apply it:
- var thisnode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
- var nodestr = thisnode.toString();
- if (thelocalconstraint[nodestr] != undefined){
-  moveChit("chit"+thelocalconstraint[nodestr][1],"editorfinal"+thelocalconstraint[nodestr][0]);
- }
 }
 
-function setLocalAction(perm=[]){
- resetLocalActionEditor();
+function setLocalAction(perm=[],node=null){
  // default is to not set a local action at all
  for (var i=0;i<perm.length;i++){
   moveChit("chit"+perm[i],"editorfinal"+i);
+ }
+ // optionally, switch the editor to a particular node (without saving)
+ if (node!=null){
+  document.getElementById("actionnode").innerHTML = "'"+labelNode(node)+"'"; // show the node in the LA editor
+  document.getElementById("actionnode").setAttribute("data-use-node",labelNode(node)); // store the node address
  }
 }
 
@@ -311,19 +311,17 @@ function loadNodeAction(thisnode=null){
    // test whether the requested node is allowed to have its local action edited (it will have an array or empty placeholder)
    if (thelocalaction[nodestr]!=undefined){
     // okay to edit, so set up the editor for this node
-    document.getElementById("actionnode").innerHTML = "'"+labelNode(thisnode)+"'"; // show the node in the LA editor
-    document.getElementById("actionnode").setAttribute("data-use-node",labelNode(thisnode)); // store the node address
-    resetLocalActionEditor();
-    setLocalAction(thelocalaction[nodestr]);
+    resetLocalActionEditor(); // also sets the chits according to any constraint that exists for this node
+    setLocalAction(thelocalaction[nodestr],thisnode);
 
-    // and, finally, set the "constrained" class on chits so-limited
+    // if there is a constraint in place for the node being edited, apply it:
     if (thelocalconstraint[nodestr]!=undefined){
-     moveChit("chit"+thelocalconstraint[nodestr][0],"editorfinal"+thelocalconstraint[nodestr][1]);
+     moveChit("chit"+thelocalconstraint[nodestr][1],"editorfinal"+thelocalconstraint[nodestr][0]);
 
+     // and set the "constrained" class on chits so-limited
      var destid = "editorfinal"+thelocalconstraint[nodestr][0]; // eg. "editorfinal3", the destination for chits which should not be changed
-     document.getElementById(destid).classList.add("constrained");
-
      var chitid = "chit"+thelocalconstraint[nodestr][1]; // eg. "chit0"
+     document.getElementById(destid).classList.add("constrained");
      document.getElementById(chitid).classList.add("constrained");
     }
    }
