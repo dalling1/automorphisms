@@ -290,33 +290,43 @@ function updateConstraint(node,el=null,val=null){
 }
 
 // when clicked, show the node label and action in the local action editor ///////////////////////// fn: loadNodeAction
-function loadNodeAction(thisnode){
- var nodestr = thisnode.toString();
+function loadNodeAction(thisnode=null){
+ if (autoFrom!=null){
+  if (thisnode==null){
+   thisnode = autoFrom;
+  }
+  var nodestr = thisnode.toString();
 
- // remove "constrained" class from the editor elements
- var allconstrained = document.getElementsByClassName("constrained");
- // the search result object is dynamic, so work backwards from the end when removing classes (the length changes as we go)
- for (var i=allconstrained.length;i>0;i--){
-  document.getElementById(allconstrained[i-1].id).classList.remove("constrained");
- }
+  // remove "constrained" class from the editor elements
+  var allconstrained = document.getElementsByClassName("constrained");
+  // the search result object is dynamic, so work backwards from the end when removing classes (the length changes as we go)
+  for (var i=allconstrained.length;i>0;i--){
+   document.getElementById(allconstrained[i-1].id).classList.remove("constrained");
+  }
 
- // test whether the requested node is allowed to have its local action edited (it will have an array or empty placeholder)
- if (thelocalaction[nodestr]!=undefined){
-  // okay to edit, so set up the editor for this node
-  document.getElementById("actionnode").innerHTML = "'"+labelNode(thisnode)+"'"; // show the node in the LA editor
-  document.getElementById("actionnode").setAttribute("data-use-node",labelNode(thisnode)); // store the node address
-  resetLocalActionEditor();
-  setLocalAction(thelocalaction[nodestr]);
+  // if the local action is "constant", only load and edit the local action of the reference node
+  if (constantActionEnabled() && nodestr!=autoFrom.toString()){
+   loadNodeAction(autoFrom);
+  } else {
+   // test whether the requested node is allowed to have its local action edited (it will have an array or empty placeholder)
+   if (thelocalaction[nodestr]!=undefined){
+    // okay to edit, so set up the editor for this node
+    document.getElementById("actionnode").innerHTML = "'"+labelNode(thisnode)+"'"; // show the node in the LA editor
+    document.getElementById("actionnode").setAttribute("data-use-node",labelNode(thisnode)); // store the node address
+    resetLocalActionEditor();
+    setLocalAction(thelocalaction[nodestr]);
 
-  // and, finally, set the "constrained" class on chits so-limited
-  if (thelocalconstraint[nodestr]!=undefined){
-   moveChit("chit"+thelocalconstraint[nodestr][0],"editorfinal"+thelocalconstraint[nodestr][1]);
+    // and, finally, set the "constrained" class on chits so-limited
+    if (thelocalconstraint[nodestr]!=undefined){
+     moveChit("chit"+thelocalconstraint[nodestr][0],"editorfinal"+thelocalconstraint[nodestr][1]);
 
-   var destid = "editorfinal"+thelocalconstraint[nodestr][0]; // eg. "editorfinal3", the destination for chits which should not be changed
-   document.getElementById(destid).classList.add("constrained");
+     var destid = "editorfinal"+thelocalconstraint[nodestr][0]; // eg. "editorfinal3", the destination for chits which should not be changed
+     document.getElementById(destid).classList.add("constrained");
 
-   var chitid = "chit"+thelocalconstraint[nodestr][1]; // eg. "chit0"
-   document.getElementById(chitid).classList.add("constrained");
+     var chitid = "chit"+thelocalconstraint[nodestr][1]; // eg. "chit0"
+     document.getElementById(chitid).classList.add("constrained");
+    }
+   }
   }
  }
 }
@@ -435,7 +445,7 @@ function permuteList(list,perm){
 
 // examine status of each node ///////////////////////////////////////////////////////////////////// fn: examineLocalActions
 function examineLocalActions(nodelist=[],ignoreConstant=false){
- var debug = false;
+ var debug = true;
 
  if (nodelist.length==0){ // use all nodes if a list is not provided
   for (var i=0;i<thenodes.length;i++) nodelist.push(thenodes[i]);
@@ -444,6 +454,7 @@ function examineLocalActions(nodelist=[],ignoreConstant=false){
 
  // loop over the nodelist and test the local action status for each one:
  for (var i=0;i<nodelist.length;i++){
+  if (debug) console.log("   examining node "+nodelist[i]+" (label \""+labelNode(nodelist[i])+"\")");
   var nodestr = nodelist[i].toString();
 
   // LA can be: constant, not enabled (undefined), empty, incomplete, invalid, complete
@@ -494,7 +505,7 @@ function constantActionEnabled(){
 
 // add borders to nodes according to their local action status ///////////////////////////////////// fn: styleActions
 function styleActions(){
- if (thenodes!=undefined){
+ if (thenodes!=undefined && autoFrom!=null){
   for (var i=0;i<thenodes.length;i++){
    var thislabel = labelNode(thenodes[i]); // eg. 'rbr'
    var thisID = findSVGNode(thislabel); // eg. node18
