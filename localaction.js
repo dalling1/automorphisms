@@ -107,11 +107,12 @@ function moveChit(from,to){
 }
 
 function resetLocalActionEditor(){
- document.getElementById("actionnode").innerHTML = "[no node selected]";
- document.getElementById("actionnode").setAttribute("data-use-node","");
+ // puts chits back to their "home" row, leaving constraints in place
  var allchits = document.getElementsByClassName("chit");
  for (var i=0;i<allchits.length;i++){
-  moveChit("chit"+i,"editoredge"+i);
+  if (!(document.getElementById("chit"+i).classList.contains("constrained"))){
+   moveChit("chit"+i,"editoredge"+i);
+  }
  }
 }
 
@@ -294,11 +295,7 @@ function loadNodeAction(thisnode=null){
   var nodestr = thisnode.toString();
 
   // remove "constrained" class from the editor elements
-  var allconstrained = document.getElementsByClassName("constrained");
-  // the search result object is dynamic, so work backwards from the end when removing classes (the length changes as we go)
-  for (var i=allconstrained.length;i>0;i--){
-   document.getElementById(allconstrained[i-1].id).classList.remove("constrained");
-  }
+  clearEditorConstraints();
 
   // if the local action is "constant", only load and edit the local action of the reference node
   if (constantActionEnabled() && nodestr!=autoFrom.toString()){
@@ -542,5 +539,14 @@ function styleActions(){
     }
    }
   }
+ }
+}
+
+// remove the constraint styling from editor components ////////////////////////////////////////////// fn: clearEditorConstraints
+function clearEditorConstraints(){
+ var allconstrained = document.getElementsByClassName("constrained");
+ // the search result object is dynamic, so work backwards from the end when removing classes (the length changes as we go)
+ for (var i=allconstrained.length;i>0;i--){
+  document.getElementById(allconstrained[i-1].id).classList.remove("constrained");
  }
 }
