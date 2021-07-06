@@ -550,3 +550,15 @@ function clearEditorConstraints(){
   document.getElementById(allconstrained[i-1].id).classList.remove("constrained");
  }
 }
+
+// manage the behaviour of the "constant" local action switch //////////////////////////////////////// fn: manageConstant
+function manageConstant(){
+ // manage which local action should be shown in the editor
+ loadNodeAction();
+ styleActions();
+
+ // and if the transformed graph is shown, re-draw it (toggles the display between constant and individual local actions)
+ if (document.getElementById("thesvg").classList.contains("autoGraph")){
+  run(true);
+ }
+}
