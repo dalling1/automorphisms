@@ -52,6 +52,7 @@ function mkdot(withAutomorphism=false){
  thisgraph += '\tedge [penwidth=1, color='+theedgecolour+']\n';
  thisgraph += '\tnode [shape=circle, fixedsize=true, color=none, style=filled, fillcolor="'+(withAutomorphism?thefadednodecolour:thenodecolour)+'"]\n';
  thisgraph += '\tnode [fontsize=14, fontcolor="'+(withAutomorphism?thefadedlabelcolour:thelabelcolour)+'"]\n';
+ thisgraph += '\tnode [fontname="Oi"]\n';
  thisgraph += '\tranksep=2\n';
  thisgraph += '\n\t// EDGES\n';
  var fromLabel = '';
@@ -734,6 +735,7 @@ function createArrowMarker(){
  <marker id="arrowhead" markerWidth="9" markerHeight="9" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">\
   <path d="M0,0 L0,6 L9,3 z" fill="'+arrowcolour+'" />\
  </marker>\
+ <style type="text/css">@import url("https://fonts.googleapis.com/css?family=Oi|NotoSerif|Open+Sans+Condensed|Open+Sans");</style>\
 </defs>');
 
 // extras, not yet used:
