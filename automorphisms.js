@@ -503,6 +503,8 @@ function setupNodes(){
      autoTo = labelToNode(thisnodelabel);
      setTo = false;
      showFromTo();
+     // now that the reference AND destination nodes are set, enable the local action editor:
+     document.getElementById("editorhider").classList.add("hiddenElement");
     } else if (setFrom){
      // set the reference node
      autoFrom = labelToNode(thisnodelabel);
@@ -566,6 +568,8 @@ function clearAutomorphism(){
 
  // reset the local action editor and clear the node being worked on
  resetLocalActionEditor();
+ // and "hide" it
+ document.getElementById("editorhider").classList.remove("hiddenElement");
 
  // turn off the "constant" local action switch
  document.getElementById("input_constantauto").checked = false;

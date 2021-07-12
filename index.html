@@ -352,7 +352,8 @@
    </select>
   </div>
 
-  <div class="onecontrol controlwrapper">
+  <div class="onecontrol controlwrapper" id="editorgroup">
+   <div id="editorhider" class="editorhider" title="Cannot use the editor until the reference and destination nodes are chosen"></div>
    <div id="editorwrapper" class="editorwrapper"></div>
    <div style="float:left;text-align:center;">
     <span style="cursor:help;" onclick="showLAinfo();">Local action</span><br/>
@@ -425,7 +426,7 @@
  <button style="left:10px;" onclick="toggleLabels(1);" title="Toggle labels">Labels</button>
  <button style="left:60px;" onclick="toggleLabels(2);" title="Toggle external labels">XLabels</button>
  <button style="right: -10px;" onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
- <div id="thedetails"><span id="fromto"></span><button style="margin-left:10px;" onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Rest Automorphism</button></div>
+ <div id="thedetails"><span id="fromto"></span><button style="margin-left:10px;" onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Reset Automorphism</button></div>
 </div>
 <div id="infobox"></div>
 
