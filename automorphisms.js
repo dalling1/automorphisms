@@ -497,6 +497,7 @@ function setupNodes(){
     var thisnodeid = this.id;
     var thisnodelabel = this.querySelector(Node="title").textContent;
     var thisnode = labelToNode(thisnodelabel);
+    var doautomorphism = document.getElementById("thesvg").classList.contains("autoGraph");
     if (setTo){
      // set the destination node
      autoTo = labelToNode(thisnodelabel);
@@ -515,12 +516,13 @@ function setupNodes(){
      // some other click behaviour... like selecting nodes for defining their local action permutation
      if (debug) console.log("Clicked on node: "+thisnodeid);
      // test if a local action (even an empty one) exists for this node, and if so show it in the editor
-     if (thelocalaction[thisnode.toString()]!=undefined){
+     // ... but only if the graph is not the "transformed" one (ie. does not have the autoGraph CSS class)
+     if (thelocalaction[thisnode.toString()]!=undefined && !doautomorphism){
       loadNodeAction(thisnode);
      }
     }
 
-    decorateNodes();
+    decorateNodes(doautomorphism);
     testAutomorphism();
    } // end of node onclick function
 
