@@ -203,6 +203,9 @@ async function run(doAutomorphism=false){
   thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
   thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
 
+  showFromTo();
+  document.getElementById("editorhider").classList.remove("hiddenElement"); // "mask" the local action editor when we are showing the transformed graph
+
   // carry out the automorphism:
   if (testPermutation(thelocalaction[autoFrom.toString()])){
    processnode(autoFrom);
@@ -211,6 +214,9 @@ async function run(doAutomorphism=false){
   }
  } else {
 //  clearAutomorphism();
+  if (autoFrom!=null && autoTo!=null){
+   document.getElementById("editorhider").classList.add("hiddenElement"); // enable the local action editor for the original graph (if autoFrom and autoTo are set)
+  }
  }
 
  // generate the dot code (for original or automorphed graph)
@@ -973,6 +979,7 @@ function demo(n=1){
   autoTo = labelToNode(demos[n][3]);
   setTo = false;
   setFrom = false;
+  showFromTo();
   saveLocalAction(autoFrom,demos[n][4]); // set the local action for the reference node
   loadNodeAction(autoFrom); // show the reference node's local action in the editor as well
   if (testPermutation(thelocalaction[autoFrom.toString()])){
