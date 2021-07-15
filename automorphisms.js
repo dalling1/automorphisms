@@ -1031,6 +1031,6 @@ setupColours();
 initPickers();
 clearAutomorphism();
 setPickers();
-initDrag();
+initialiseLocalActionEditor();
 setOutputValues();
 testAutomorphism();

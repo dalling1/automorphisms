@@ -2,7 +2,7 @@
  Functions relating to the local action editor and its interaction with nodes (saving, loading, etc.)
 */
 
-function initDrag(){
+function initialiseLocalActionEditor(){
  var valency = parseInt(document.getElementById("input_valency").value);
 
  // create the editor elements
