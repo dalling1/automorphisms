@@ -30,6 +30,27 @@
    border-radius: 10px;
   }
 
+  #instructions {
+   background-color: #222c;
+   text-align: center;
+   cursor: help;
+   z-index: 200;
+  }
+  #instructions h2 {
+   background-color: #ed0;
+   color: #000;
+  }
+  #instructions img {
+   margin: 5vh auto;
+   max-height: 70vh;
+   max-width: 100vw;
+   border-radius: 10px;
+   border: 2px solid #000;
+   padding: 5px;
+   background-color: #ddd;
+   box-shadow: 12px 12px 15px #fff,-3px -3px 10px #fff,3px -3px 10px #fff,-3px 3px 10px #fff;
+  }
+
   #dotContainer button,
   #graphContainer button {
    font-size: 10px;
@@ -283,6 +304,10 @@
  </style>
 </head>
 <body>
+ <div id="instructions" class="editorhider hiddenElement" title="Annotated instructions (5.9 MB animated GIF)" onclick="toggleHelp(false);">
+  <h2>Click anywhere to close the instructions</h2>
+  <img id="helpimage" src="annotated_instructions.gif" alt="Annotated instructions (5.9 MB animated GIF)" />
+ </div>
 
  <div id="graphControls">
   <div class="onecontrol">Valency:<br/>
@@ -426,6 +451,7 @@
  <button style="left:10px;" onclick="toggleLabels(1);" title="Toggle labels">Labels</button>
  <button style="left:60px;" onclick="toggleLabels(2);" title="Toggle external labels">XLabels</button>
  <button style="right: -10px;" onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
+ <div style="left:10px;bottom:-10px;"><button onclick="toggleHelp();" title="Toggle help display">Help</button></div>
  <div id="thedetails"><span id="fromto"></span><button style="margin-left:10px;" onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Reset Automorphism</button></div>
 </div>
 <div id="infobox"></div>

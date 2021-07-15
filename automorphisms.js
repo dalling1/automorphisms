@@ -465,7 +465,7 @@ function setOutputValues(){
     document.getElementById(outputID).value = inputs[i].value; // set the value of the output to the input
    }
   } else {
-//   console.log("skipping "+inputs[i].id);
+   if (debug) console.log("skipping "+inputs[i].id);
   }
  }
 
@@ -991,6 +991,31 @@ function demo(n=1){
 // set the "wait" cursor /////////////////////////////////////////////////////////////////////////// fn: waitCursor
 function waitCursor(){
  document.body.style.cursor = "wait";
+}
+
+// show the help (animated GIF) //////////////////////////////////////////////////////////////////// fn: toggleHelp
+function toggleHelp(show=null){
+ var forceHide = false;
+ var forceShow = false;
+ // if an input is given, use that (true=show, false=hide):
+ if (show!=null){
+  if (show){
+   forceShow = true;
+  } else {
+   forceHide = true;
+  }
+ }
+ if (document.getElementById("instructions").classList.contains("hiddenElement") || forceShow){
+  // show the element (CSS display property)
+  document.getElementById("instructions").classList.remove("hiddenElement");
+  // insert the image: this way, the animation will start from the beginning each time
+  document.getElementById("helpimage").setAttribute('src','annotated_instructions.gif');
+ } else if (!document.getElementById("instructions").classList.contains("hiddenElement") || forceHide){
+  // hide the element (CSS display property)
+  document.getElementById("instructions").classList.add("hiddenElement");
+  // remove the image
+  document.getElementById("helpimage").setAttribute('src','');
+ }
 }
 
 /*
