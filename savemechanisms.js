@@ -38,10 +38,19 @@ function savePDF(){
  var layout = "portrait";
 
  if (pdfwidth>pdfheight) layout="landscape";
- var thepdf = new jsPDF(layout, "pt", [pdfheight, pdfwidth]);
+// var thepdf = new jsPDF(layout, "pt", [pdfheight, pdfwidth]);
+ var thepdf = new jsPDF({
+        orientation: layout,
+        unit: "pt",
+        format: [pdfheight, pdfwidth],
+        putOnlyUsedFonts: true,
+        filters: ["ASCIIHexEncode"]
+ });
 
- // This produces a PDF which is approx. 33% larger than on screen;
- // changing "scale" to 75% broke the offsets and/or width-height.
+ // Set up the font embedding:
+ thepdf = putFont(thepdf,'NotoSerif');
+// thepdf = putFont(thepdf,'Oi'); // unusual typeface, good for testing!
+
  svg2pdf(document.getElementById("thesvg"), thepdf, {
        xOffset: xoff,
        yOffset: yoff,

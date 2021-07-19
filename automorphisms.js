@@ -52,6 +52,7 @@ function mkdot(withAutomorphism=false){
  thisgraph += '\tedge [penwidth=1, color='+theedgecolour+']\n';
  thisgraph += '\tnode [shape=circle, fixedsize=true, color=none, style=filled, fillcolor="'+(withAutomorphism?thefadednodecolour:thenodecolour)+'"]\n';
  thisgraph += '\tnode [fontsize=14, fontcolor="'+(withAutomorphism?thefadedlabelcolour:thelabelcolour)+'"]\n';
+ thisgraph += '\tnode [fontname = "NotoSerif"]\n';
  thisgraph += '\tranksep=2\n';
  thisgraph += '\n\t// EDGES\n';
  var fromLabel = '';
@@ -152,7 +153,7 @@ function drawGraph(G=[],doAutomorphism=false){
    document.getElementById("thegraph").setAttribute("data-copy-text",svg); // for the clipboard
    document.getElementById("thegraph").querySelector("polygon").remove(); // remove the spurious background polygon
    setupNodes(); // set the onclick function for the nodes (now that they exist)
-   createArrowMarker(); // attach the SVG code for the arrow head markers
+   setSVGDefs(); // attach the SVG code for the arrow head markers
    decorateNodes(doAutomorphism);
   });
  }
@@ -734,8 +735,8 @@ function createPath(startX,startY,endX,endY,offset=0,relativePath=false){
  return thepath;
 }
 
-// add an SVG marker to the page to use as an arrow-head /////////////////////////////////////////// fn: createArrowMarker()
-function createArrowMarker(){
+// add SVG defs for an arrow-head marker and some fonts //////////////////////////////////////////// fn: setSVGDefs
+function setSVGDefs(){
  var arrowcolour = "#0003";
  // insert the marker definition:
  document.getElementById("graph0").insertAdjacentHTML('afterbegin','\
@@ -746,6 +747,10 @@ function createArrowMarker(){
  <marker id="arrowhead" markerWidth="9" markerHeight="9" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">\
   <path d="M0,0 L0,6 L9,3 z" fill="'+arrowcolour+'" />\
  </marker>\
+ <style type="text/css">\
+  @import url("https://fonts.googleapis.com/css2?family=Noto+Serif");\
+<!--  @import url("https://fonts.googleapis.com/css2?family=Oi"); -->\
+ </style>\
 </defs>');
 
 // extras, not yet used:
