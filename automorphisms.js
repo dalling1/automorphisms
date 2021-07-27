@@ -9,11 +9,12 @@
  // colour set-up of nodes, edges and labels:
  const thenodecolour = '#999999';  // '#dddd55'; // '#ccaa00'; // was orange, then yellow
  const theautonodecolour = '#dddd55'; // post-automorphism node colour
+ const theautonodecolourextended = '#ddaa66'; // post-automorphism node colour for "extended" nodes
  const theedgecolour = 'black'; // currently a fall-back (each edge's colour is over-ridden individually)
  const thefadednodecolour = '#eaeaea22';
  const thelabelcolour = '#000000';
  const thefadedlabelcolour = '#aaaaaa';
- const thefadeopacity = '22'; // 2-digit hex code
+ const thefadeopacity = '44'; // 2-digit hex code
  const thereferencenodecolour = '#55ff5566';
  const thereferencelabelcolour = 'black';
  const thedestinationnodecolour = '#ff555566';
@@ -99,6 +100,7 @@ function mkdot(withAutomorphism=false){
 
    // if there is an entry in thenewnodes, set the properties of the node
    if (thislabel!=null){
+    if (findNode(thenewnodes[i],thenewnodeindex) >= NoriginalNodes) nodecolour = theautonodecolourextended; // use a different colour for extended nodes
     if (autodistance[thenewnodes[i].toString()]!=undefined){
      thisradius = 1/autodistance[thenewnodes[i].toString()];
      showdist = autodistance[thenewnodes[i].toString()];
