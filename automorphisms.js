@@ -194,10 +194,10 @@ async function run(doAutomorphism=false){
  }
 
  // initialise the post-automorphism nodes
+ NoriginalNodes = thenodes.length; // we want to know this to limit recursing if we add nodes during the tranformation
  for (var i=0;i<thenodes.length;i++){
   thenewnodes[i] = null; // Note: empty value is reserved for the root node, so use null for unspecified nodes
  }
-
 
  if (doAutomorphism && autoFrom!=null && autoTo!=null){
   // the new approach to performing the automorphism:
@@ -387,11 +387,32 @@ function processnode(v){
      var neighbourdestindx = findNode(wi[i],thenodeindex);
 
      // can we draw this destination node?
+     var doprocess = true;  // process this neighbouring node?
      if (neighbourdestindx==undefined){
-      if (debug) console.log("   "+labelNode(vi[i])+" node destination "+labelNode(vif[i])+" is outside the drawn graph ");
-      if (verbose) console.log("    ... skipping "+labelNode(vif[i])+" [destination not drawn]"); // v is off the drawn graph
-     } else {
+      if (debug) console.log("     ... "+labelNode(vi[i])+" node permutes to "+labelNode(vif[i])+" but their destination "+labelNode(wi[i])+" is outside the drawn graph ");
+      doprocess = false; // unless....:
 
+      // test whether this neighbour is drawn on the original graph, and whether we want, in that case, to extend the graph:
+      var extendGraph = document.getElementById("input_extendgraph").checked;
+      if (extendGraph & thenodeindex[vif[i].toString()]<NoriginalNodes){ // note that the < test replaces !=undefined
+       if (verbose) console.log("          EXTENDING GRAPH:");
+       if (verbose) console.log("          ... using original node "+labelNode(thenodes[thenodeindex[[0].toString()]]));
+       // yes, so add the destination node:
+       thenodes.push(wi[i]);
+       thenodeindex[wi[i].toString()] = thenodes.length - 1;
+       // now we do have the neighbour's destination index:
+       neighbourdestindx = thenodeindex[wi[i].toString()];
+       // and connect it:
+       theedges.push([destindx,neighbourdestindx]);
+       if (verbose) console.log("          ....... adding edge "+theedges[theedges.length-1][0]+", "+theedges[theedges.length-1][1]);
+       if (verbose) console.log("          .......           = "+destindx+", "+neighbourdestindx);
+       if (verbose) console.log("          .......           = "+labelNode(thenodes[destindx])+", "+labelNode(thenodes[neighbourdestindx]));
+       // then.....
+       doprocess = true;
+      }
+     }
+
+     if (doprocess){
       // only process nodes which were drawn in the original graph:
       if (!onlyDrawDrawnNodes|findNode(vif[i],thenodeindex)!=undefined){
        thenewnodes[neighbourdestindx] = vif[i];
@@ -977,6 +998,7 @@ function demo(n=1){
   document.getElementById("input_maxdepth").value = demos[n][1]; // set depth
   document.getElementById("input_constantauto").checked = demos[n][5]; // turn constantauto on or off
   document.getElementById("input_extent").checked = demos[n][6]; // turn "original nodes only" on or off
+  document.getElementById("input_extendgraph").checked = false; // always off in demos, for now
   setOutputValues();
   manageControls();
   run(false); // create the original (non-transformed) graph
