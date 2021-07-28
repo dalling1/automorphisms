@@ -66,7 +66,7 @@ function savePNG(){
 
  // get the transparency option if there is a control for it:
  if (document.getElementById("input_transparent")!=null){
-  var transparentBG = $("#transparency").prop('checked');
+  var transparentBG = document.getElementById("input_transparent").checked;
  } else { // default to true if there is no control
   var transparentBG = true;
  }
