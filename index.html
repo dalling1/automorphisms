@@ -373,7 +373,7 @@
 
  </style>
 </head>
-<body onload="parse()">
+<body onload="parse();hideEditor();">
  <div id="instructions" class="editorhider hiddenElement" title="Annotated instructions (5.9 MB animated GIF)" onclick="toggleHelp(false);">
   <h2>Click anywhere to close the instructions</h2>
   <img id="helpimage" src="annotated_instructions.gif" alt="Annotated instructions (5.9 MB animated GIF)" />
@@ -493,7 +493,7 @@
   </div>
 
   <div class="controlgroup" style="vertical-align:top; margin:0 10px;">
-   <button id="toggleeditorbutton" style="font-size:14px;width:100%" class="onecontrol" onclick="showEditor();">Show editor</button><br/>
+   <button id="toggleeditorbutton" style="font-size:14px;width:100%" class="onecontrol" onclick="toggleEditor();">Show editor</button><br/>
   </div>
 
   <div class="demobuttons">
@@ -557,15 +557,23 @@
 <script src="managefonts.js"></script>
 <script src="parse.js"></script>
 <script>
-function showEditor(){
+function toggleEditor(){
  var btn = document.getElementById('toggleeditorbutton');
  if (btn.innerHTML == 'Show editor'){
-  btn.innerHTML = 'Hide editor';
-  document.getElementById('parsingInput').scrollIntoView({inline:'start'});
+  showEditor();
  } else {
-  btn.innerHTML = 'Show editor';
-  document.getElementById('wrapper').scrollLeft = 0;
+  hideEditor();
  }
+}
+function showEditor(){
+ var btn = document.getElementById('toggleeditorbutton');
+ btn.innerHTML = 'Hide editor';
+ document.getElementById('parsingInput').scrollIntoView({inline:'start'});
+}
+function hideEditor(){
+ var btn = document.getElementById('toggleeditorbutton');
+ btn.innerHTML = 'Show editor';
+ document.getElementById('wrapper').scrollLeft = 0;
 }
 </script>
 </body>

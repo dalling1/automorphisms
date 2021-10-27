@@ -46,7 +46,7 @@ function parse(){
        console.log('ERROR: local action (for node '+thenode.join(',').replace('NaN','\u{d8}')+' is the wrong length.');
       }
      }
-     console.log('Node '+thenode.join(',').replace('NaN','\u{d8}')+' (N='+thenode.length+') has local action '+thelocalaction.join(',')+' (N='+thelocalaction.length+')');
+//     console.log('Node '+thenode.join(',').replace('NaN','\u{d8}')+' (N='+thenode.length+') has local action '+thelocalaction.join(',')+' (N='+thelocalaction.length+')');
     } else {
      output += '<span class="wrongformat" title="Wrong format for lists withing (...) and/or [...]">'+input[i]+'</span>'+EOL;
     }
@@ -72,9 +72,13 @@ function syncScroll(){
 
 function actionToEditor(){
  var output = '';
- for (var t in thelocalaction){
-  if (thelocalaction[t].length){
-   output += `(${t}) -> [${thelocalaction[t]}]\n`;
+ if (constantActionEnabled()){
+  output = 'constant action enabled';
+ } else {
+  for (var t in thelocalaction){
+   if (thelocalaction[t].length){
+    output += `(${t}) -> [${thelocalaction[t]}]\n`;
+   }
   }
  }
  document.getElementById('input').value = output;

@@ -451,6 +451,9 @@ function saveLocalAction(thisnode=null,thisaction=null){
 
  // run a check (will enable the "Draw transformed" button if the conditions are all set)
  testAutomorphism();
+
+ // put the whole set of local actions into the editor
+ actionToEditor();
 }
 
 // cyclically permute a given list (by a specified "distance") ///////////////////////////////////// fn: permutationCyclic
@@ -640,4 +643,7 @@ function manageConstant(){
  if (document.getElementById("thesvg").classList.contains("autoGraph")){
   run(true);
  }
+
+ // update the local action editor
+ actionToEditor();
 }
