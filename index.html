@@ -6,6 +6,8 @@
  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.css">
  <link rel="stylesheet" href="graphControls.css">
  <link rel="stylesheet" href="localaction.css">
+ <script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]},svg: {fontCache: 'global'}};</script>
+ <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
  <style>
   html {
    overflow: hidden;
@@ -18,7 +20,7 @@
   }
   #thegraph {
    border: 2px solid #446;
-   display: block;
+/*   display: block;*/
    margin: 0 auto;
    box-shadow: inset 3px 3px 3px #bbb;
    background-color: #777;
@@ -65,7 +67,7 @@
    position: relative;
    height: 70vh;
    width: 45vw;
-   float: left;
+/*   float: left;*/
    margin-right: 20px;
   }
   #dotContainer > * {
@@ -80,7 +82,7 @@
    position: relative;
    height: 70vh;
    width: 45vw;
-   float: left;
+/*   float: left;*/
    margin-right: 20px;
   }
   #graphContainer > * {
@@ -112,7 +114,7 @@
    color: yellow;
   }
   #thegraph {
-   height: 70vh; /* ie. square */
+   height: 70vh;
    width: 45vw;
    padding: 5px;
    margin: 5px;
@@ -304,9 +306,74 @@
    20% { background-color:#fff; }
   100% { background-color:#999; }
  }
+
+
+ #wrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  overflow: hidden;
+  height: 75vh;
+ }
+ #wrapper > div {
+  flex-shrink: 0;
+  position: relative;
+  width: 45vw;
+ }
+ #parsingInput {
+  box-sizing: box-content;
+  margin: 5px 0;
+  margin-left: 10vw;
+  padding: 0;
+  height: 70vh;
+  overflow: hidden;
+ }
+ #parsingOutput {
+  box-sizing: box-content;
+  background-color: #fff;
+  margin: 5px;
+  margin-right: 10vw;
+  margin-top: 5px;
+  padding: 0;
+  height: 70vh;
+  overflow: auto;
+  color: #000;
+  font-family: monospace;
+  padding-left: 12px;
+ }
+ #parsingInput textarea {
+  background-color: #fff;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-size: 26px;
+ }
+ #parsingInput textarea,
+ #parsingOutput {
+  font-size: 16px;
+ }
+ #parsingOutput #term1,
+ #parsingOutput #term2 {
+  color: #00f;
+ }
+ #parsingOutput .nomatch {
+  background-color: #f66;
+  color: #000;
+  cursor: help;
+ }
+ #parsingOutput .wrongformat {
+  background-color: #dd6;
+  color: #000;
+  cursor: help;
+ }
+
+
+
+
  </style>
 </head>
-<body>
+<body onload="parse()">
  <div id="instructions" class="editorhider hiddenElement" title="Annotated instructions (5.9 MB animated GIF)" onclick="toggleHelp(false);">
   <h2>Click anywhere to close the instructions</h2>
   <img id="helpimage" src="annotated_instructions.gif" alt="Annotated instructions (5.9 MB animated GIF)" />
@@ -425,6 +492,10 @@
    </div>
   </div>
 
+  <div class="controlgroup" style="vertical-align:top; margin:0 10px;">
+   <button id="toggleeditorbutton" style="font-size:14px;width:100%" class="onecontrol" onclick="showEditor();">Show editor</button><br/>
+  </div>
+
   <div class="demobuttons">
    <table>
     <tr>
@@ -450,19 +521,27 @@
 
  </div> <!-- end graphControls -->
 
+<div id="wrapper">
 <div id="dotContainer">
- <div id="theoutput" data-copy-text="">Dot code will be shown here</div>
- <button onclick="copy('theoutput');" title="Copy dot text">Copy</button>
- <button id="gvbutton" style="right:45px;" onclick="window.open(openGraphVizLink(),'_blank');return false;" title="Opens in new tab/window">GraphViz</button>
-</div>
-<div id="graphContainer">
- <div id="thegraph" data-copy-text=""></div>
- <button style="left:10px;" onclick="toggleLabels(1);" title="Toggle labels">Labels</button>
- <button style="left:60px;" onclick="toggleLabels(2);" title="Toggle external labels">XLabels</button>
- <button style="right: -10px;" onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
- <div style="left:10px;bottom:-10px;"><button onclick="toggleHelp();" title="Toggle display of instructions">Instructions</button></div>
- <div id="thedetails"><span id="fromto"></span><button style="margin-left:10px;" onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Reset Automorphism</button></div>
-</div>
+  <div id="theoutput" data-copy-text="">Dot code will be shown here</div>
+  <button onclick="copy('theoutput');" title="Copy dot text">Copy</button>
+  <button id="gvbutton" style="right:45px;" onclick="window.open(openGraphVizLink(),'_blank');return false;" title="Opens in new tab/window">GraphViz</button>
+ </div>
+ <div id="graphContainer">
+  <div id="thegraph" data-copy-text=""></div>
+  <button style="left:10px;" onclick="toggleLabels(1);" title="Toggle labels">Labels</button>
+  <button style="left:60px;" onclick="toggleLabels(2);" title="Toggle external labels">XLabels</button>
+  <button style="right: -10px;" onclick="copy('thegraph');" title="Copy SVG code">Copy</button>
+  <div style="left:10px;bottom:-10px;"><button onclick="toggleHelp();" title="Toggle display of instructions">Instructions</button></div>
+  <div id="thedetails"><span id="fromto"></span><button style="margin-left:10px;" onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Reset Automorphism</button></div>
+ </div>
+ <div id="parsingInput">
+  <textarea id="input" oninput="parse()" onscroll="syncScroll()"></textarea>
+ </div> <!-- end parsingInput -->
+ <div id="parsingOutput">
+ </div> <!-- end parsingOutput -->
+</div> <!-- end wrapper -->
+
 <div id="infobox"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
@@ -476,5 +555,18 @@
 <script src="savemechanisms.js"></script>
 <script src="automorphisms.js"></script>
 <script src="managefonts.js"></script>
+<script src="parse.js"></script>
+<script>
+function showEditor(){
+ var btn = document.getElementById('toggleeditorbutton');
+ if (btn.innerHTML == 'Show editor'){
+  btn.innerHTML = 'Hide editor';
+  document.getElementById('parsingInput').scrollIntoView({inline:'start'});
+ } else {
+  btn.innerHTML = 'Show editor';
+  document.getElementById('wrapper').scrollLeft = 0;
+ }
+}
+</script>
 </body>
 </html>
