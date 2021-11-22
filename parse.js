@@ -6,6 +6,7 @@ function parse(){
  var output = ''
  var parseReferenceNode = '';
  var parseDestinationNode = '';
+ var valencyEstimate = -1;
  /* break the input down by rows and process each one as an element of the automorphism */
  for (var i=0;i<input.length;i++){
   if (what=='mapsto'){ // could be adapted for dot language
@@ -79,12 +80,12 @@ function parse(){
      // extract the automorphism entries
      var thenode = term1.split(',').map(x=>parseInt(x));
      var thelocalaction = term2.split(',').map(x=>parseInt(x)); // empty entries (the root node) become 'NaN'
-     if (i==0){
+     if (valencyEstimate==-1){
       // take the valency from the length of the first local action
       var valency = thelocalaction.length;
      } else {
       if (thelocalaction.length != valency){
-       console.log('ERROR: local action (for node '+thenode.join(',').replace('NaN','\u{d8}')+') is the wrong length.');
+       console.log('ERROR: local action (for node '+thenode.join(',').replace('NaN','\u{d8}')+') is the wrong length (should be '+valency+').');
       }
      }
 //     console.log('Node '+thenode.join(',').replace('NaN','\u{d8}')+' (N='+thenode.length+') has local action '+thelocalaction.join(',')+' (N='+thelocalaction.length+')');
