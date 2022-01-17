@@ -115,8 +115,9 @@ function syncScroll(){
 
 function actionToEditor(){
  var output = '';
- output += '// Reference node: ['+autoFrom.toString()+']\n';
- output += '// Destination node: ['+autoTo.toString()+']\n';
+
+ output += '// Reference node: ['+(autoFrom==null?'NOT SET':autoFrom.toString())+']\n';
+ output += '// Destination node: ['+(autoTo==null?'NOT SET':autoTo.toString())+']\n';
  if (constantActionEnabled()){
   output += '// constant action enabled\n';
   var t = autoFrom.toString();
