@@ -248,7 +248,7 @@
   }
 
  .demobuttons {
-  float: right;
+/*  float: right;*/
   margin-top: 5px;
   margin-right: 10px;
  }
@@ -384,7 +384,7 @@
 
  </style>
 </head>
-<body onload="parse();hideEditor();">
+<body onload="parse();hideTextEditor();">
  <div id="instructions" class="editorhider hiddenElement" title="Annotated instructions (5.9 MB animated GIF)" onclick="toggleHelp(false);">
   <h2>Click anywhere to close the instructions</h2>
   <img id="helpimage" src="annotated_instructions.gif" alt="Annotated instructions (5.9 MB animated GIF)" />
@@ -489,6 +489,29 @@
   <div class="controlgroup" style="vertical-align:top; margin:0 10px;">
    <button style="width:100%;font-size:14px;" class="onecontrol" onclick="run(false);">Draw original</button><br/>
    <button style="width:100%;font-size:14px;" class="onecontrol" onclick="run(true);" id="drawtransformedbutton" disabled="disabled">Draw transformed</button>
+
+  <div class="demobuttons">
+   <table>
+    <tr>
+     <td onMouseDown="waitCursor();" onMouseUp="demo(1)" title="Demo 1">1</td>
+     <td onclick="demo(2)" title="Demo 2">2</td>
+     <td onclick="demo(3)" title="Demo 3">3</td>
+     <td onclick="demo(4)" title="Demo 4">4</td>
+     <td onclick="demo(5)" title="Demo 5">5</td>
+     <td onclick="demo(6)" title="Demo 6">6</td>
+    </tr>
+    <tr>
+<!--
+     <td onclick="demo(7)">7</td>
+     <td onclick="demo(8)">8</td>
+     <td onclick="demo(9)">9</td>
+     <td onclick="demo(10)">10</td>
+     <td onclick="demo(11)">11</td>
+     <td onclick="demo(12)">12</td>
+-->
+    </tr>
+  </table>
+ </div>
   </div>
 
   <div class="controlgroup">
@@ -506,29 +529,6 @@
   <div class="controlgroup" style="vertical-align:top; margin:0 10px;">
    <button id="toggleeditorbutton" style="font-size:14px;width:100%" class="onecontrol" onclick="toggleEditor();">Show editor</button><br/>
   </div>
-
-  <div class="demobuttons">
-   <table>
-    <tr>
-     <td onMouseDown="waitCursor();" onMouseUp="demo(1)">1</td>
-     <td onclick="demo(2)">2</td>
-     <td onclick="demo(3)">3</td>
-     <td onclick="demo(4)">4</td>
-     <td onclick="demo(5)">5</td>
-     <td onclick="demo(6)">6</td>
-    </tr>
-    <tr>
-<!--
-     <td onclick="demo(7)">7</td>
-     <td onclick="demo(8)">8</td>
-     <td onclick="demo(9)">9</td>
-     <td onclick="demo(10)">10</td>
-     <td onclick="demo(11)">11</td>
-     <td onclick="demo(12)">12</td>
--->
-    </tr>
-  </table>
- </div>
 
  </div> <!-- end graphControls -->
 
@@ -571,17 +571,17 @@
 function toggleEditor(){
  var btn = document.getElementById('toggleeditorbutton');
  if (btn.innerHTML == 'Show editor'){
-  showEditor();
+  showTextEditor();
  } else {
-  hideEditor();
+  hideTextEditor();
  }
 }
-function showEditor(){
+function showTextEditor(){
  var btn = document.getElementById('toggleeditorbutton');
  btn.innerHTML = 'Hide editor';
  document.getElementById('parsingInput').scrollIntoView({inline:'start'});
 }
-function hideEditor(){
+function hideTextEditor(){
  var btn = document.getElementById('toggleeditorbutton');
  btn.innerHTML = 'Show editor';
  document.getElementById('wrapper').scrollLeft = 0;
