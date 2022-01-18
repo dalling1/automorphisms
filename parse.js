@@ -76,15 +76,19 @@ function parse(){
     var checkterm1 = listformat.exec(term1);
     var checkterm2 = listformat.exec(term2);
     if (checkterm1 && checkterm2){
-     output += `<span id="term1">(${term1})</span> $\\mapsto$ <span id="term2">[${term2}]</span>`;
+     // replace empty terms with the empty set symbol (for the root node):
+     var showterm1 = (term1.length==0?'\u{d8}':term1);
+     var showterm2 = (term2.length==0?'\u{d8}':term2);
+     // set the output display as the first term leading to the other with an arrow (\mapsto in Latex)
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
      // extract the automorphism entries
-     var thenode = term1.split(',').map(x=>parseInt(x));
      var thelocalaction = term2.split(',').map(x=>parseInt(x)); // empty entries (the root node) become 'NaN'
      if (valencyEstimate==-1){
       // take the valency from the length of the first local action
       var valency = thelocalaction.length;
      } else {
       if (thelocalaction.length != valency){
+       var thenode = term1.split(',').map(x=>parseInt(x));
        console.log('ERROR: local action (for node '+thenode.join(',').replace('NaN','\u{d8}')+') is the wrong length (should be '+valency+').');
       }
      }
