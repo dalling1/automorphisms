@@ -122,14 +122,27 @@ function actionToEditor(){
 
  output += '// Reference node: ['+(autoFrom==null?'NOT SET':autoFrom.toString())+']\n';
  output += '// Destination node: ['+(autoTo==null?'NOT SET':autoTo.toString())+']\n';
- if (constantActionEnabled()){
-  output += '// constant action enabled\n';
-  var t = autoFrom.toString();
-  output += `(${t}) -> [${thelocalaction[t]}]\n`;
- } else {
-  for (var t in thelocalaction){
-   if (thelocalaction[t].length){
-    output += `(${t}) -> [${thelocalaction[t]}]\n`;
+
+ // check that we have some (potentially valid) local actions by making sure that all entries are not
+ // empty arrays:
+ var haveLAs = false;
+ for (L in thelocalaction){
+  if (thelocalaction[L].length > 0){
+   haveLAs = true;
+  }
+ }
+
+ // now, if some local actions exist, add them to the editor contents:
+ if (haveLAs){
+  if (constantActionEnabled()){
+   output += '// constant action enabled\n';
+   var t = autoFrom.toString();
+   output += `(${t}) -> [${thelocalaction[t]}]\n`;
+  } else {
+   for (var t in thelocalaction){
+    if (thelocalaction[t].length){
+     output += `(${t}) -> [${thelocalaction[t]}]\n`;
+    }
    }
   }
  }
