@@ -579,6 +579,7 @@ function toggleEditor(){
 function showTextEditor(){
  var btn = document.getElementById('toggleeditorbutton');
  btn.innerHTML = 'Hide editor';
+ actionToEditor();
  document.getElementById('parsingInput').scrollIntoView({inline:'start'});
 }
 function hideTextEditor(){
