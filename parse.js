@@ -9,6 +9,12 @@ function parse(){
  var parseDestinationNode = '';
  var valencyEstimate = -1;
 
+ // global variables for taking the editor's automorphism and putting it into the graph
+ editorReferenceNode = null;
+ editorDestinationNode = null;
+ editorAutomorphismValid = false;
+ editorLocalAction = new Array;
+
  // make the input's content available to the clipboard (for the "copy" button)
  document.getElementById('theinput').setAttribute("data-copy-text",rawinput); // for the clipboard
 
@@ -87,17 +93,24 @@ function parse(){
      // set the output display as the first term leading to the other with an arrow (\mapsto in Latex)
      output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
      // extract the automorphism entries
-     var thelocalaction = term2.split(',').map(x=>parseInt(x)); // empty entries (the root node) become 'NaN'
+     var thelocalaction = stringListToArray(term2); // empty entries (the root node) become 'NaN'
      if (valencyEstimate==-1){
       // take the valency from the length of the first local action
       var valency = thelocalaction.length;
      } else {
       if (thelocalaction.length != valency){
-       var thenode = term1.split(',').map(x=>parseInt(x));
+       var thenode = stringListToArray(term1);
        console.log('ERROR: local action (for node '+thenode.join(',').replace('NaN','\u{d8}')+') is the wrong length (should be '+valency+').');
       }
      }
 //     console.log('Node '+thenode.join(',').replace('NaN','\u{d8}')+' (N='+thenode.length+') has local action '+thelocalaction.join(',')+' (N='+thelocalaction.length+')');
+     // add this local action to the global list (but only where the local action is actually defined; 0-length entries are placeholders for the next set of local actions)
+     if (thelocalaction.length>0){
+//      editorLocalAction[thenode.join(',').toString()] = thelocalaction; // index should be a string, entry should be an array (with length equal to the valency)
+      editorLocalAction[term1] = thelocalaction; // index should be a string, entry should be an array (with length equal to the valency)
+//     editorLocalAction[term1] = term2; // term1 is a string, want a n array
+     }
+
     } else {
      output += '<span class="wrongformat" title="Wrong format for lists within (...) and/or [...]">'+input[i]+'</span>';
     }
@@ -115,6 +128,19 @@ function parse(){
  syncScroll();
  // typeset
  if (typeof(MathJax)) MathJax.typesetPromise([document.getElementById('parsingOutput')]);
+
+ // if the automorphism in the editor (whether read from the graph or typed/pasted in) is complete and legal,
+ // then set some global variables which might be used for putting the editor's automorphism into the graph:
+ if (parseReferenceNode!="NOT SET" && parseDestinationNode!="NOT SET"){
+  // *** also need to test the local actions: need at least one entry ***
+  editorAutomorphismValid = true;
+  editorReferenceNode = parseReferenceNode;
+  editorDestinationNode = parseDestinationNode;
+ } else {
+  // not complete
+  editorAutomorphismValid = false;
+  editorLocalAction = new Array; // remove any entries which might have been added
+ }
 }
 
 function syncScroll(){
@@ -156,5 +182,29 @@ function actionToEditor(){
 }
 
 function editorToAction(){
- // does nothing yet
+ // make sure we are up to date
+ parse();
+
+ // temporary reporting
+ if (editorAutomorphismValid){
+  console.log("editorReferenceNode = "+editorReferenceNode.toString());
+  console.log("editorDestinationNode = "+editorDestinationNode.toString());
+  console.log("Found local actions for these nodes:");
+  for (T in editorLocalAction){
+   console.log(labelNode(stringListToArray(T))+" -- "+editorLocalAction[T].toString());
+  }
+ }
+
+ // we have the parts we need: copy them over to the graph's variables (eg. thelocalaction) and re-draw (re-decorate) the graph
+ // ....
+ // clearAutomorphism();
+ // set the variables
+ // testAutomorphism(); // ?
+}
+
+// function to take a comma-separated string list address for a node (eg. "2,1,2") and return the array version (eg. [2,1,2])
+function stringListToArray(str){
+ // deal with the empty string first
+ if (str.length==0) return [];
+ else return str.split(',').map(x=>parseInt(x));
 }
