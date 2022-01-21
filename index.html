@@ -53,6 +53,7 @@
    box-shadow: 12px 12px 15px #fff,-3px -3px 10px #fff,3px -3px 10px #fff,-3px 3px 10px #fff;
   }
 
+  #parsingInput button,
   #dotContainer button,
   #graphContainer button {
    font-size: 10px;
@@ -76,6 +77,7 @@
   #dotContainer > button {
    top: 12px;
    right: 5px;
+   z-index: 100;
   }
 
   #graphContainer {
@@ -90,6 +92,7 @@
   }
   #graphContainer > button {
    top: 12px;
+   z-index: 100;
   }
   #graphContainer > #thedetails {
    bottom: -10px;
@@ -129,6 +132,17 @@
   #thegraph > svg > g > polygon {
    display: none; /* hide the default background object on the GraphViz graph */
   }
+
+  #parsingInput > * {
+   position: absolute;
+  }
+  #parsingInput > button {
+   top: 12px;
+   top: 5px;
+   right: 5px;
+   z-index: 100;
+  }
+
   .red {
    color: red;
   }
@@ -547,7 +561,9 @@
   <div id="thedetails"><span id="fromto"></span><button style="margin-left:10px;" onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Reset Automorphism</button></div>
  </div>
  <div id="parsingInput">
-  <textarea id="input" oninput="parse()" onscroll="syncScroll()"></textarea>
+  <button onclick="copy('theinput');" title="Copy input text" style="right: 45px;">Copy</button>
+  <button onclick="editorToAction();" title="Set automorphism">Apply</button>
+  <textarea id="theinput" data-copy-text="" oninput="parse()" onscroll="syncScroll()"></textarea>
  </div> <!-- end parsingInput -->
  <div id="parsingOutput">
  </div> <!-- end parsingOutput -->

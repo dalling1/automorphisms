@@ -1,12 +1,17 @@
 function parse(){
 // var what = document.getElementById('parsewhat').value; // optional selector for different input formats
  var what = 'localaction';
- var input = document.getElementById('input').value.split('\n').map(X=>X.trim());
+ var rawinput = document.getElementById('theinput').value;
+ var input = rawinput.split('\n').map(X=>X.trim());
  var comments = []
  var output = ''
  var parseReferenceNode = '';
  var parseDestinationNode = '';
  var valencyEstimate = -1;
+
+ // make the input's content available to the clipboard (for the "copy" button)
+ document.getElementById('theinput').setAttribute("data-copy-text",rawinput); // for the clipboard
+
  /* break the input down by rows and process each one as an element of the automorphism */
  for (var i=0;i<input.length;i++){
   if (what=='mapsto'){ // could be adapted for dot language
@@ -114,7 +119,7 @@ function parse(){
 
 function syncScroll(){
  // keep the output in sync with the input when scrolling the input
- document.getElementById('parsingOutput').scrollTop = document.getElementById('input').scrollTop;
+ document.getElementById('parsingOutput').scrollTop = document.getElementById('theinput').scrollTop;
 }
 
 function actionToEditor(){
@@ -146,6 +151,10 @@ function actionToEditor(){
    }
   }
  }
- document.getElementById('input').value = output;
+ document.getElementById('theinput').value = output;
  parse();
+}
+
+function editorToAction(){
+ // does nothing yet
 }
