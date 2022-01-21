@@ -644,6 +644,6 @@ function manageConstant(){
   run(true);
  }
 
- // update the local action editor -- removed, this is now called when the editor is displayed
-// actionToEditor();
+ // update the local action editor
+ actionToEditor();
 }
