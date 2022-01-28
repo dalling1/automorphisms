@@ -18,39 +18,48 @@ function parse(){
  // make the input's content available to the clipboard (for the "copy" button)
  document.getElementById('theinput').setAttribute("data-copy-text",rawinput); // for the clipboard
 
+ // set up the expressions to be recognised, depending on the type of parsing:
+ if (what=='mapsto'){ // could be adapted for dot language
+  // look for rows in the form "XXX -> YYY"
+  var mapstoformat = new RegExp('^\s*(.*?) *-+> *(.*)\s*$','i'); // allow spaces around the "->" and any number of dashes in the "->"
+
+  var EOL = '<br/>'; //  var EOL = '\n';
+ } else if (what=='localaction'){
+  // two-stage approach:
+  //  1. look for (...) and [...], separated by comma (could add dash or arrow)
+  //  2. test the () and [] terms to check that they are legal
+  // updated to add
+  //  0. look for and remove comments (they will be appended at the end of the other tests)
+
+  // REGEXP SECTION: define various patterns which we will need for parsing automorphisms
+  // Nb. most of these allow arbitrary white-space at the start of the line
+  //
+  // define the comment format: two slashes followed by the comment
+  var commentformat = new RegExp('(^[^\s]*?)\s*//\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
+  // define the automorphism entry format: parentheses list, arrow then bracketed list
+  var automorphismformat = new RegExp('^ *(\\(.*?\\)) *(?:,|-+>?) *(\\[.*?\\]) *$','i');
+  // format for a comma-separated list, with optional spaces around the commas
+  var spacedcommas = new RegExp(' *, *','g');
+  // format for a list of multiple (alphanumeric) labels, possibly with a terminating comma (followed by no label: used for the root (empty) node)
+  var listformat = new RegExp('^ *([0-9a-z]+ *?, *?)*[0-9a-z]+ *?$|^ *[0-9a-z]* *,? *$','i');
+  // reference node format:
+  var refformat = new RegExp('^\s*?//\\s*?Reference node:\\s*?\\[(.*)\\].*$','i');
+  // destination node format:
+  var destformat = new RegExp('^\s*?//\\s*?Destination node:\\s*?\\[(.*)\\].*$','i');
+
+  var EOL = '<br/>'; //  var EOL = '\n';
+ }
+
  /* break the input down by rows and process each one as an element of the automorphism */
  for (var i=0;i<input.length;i++){
   if (what=='mapsto'){ // could be adapted for dot language
-   // look for rows in the form "XXX -> YYY"
-   var mapstoformat = new RegExp('^\s*(.*?) *-+> *(.*)\s*$','i'); // allow spaces around the "->" and any number of dashes in the "->"
    var tmp = mapstoformat.exec(input[i]); // find matches
-   var EOL = '<br/>'; //  var EOL = '\n';
    if (tmp && tmp[1].length && tmp[2].length){
     output += '<span id="term1">'+tmp[1].trim()+'</span> $\\mapsto$ <span id="term2">'+tmp[2].trim()+'</span>'+EOL;
    } else {
     output += '<span class="nomatch" title="No match for [term1] -> [term2]">'+input[i]+'</span>'+EOL;
    }
   } else if (what=='localaction'){
-   // two-stage approach:
-   //  1. look for (...) and [...], separated by comma (could add dash or arrow)
-   //  2. test the () and [] terms to check that they are legal
-   // updated to add
-   //  0. look for and remove comments (they will be appended at the end of the other tests)
-
-   // REGEXP SECTION: define various patterns which we will need for parsing automorphisms
-   //
-   // define the comment format: two slashes followed by the comment
-   var commentformat = new RegExp('(^[^\s]*?)\s*//\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
-   // define the automorphism entry format: parentheses list, arrow then bracketed list
-   var automorphismformat = new RegExp('^ *(\\(.*?\\)) *(?:,|-+>?) *(\\[.*?\\]) *$','i');
-   // format for a comma-separated list, with optional spaces around the commas
-   var spacedcommas = new RegExp(' *, *','g');
-   // format for a list of multiple (alphanumeric) labels, possibly with a terminating comma (followed by no label: used for the root (empty) node)
-   var listformat = new RegExp('^ *([0-9a-z]+ *?, *?)*[0-9a-z]+ *?$|^ *[0-9a-z]* *,? *$','i');
-   // reference node format:
-   var refformat = new RegExp('^\s*?//\\s*?Reference node:\\s*?\\[(.*)\\].*$','i');
-   // destination node format:
-   var destformat = new RegExp('^\s*?//\\s*?Destination node:\\s*?\\[(.*)\\].*$','i');
 
    // look for a comment:
    var tmpcomments = commentformat.exec(input[i]);
@@ -77,7 +86,6 @@ function parse(){
 
    // comments have been stored and removed, now look for the ()->[] entries
    var tmp = automorphismformat.exec(input[i].replaceAll('"','')); // find matches, ignore quotation marks
-   var EOL = '<br/>'; //  var EOL = '\n';
    if (tmp && tmp[1].length && tmp[2].length){
     // remove the () or [] and spaces around commas
     var term1 = tmp[1].replace(spacedcommas,',').trim().slice(1,-1).trim();
