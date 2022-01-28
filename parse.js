@@ -14,6 +14,7 @@ function parse(){
  editorDestinationNode = null;
  editorAutomorphismValid = false;
  editorLocalAction = new Array;
+ editorConstantLocalAction = false;
 
  // make the input's content available to the clipboard (for the "copy" button)
  document.getElementById('theinput').setAttribute("data-copy-text",rawinput); // for the clipboard
@@ -21,7 +22,7 @@ function parse(){
  // set up the expressions to be recognised, depending on the type of parsing:
  if (what=='mapsto'){ // could be adapted for dot language
   // look for rows in the form "XXX -> YYY"
-  var mapstoformat = new RegExp('^\s*(.*?) *-+> *(.*)\s*$','i'); // allow spaces around the "->" and any number of dashes in the "->"
+  var mapstoformat = new RegExp('^\\s*(.*?) *-+> *(.*)\\s*$','i'); // allow spaces around the "->" and any number of dashes in the "->"
 
   var EOL = '<br/>'; //  var EOL = '\n';
  } else if (what=='localaction'){
@@ -35,7 +36,7 @@ function parse(){
   // Nb. most of these allow arbitrary white-space at the start of the line
   //
   // define the comment format: two slashes followed by the comment
-  var commentformat = new RegExp('(^[^\s]*?)\s*//\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
+  var commentformat = new RegExp('(^[^\\s]*?)\\s*//\\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
   // define the automorphism entry format: parentheses list, arrow then bracketed list
   var automorphismformat = new RegExp('^ *(\\(.*?\\)) *(?:,|-+>?) *(\\[.*?\\]) *$','i');
   // format for a comma-separated list, with optional spaces around the commas
@@ -43,9 +44,12 @@ function parse(){
   // format for a list of multiple (alphanumeric) labels, possibly with a terminating comma (followed by no label: used for the root (empty) node)
   var listformat = new RegExp('^ *([0-9a-z]+ *?, *?)*[0-9a-z]+ *?$|^ *[0-9a-z]* *,? *$','i');
   // reference node format:
-  var refformat = new RegExp('^\s*?//\\s*?Reference node:\\s*?\\[(.*)\\].*$','i');
+  var refformat = new RegExp('^\\s*?//\\s*?Reference node:\\s*?\\[(.*)\\].*$','i');
   // destination node format:
-  var destformat = new RegExp('^\s*?//\\s*?Destination node:\\s*?\\[(.*)\\].*$','i');
+  var destformat = new RegExp('^\\s*?//\\s*?Destination node:\\s*?\\[(.*)\\].*$','i');
+  // special comment for enabling a constant local action: [first version allows trailing characters]
+//  var constantactionformat = new RegExp('^\\s*\/\/\\s*constant\\s+(local\\s+)?action\\s+(enabled|on)(\\s+.*)?$','i')
+  var constantactionformat = new RegExp('^\\s*\/\/\\s*constant\\s+(local\\s+)?action\\s+(enabled|on)$','i')
 
   var EOL = '<br/>'; //  var EOL = '\n';
  }
@@ -60,13 +64,20 @@ function parse(){
     output += '<span class="nomatch" title="No match for [term1] -> [term2]">'+input[i]+'</span>'+EOL;
    }
   } else if (what=='localaction'){
+/*
+   // look to see if the "constant local action" is requested
+   var tmpconstant = constantactionformat.exec(input[i]);
+   if (tmpconstant && tmpconstant.length>2){
+   }
+*/
 
    // look for a comment:
    var tmpcomments = commentformat.exec(input[i]);
    if (tmpcomments && tmpcomments.length>2){ // ie. if the row matched (has a comment, even if the comment part is empty)
-    // test for two special comments, which define the reference and destination nodes:
+    // test for three special comments, which define the reference and destination nodes or set constant local actions:
     var tmpreference = refformat.exec(input[i]);
     var tmpdestination = destformat.exec(input[i]);
+    var tmpconstantaction = constantactionformat.exec(input[i]);
 
     if (tmpreference && tmpreference.length>0){
      comments[i] = ' <span class="comment refnodecomment">// Set reference node: ['+tmpreference[1].trim()+']</span>';
@@ -74,6 +85,10 @@ function parse(){
     } else if (tmpdestination && tmpdestination.length>0) {
      comments[i] = ' <span class="comment destnodecomment">// Set destination node: ['+tmpdestination[1].trim()+']</span>';
      parseDestinationNode = tmpdestination[1];
+    } else if (tmpconstantaction && tmpconstantaction.length>0) {
+//     alert("Found local action should be constant");
+     editorConstantLocalAction = true;
+     comments[i] = ' <span class="comment constantactioncomment">// Local action is constant</span>';
     } else {
      // otherwise, found a normal comment, so store it in the comments array
      comments[i] = ' <span class="comment">// '+tmpcomments[2].trim()+'</span>';
