@@ -10,9 +10,9 @@ function parse(){
  var valencyEstimate = -1;
 
  // global variables for taking the editor's automorphism and putting it into the graph
+ editorAutomorphismValid = false;
  editorReferenceNode = null;
  editorDestinationNode = null;
- editorAutomorphismValid = false;
  editorLocalAction = new Array;
  editorConstantLocalAction = false;
 
@@ -154,11 +154,10 @@ function parse(){
 
  // if the automorphism in the editor (whether read from the graph or typed/pasted in) is complete and legal,
  // then set some global variables which might be used for putting the editor's automorphism into the graph:
- if (parseReferenceNode!="NOT SET" && parseDestinationNode!="NOT SET"){
-  // *** also need to test the local actions: need at least one entry ***
+ if (parseReferenceNode!="NOT SET" && parseDestinationNode!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[editorReferenceNode]==undefined){
   editorAutomorphismValid = true;
-  editorReferenceNode = parseReferenceNode;
-  editorDestinationNode = parseDestinationNode;
+  editorReferenceNode = stringListToArray(parseReferenceNode); // store an array of integers, not a string
+  editorDestinationNode = stringListToArray(parseDestinationNode);
  } else {
   // not complete
   editorAutomorphismValid = false;
@@ -205,24 +204,49 @@ function actionToEditor(){
 }
 
 function editorToAction(){
+ var okayToDraw = false;
+
  // make sure we are up to date
  parse();
 
  // temporary reporting
  if (editorAutomorphismValid){
-  console.log("editorReferenceNode = "+editorReferenceNode.toString());
-  console.log("editorDestinationNode = "+editorDestinationNode.toString());
-  console.log("Found local actions for these nodes:");
-  for (T in editorLocalAction){
-   console.log(labelNode(stringListToArray(T))+" -- "+editorLocalAction[T].toString());
+  // for now, show the automorphism in the console
+  if (true){
+   console.log("editorReferenceNode = "+labelNode(editorReferenceNode));
+   console.log("editorDestinationNode = "+labelNode(editorDestinationNode));
+   console.log("Found local actions for these nodes:");
+   for (T in editorLocalAction){
+    console.log(labelNode(stringListToArray(T))+" -- "+editorLocalAction[T].toString());
+   }
   }
- }
 
- // we have the parts we need: copy them over to the graph's variables (eg. thelocalaction) and re-draw (re-decorate) the graph
- // ....
- // clearAutomorphism();
- // set the variables
- // testAutomorphism(); // ?
+  // we have the parts we need: copy them over to the graph's variables (eg. thelocalaction) and re-draw (re-decorate) the graph
+  clearAutomorphism();
+  // draw the (untransformed) graph to create the SVG objects (nodes, etc.)
+  run(false);
+  // set the reference node
+  autoFrom = editorReferenceNode;
+  setFrom = false;
+  // set the destination node
+  autoTo = editorDestinationNode;
+  setTo = false;
+  showFromTo();
+  // put the local actions in place
+  for (T in editorLocalAction){
+//   thelocalaction[T] = editorLocalAction[T];
+   saveLocalAction(stringListToArray(T),editorLocalAction[T]);
+  }
+  // show the reference node's local action in the local action editor
+  loadNodeAction(autoFrom);
+  // hide the text editor
+  hideTextEditor();
+  // re-draw the (untransformed) graph with the automorphism
+  run(false);
+
+ } else {
+  // not valid, is there anything that should be done?
+ }
 }
 
 // function to take a comma-separated string list address for a node (eg. "2,1,2") and return the array version (eg. [2,1,2])
