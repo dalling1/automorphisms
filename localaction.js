@@ -522,7 +522,6 @@ function permuteList(list,perm){
 function examineLocalActions(nodelist=[],ignoreConstant=false){
  var debug = false;
 
-//fix if (nodelist==null || nodelist.length==0){ // use all nodes if a list is not provided
  if (nodelist.length==0){ // use all nodes if a list is not provided
   for (var i=0;i<thenodes.length;i++) nodelist.push(thenodes[i]);
  }
