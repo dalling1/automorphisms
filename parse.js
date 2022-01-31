@@ -234,11 +234,12 @@ function editorToAction(){
   showFromTo();
   // put the local actions in place
   for (T in editorLocalAction){
-//   thelocalaction[T] = editorLocalAction[T];
    saveLocalAction(stringListToArray(T),editorLocalAction[T]);
   }
-  // show the reference node's local action in the local action editor
-  loadNodeAction(autoFrom);
+  // set the constant local action switch and decorate the graph nodes accordingly
+  document.getElementById("input_constantauto").checked = editorConstantLocalAction;
+  styleActions();
+//  loadNodeAction(autoFrom); // not necessary
   // hide the text editor
   hideTextEditor();
   // re-draw the (untransformed) graph with the automorphism
