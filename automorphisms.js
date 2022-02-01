@@ -103,6 +103,7 @@ function mkdot(withAutomorphism=false){
     if (findNode(thenewnodes[i],thenewnodeindex) >= NoriginalNodes) nodecolour = theautonodecolourextended; // use a different colour for extended nodes
     if (autodistance[thenewnodes[i].toString()]!=undefined){
      thisradius = 1/autodistance[thenewnodes[i].toString()];
+     if (thisradius==Infinity) thisradius = 1.25;
      showdist = autodistance[thenewnodes[i].toString()];
     } else { // try the old label instead?
      if (autodistance[thenodes[i].toString()]!=undefined){
