@@ -1047,6 +1047,30 @@ function toggleHelp(show=null){
  }
 }
 
+// gather all distances between original and transformed nodes ///////////////////////////////////// fn: waitCursor
+function gatherDistances(){
+ var allDistances = [];
+ for (T in autodistance){
+  allDistances.push(autodistance[T]);
+ }
+ return allDistances;
+}
+
+// count the occurences of the minimum of an array ///////////////////////////////////////////////// fn: countMinima
+function countMinima(A){
+ // firstly, find the minimum value in the array
+ var m = Infinity; // initialise search
+ for (T in A){
+  if (A[T]<m) m=A[T]; // found new minimum value
+ }
+ // secondly, check how many occurrences of the minimum there are
+ var n = 0;
+ for (T in A){
+  if (A[T]==m) n++;
+ }
+ return n;
+}
+
 /*
    INITIAL FUNCTIONS TO RUN WHEN THE PAGE LOADS:
 */
