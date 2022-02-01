@@ -44,9 +44,9 @@ function parse(){
   // format for a list of multiple (alphanumeric) labels, possibly with a terminating comma (followed by no label: used for the root (empty) node)
   var listformat = new RegExp('^ *([0-9a-z]+ *?, *?)*[0-9a-z]+ *?$|^ *[0-9a-z]* *,? *$','i');
   // reference node format:
-  var refformat = new RegExp('^\\s*?//\\s*?Reference node:\\s*?\\[(.*)\\].*$','i');
+  var refformat = new RegExp('^\\s*?//\\s*?Reference node:\\s*?\\((.*)\\).*$','i');
   // destination node format:
-  var destformat = new RegExp('^\\s*?//\\s*?Destination node:\\s*?\\[(.*)\\].*$','i');
+  var destformat = new RegExp('^\\s*?//\\s*?Destination node:\\s*?\\((.*)\\).*$','i');
   // special comment for enabling a constant local action: [first version allows trailing characters]
 //  var constantactionformat = new RegExp('^\\s*\/\/\\s*constant\\s+(local\\s+)?action\\s+(enabled|on)(\\s+.*)?$','i')
   var constantactionformat = new RegExp('^\\s*\/\/\\s*constant\\s+(local\\s+)?action\\s+(enabled|on)$','i')
@@ -80,10 +80,11 @@ function parse(){
     var tmpconstantaction = constantactionformat.exec(input[i]);
 
     if (tmpreference && tmpreference.length>0){
-     comments[i] = ' <span class="comment refnodecomment">// Set reference node: ['+tmpreference[1].trim()+']</span>';
+//     comments[i] = ' <span class="comment refnodecomment">// Set reference node: ('+tmpreference[1].trim()+')</span>';
+     comments[i] = ' <span class="comment refnodecomment">// Set reference node: ('+(tmpreference[1].trim()==''?'\u{d8}':tmpreference[1].trim())+')</span>';
      parseReferenceNode = tmpreference[1];
     } else if (tmpdestination && tmpdestination.length>0) {
-     comments[i] = ' <span class="comment destnodecomment">// Set destination node: ['+tmpdestination[1].trim()+']</span>';
+     comments[i] = ' <span class="comment destnodecomment">// Set destination node: ('+(tmpdestination[1].trim()==''?'\u{d8}':tmpdestination[1].trim())+')</span>';
      parseDestinationNode = tmpdestination[1];
     } else if (tmpconstantaction && tmpconstantaction.length>0) {
 //     alert("Found local action should be constant");
