@@ -155,7 +155,7 @@ function parse(){
 
  // if the automorphism in the editor (whether read from the graph or typed/pasted in) is complete and legal,
  // then set some global variables which might be used for putting the editor's automorphism into the graph:
- if (parseReferenceNode!="NOT SET" && parseDestinationNode!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[editorReferenceNode]==undefined){
+ if (parseReferenceNode!="NOT SET" && parseDestinationNode!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[editorReferenceNode.toString()]!=undefined){
   editorAutomorphismValid = true;
   editorReferenceNode = stringListToArray(parseReferenceNode); // store an array of integers, not a string
   editorDestinationNode = stringListToArray(parseDestinationNode);
