@@ -155,7 +155,7 @@ function parse(){
 
  // if the automorphism in the editor (whether read from the graph or typed/pasted in) is complete and legal,
  // then set some global variables which might be used for putting the editor's automorphism into the graph:
- if (parseReferenceNode!="NOT SET" && parseDestinationNode!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[editorReferenceNode.toString()]!=undefined){
+ if (parseReferenceNode!="NOT SET" && parseDestinationNode!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[parseReferenceNode.toString()]!=undefined){
   editorAutomorphismValid = true;
   editorReferenceNode = stringListToArray(parseReferenceNode); // store an array of integers, not a string
   editorDestinationNode = stringListToArray(parseDestinationNode);
@@ -163,6 +163,8 @@ function parse(){
   // not complete
   editorAutomorphismValid = false;
   editorLocalAction = new Array; // remove any entries which might have been added
+  editorReferenceNode = stringListToArray(parseReferenceNode); // store an array of integers, not a string
+  editorDestinationNode = stringListToArray(parseDestinationNode);
  }
 }
 
@@ -174,8 +176,8 @@ function syncScroll(){
 function actionToEditor(){
  var output = '';
 
- output += '// Reference node: ['+(autoFrom==null?'NOT SET':autoFrom.toString())+']\n';
- output += '// Destination node: ['+(autoTo==null?'NOT SET':autoTo.toString())+']\n';
+ output += '// Reference node: ('+(autoFrom==null?'NOT SET':autoFrom.toString())+')\n';
+ output += '// Destination node: ('+(autoTo==null?'NOT SET':autoTo.toString())+')\n';
 
  // check that we have some (potentially valid) local actions by making sure that all entries are not
  // empty arrays:
@@ -248,6 +250,11 @@ function editorToAction(){
 
  } else {
   // not valid, is there anything that should be done?
+
+  // report on a missing local action at the reference node:
+  if (editorLocalAction[editorReferenceNode.toString()]==undefined){
+   alert('Error: the local action for the reference node must be specified');
+  }
  }
 }
 
