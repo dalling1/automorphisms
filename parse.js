@@ -36,7 +36,9 @@ function parse(){
   // Nb. most of these allow arbitrary white-space at the start of the line
   //
   // define the comment format: two slashes followed by the comment
-  var commentformat = new RegExp('(^[^\\s]*?)\\s*//\\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
+//  var commentformat = new RegExp('(^[^\\s]*?)\\s*//\\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
+  // this version allows comments following other valid lines (but note that comments are not preserved when the text is processed...)
+  var commentformat = new RegExp('(^.*?)\\s*//\\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
   // define the automorphism entry format: parentheses list, arrow then bracketed list
   var automorphismformat = new RegExp('^ *(\\(.*?\\)) *(?:,|-+>?) *(\\[.*?\\]) *$','i');
   // format for a comma-separated list, with optional spaces around the commas
@@ -214,8 +216,8 @@ function editorToAction(){
 
  // temporary reporting
  if (editorAutomorphismValid){
-  // for now, show the automorphism in the console
-  if (true){
+  // show the automorphism details in the console?
+  if (false){
    console.log("editorReferenceNode = "+labelNode(editorReferenceNode));
    console.log("editorDestinationNode = "+labelNode(editorDestinationNode));
    console.log("Found local actions for these nodes:");
@@ -245,8 +247,8 @@ function editorToAction(){
 //  loadNodeAction(autoFrom); // not necessary
   // hide the text editor
   hideTextEditor();
-  // re-draw the (untransformed) graph with the automorphism
-  run(false);
+  // re-draw the transformed graph with the automorphism
+  run(true);
 
  } else {
   // not valid, is there anything that should be done?
