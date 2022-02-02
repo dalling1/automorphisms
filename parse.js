@@ -36,7 +36,7 @@ function parse(){
   // Nb. most of these allow arbitrary white-space at the start of the line
   //
   // define the comment format: two slashes followed by the comment
-//  var commentformat = new RegExp('(^[^\\s]*?)\\s*//\\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
+//old  var commentformat = new RegExp('(^[^\\s]*?)\\s*//\\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
   // this version allows comments following other valid lines (but note that comments are not preserved when the text is processed...)
   var commentformat = new RegExp('(^.*?)\\s*//\\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
   // define the automorphism entry format: parentheses list, arrow then bracketed list
@@ -66,13 +66,6 @@ function parse(){
     output += '<span class="nomatch" title="No match for [term1] -> [term2]">'+input[i]+'</span>'+EOL;
    }
   } else if (what=='localaction'){
-/*
-   // look to see if the "constant local action" is requested
-   var tmpconstant = constantactionformat.exec(input[i]);
-   if (tmpconstant && tmpconstant.length>2){
-   }
-*/
-
    // look for a comment:
    var tmpcomments = commentformat.exec(input[i]);
    if (tmpcomments && tmpcomments.length>2){ // ie. if the row matched (has a comment, even if the comment part is empty)
@@ -82,14 +75,12 @@ function parse(){
     var tmpconstantaction = constantactionformat.exec(input[i]);
 
     if (tmpreference && tmpreference.length>0){
-//     comments[i] = ' <span class="comment refnodecomment">// Set reference node: ('+tmpreference[1].trim()+')</span>';
      comments[i] = ' <span class="comment refnodecomment">// Set reference node: ('+(tmpreference[1].trim()==''?'\u{d8}':tmpreference[1].trim())+')</span>';
-     parseReferenceNode = tmpreference[1];
+     parseReferenceNode = tmpreference[1].trim();
     } else if (tmpdestination && tmpdestination.length>0) {
      comments[i] = ' <span class="comment destnodecomment">// Set destination node: ('+(tmpdestination[1].trim()==''?'\u{d8}':tmpdestination[1].trim())+')</span>';
-     parseDestinationNode = tmpdestination[1];
+     parseDestinationNode = tmpdestination[1].trim();
     } else if (tmpconstantaction && tmpconstantaction.length>0) {
-//     alert("Found local action should be constant");
      editorConstantLocalAction = true;
      comments[i] = ' <span class="comment constantactioncomment">// Local action is constant</span>';
     } else {
@@ -119,22 +110,20 @@ function parse(){
      // set the output display as the first term leading to the other with an arrow (\mapsto in Latex)
      output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
      // extract the automorphism entries
-     var thelocalaction = stringListToArray(term2); // empty entries (the root node) become 'NaN'
+     var parselocalaction = stringListToArray(term2); // empty entries (the root node) become 'NaN'
      if (valencyEstimate==-1){
       // take the valency from the length of the first local action
-      var valency = thelocalaction.length;
+      var valency = parselocalaction.length;
      } else {
-      if (thelocalaction.length != valency){
+      if (parselocalaction.length != valency){
        var thenode = stringListToArray(term1);
        console.log('ERROR: local action (for node '+thenode.join(',').replace('NaN','\u{d8}')+') is the wrong length (should be '+valency+').');
       }
      }
-//     console.log('Node '+thenode.join(',').replace('NaN','\u{d8}')+' (N='+thenode.length+') has local action '+thelocalaction.join(',')+' (N='+thelocalaction.length+')');
+//     console.log('Node '+thenode.join(',').replace('NaN','\u{d8}')+' (N='+thenode.length+') has local action '+parselocalaction.join(',')+' (N='+parselocalaction.length+')');
      // add this local action to the global list (but only where the local action is actually defined; 0-length entries are placeholders for the next set of local actions)
-     if (thelocalaction.length>0){
-//      editorLocalAction[thenode.join(',').toString()] = thelocalaction; // index should be a string, entry should be an array (with length equal to the valency)
-      editorLocalAction[term1] = thelocalaction; // index should be a string, entry should be an array (with length equal to the valency)
-//     editorLocalAction[term1] = term2; // term1 is a string, want a n array
+     if (parselocalaction.length>0){
+      editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
      }
 
     } else {
@@ -157,16 +146,14 @@ function parse(){
 
  // if the automorphism in the editor (whether read from the graph or typed/pasted in) is complete and legal,
  // then set some global variables which might be used for putting the editor's automorphism into the graph:
+ editorReferenceNode = stringListToArray(parseReferenceNode); // store an array of integers, not a string
+ editorDestinationNode = stringListToArray(parseDestinationNode);
  if (parseReferenceNode!="NOT SET" && parseDestinationNode!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[parseReferenceNode.toString()]!=undefined){
   editorAutomorphismValid = true;
-  editorReferenceNode = stringListToArray(parseReferenceNode); // store an array of integers, not a string
-  editorDestinationNode = stringListToArray(parseDestinationNode);
  } else {
   // not complete
   editorAutomorphismValid = false;
   editorLocalAction = new Array; // remove any entries which might have been added
-  editorReferenceNode = stringListToArray(parseReferenceNode); // store an array of integers, not a string
-  editorDestinationNode = stringListToArray(parseDestinationNode);
  }
 }
 
