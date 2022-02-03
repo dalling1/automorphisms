@@ -600,12 +600,14 @@ function showTextEditor(){
  var btn = document.getElementById('toggleeditorbutton');
  btn.innerHTML = 'Hide editor';
  actionToEditor();
- document.getElementById('parsingInput').scrollIntoView({inline:'start'});
+ document.getElementById('parsingInput').scrollIntoView({inline:'start',behavior:'smooth'});
+ document.getElementById('graphControls').scrollIntoView({inline:'start',behavior:'smooth'});
 }
 function hideTextEditor(){
  var btn = document.getElementById('toggleeditorbutton');
  btn.innerHTML = 'Show editor';
- document.getElementById('wrapper').scrollLeft = 0;
+ document.getElementById('dotContainer').scrollIntoView({inline:'start',behavior:'smooth'});
+ document.getElementById('graphControls').scrollIntoView({inline:'start',behavior:'smooth'});
 }
 </script>
 </body>
