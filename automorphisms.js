@@ -1072,6 +1072,25 @@ function countMinima(A){
  return n;
 }
 
+// assess the automorphism's type ////////////////////////////////////////////////////////////////// fn: autoType
+function autoType(){
+ var D = gatherDistances();
+ var N = D.length;
+ var C = countMinima(D);
+ var T = 'unknown';
+ if (C==N && N>2){
+  T = 'trivial';
+ } else if (C==1){
+  T = 'rotational';
+ } else if (C==2){
+  T = 'reflecting';
+ } else if (C>2){
+  T = 'translational';
+ }
+ return T;
+}
+
+
 /*
    INITIAL FUNCTIONS TO RUN WHEN THE PAGE LOADS:
 */
