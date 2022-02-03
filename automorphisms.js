@@ -207,6 +207,9 @@ async function run(doAutomorphism=false){
   thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
   thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
 
+  // add the distance between the reference and destination nodes:
+  autodistance[autoFrom.toString()] = nodeDistance(autoFrom,autoTo);
+
   showFromTo();
   document.getElementById("editorhider").classList.remove("hiddenElement"); // "mask" the local action editor when we are showing the transformed graph
 
@@ -416,6 +419,7 @@ function processnode(v){
      }
 
      if (doprocess){
+      if (debug) console.log(" ^^^^^^^^^^^^^^^^^^^^ processing node "+labelNode(vif[i]));
       // only process nodes which were drawn in the original graph:
       if (!onlyDrawDrawnNodes|findNode(vif[i],thenodeindex)!=undefined){
        thenewnodes[neighbourdestindx] = vif[i];
@@ -426,15 +430,17 @@ function processnode(v){
 
        // how far did the node move?
        autodistance[vif[i].toString()] = nodeDistance(vif[i],wi[i]);
-       if (debug) console.log(" ----------------------------------------------------------------- distance from "+labelNode(vif[i])+" to "+labelNode(wi[i])+" is "+autodistance[wi[i].toString()]);
+       if (debug) console.log(" ----------------------------------------------------------------- distance from "+labelNode(vif[i])+" to "+labelNode(wi[i])+" is "+autodistance[vif[i].toString()]);
        if (debug) console.log("   --- setting thenewnodeindex["+vif[i].toString()+"] to "+thenewnodeindex[vif[i].toString()]);
 
        // now work on this neighbour's neighbours:
        if (debug) console.log("Calling processnode(["+vif[i]+"]), ie. processnode(\""+labelNode(vif[i])+"\")");
        processnode(vif[i]);
       }
-
+     } else {
+      if (debug) console.log(" ********************************************************** NOT PROCESSING NODE "+labelNode(vif[i])); // probably because it is off the graph (and the graph is not being extended)
      }
+
     }
    }
   }
