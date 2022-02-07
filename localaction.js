@@ -449,7 +449,7 @@ function saveLocalAction(thisnode=null,thisaction=null){
  // decorate the SVG nodes according to their local action status:
  styleActions();
 
- // run a check (will enable the "Draw transformed" button if the conditions are all set)
+ // run a check (will enable the "Draw transformed" button if the conditions are all set; if it fails, it won't be enabled)
  testAutomorphism();
 
  // put the whole set of local actions into the editor -- removed, this is now called when the editor is displayed
@@ -476,25 +476,29 @@ function permutationRandom(list){
 }
 
 // test a permutation vector for legality ////////////////////////////////////////////////////////// fn: testPermuation
-function testPermutation(perm){
+function testPermutation(perm=null){
  var valency = parseInt(document.getElementById("input_valency").value);
  var debug = false;
 
- // test for a valid permutation
- if (perm.length==valency){ // right size?
-  for (var p=0;p<perm.length;p++){
-   if (perm[p]<0 || perm[p] >= valency){   // look for out-of-range entries
-    if (debug) console.log("ERROR: invalid permutation (out-of-range entries)");
-    return false;
+ if (perm!=null){
+  // test for a valid permutation
+  if (perm.length==valency){ // right size?
+   for (var p=0;p<perm.length;p++){
+    if (perm[p]<0 || perm[p] >= valency){   // look for out-of-range entries
+     if (debug) console.log("ERROR: invalid permutation (out-of-range entries)");
+     return false;
+    }
+    if (perm.indexOf(perm[p])!=p){   // look for repeated entries
+     if (debug) console.log("ERROR: invalid permutation (repeated entries)");
+     return false;
+    }
    }
-   if (perm.indexOf(perm[p])!=p){   // look for repeated entries
-    if (debug) console.log("ERROR: invalid permutation (repeated entries)");
-    return false;
-   }
+  } else {
+   if (debug) console.log("WARNING: permutation length ("+perm.length+") is not equal to the valency ("+valency+") in "+perm.toString());
+   return false;
   }
  } else {
-  if (debug) console.log("WARNING: permutation length ("+perm.length+") is not equal to the valency ("+valency+") in "+perm.toString());
-  return false;
+  return false; // perm was null
  }
  return true;
 }

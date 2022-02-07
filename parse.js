@@ -224,9 +224,9 @@ function editorToAction(){
   autoTo = editorDestinationNode;
   setTo = false;
   showFromTo();
-  // put the local actions in place
+  // put the local actions in place (copy them to thelocalaction)
   for (T in editorLocalAction){
-   saveLocalAction(stringListToArray(T),editorLocalAction[T]);
+   saveLocalAction(stringListToArray(T),editorLocalAction[T]); // calls testAutomorphism() for each one, which might fail until the reference node's local action is copied
   }
   // set the constant local action switch and decorate the graph nodes accordingly
   document.getElementById("input_constantauto").checked = editorConstantLocalAction;
