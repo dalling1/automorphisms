@@ -40,7 +40,7 @@ function parse(){
   // this version allows comments following other valid lines (but note that comments are not preserved when the text is processed...)
   var commentformat = new RegExp('(^.*?)\\s*//\\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
   // define the automorphism entry format: parentheses list, arrow then bracketed list
-  var automorphismformat = new RegExp('^ *(\\(.*?\\)) *(?:,|-+>?) *(\\[.*?\\]) *$','i');
+  var automorphismformat = new RegExp('^ *(\\(.*?\\)) *(?:,|\t+|-+>?) *(\\[.*?\\]) *$','i');
   // format for a comma-separated list, with optional spaces around the commas
   var spacedcommas = new RegExp(' *, *','g');
   // format for a list of multiple (alphanumeric) labels, possibly with a terminating comma (followed by no label: used for the root (empty) node)
