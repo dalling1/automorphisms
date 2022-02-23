@@ -664,8 +664,8 @@ function lineMidPoint(start,end,factor=0.5){
 }
 
 // function to create an arrow between two nodes /////////////////////////////////////////////////// fn: addArrow
-function addArrow(startNode,endNode){
- // create an SVG path between the given nodes
+function addArrow(startNode,endNode,clearOldArrows=true){
+ // create an SVG path between the given nodes (by label, eg. addArrow("br",labelNode([])) )
  startPosition=findCoords(startNode);
  endPosition=findCoords(endNode);
  d=createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],-1); // -1 for default curvature
@@ -680,22 +680,30 @@ function addArrow(startNode,endNode){
  // generate the path that we want the label to follow:
  var thepathRel = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,RELATIVE_PATH);
 
- // remove the old one?
- var oldpath = document.getElementById("thearrow");
- if (oldpath!=null) oldpath.remove();
+ // remove old arrows?
+ if (clearOldArrows) clearArrows();
 
  // create a new one:
  var newpath = document.createElementNS("http://www.w3.org/2000/svg","path");
- newpath.id = "thearrow";
+// newpath.id = "thearrow";
  newpath.style.fill = "none";
  newpath.style.stroke = "#0003";
  newpath.setAttribute("stroke-width",3);
  newpath.setAttribute("d",d);
  newpath.setAttribute("marker-end","url(#arrowhead)");
+ newpath.classList.add("graphArrow");
 // "class": "animpath",
 // "fromto": from+" "+to,
  var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
  svg.appendChild(newpath);
+}
+
+// function to remove all SVG arrows from the graph //////////////////////////////////////////////// fn: clearArrows
+function clearArrows(){
+ var oldarrows = document.getElementsByClassName("graphArrow");
+ for (var i=oldarrows.length;i>0;i--){
+  oldarrows[i-1].remove();
+ }
 }
 
 // function to compute the path between given endpoints [from focusmodels] ///////////////////////// fn: createPath
@@ -853,8 +861,7 @@ function decorateNodes(doAutomorphism=false){
  for (var j=0;j<old.length;j++) old[j].classList.remove("referenceNode");
  var old = document.getElementsByClassName("destinationNode");
  for (var j=0;j<old.length;j++) old[j].classList.remove("destinationNode");
- var oldarrow = document.getElementById("thearrow");
- if (oldarrow!=null) oldarrow.remove();
+ clearArrows();
 
  // if not drawing the post-automorphism graph, apply the reference and destination node classes
  // and mark the nodes with local action functions
