@@ -82,3 +82,25 @@ function savePNG(){
 
  saveSvgAsPng(document.getElementById("thesvg"), "graph.png", saveOptions);
 }
+
+// save the current SVG graph as an SVG file ///////////////////////////////////////////// fn: saveSVG
+// by Dmitry: https://stackoverflow.com/a/69067443
+function saveSVG(){
+ var svg = document.getElementById("thesvg");
+ var data = (new XMLSerializer()).serializeToString(svg);
+ var svgBlob = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
+ var url = URL.createObjectURL(svgBlob);
+ triggerDownload(url);
+}
+
+// download trigger ////////////////////////////////////////////////////////////////////// fn: triggerDownload
+// by Dmitry: https://stackoverflow.com/a/69067443
+function triggerDownload(imgURI, fileName){
+ var a = document.createElement('a');
+
+ a.setAttribute('download', 'graph.svg');
+ a.setAttribute('href', imgURI);
+ a.setAttribute('target', '_blank');
+
+ a.click();
+}
