@@ -696,6 +696,8 @@ function addArrow(startNode,endNode,clearOldArrows=true){
 // "fromto": from+" "+to,
  var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
  svg.appendChild(newpath);
+
+ return newpath;
 }
 
 // function to remove all SVG arrows from the graph //////////////////////////////////////////////// fn: clearArrows
@@ -1111,6 +1113,21 @@ function autoType(){
   T = 'translational';
  }
  return T;
+}
+
+// function to show the movement of vertices /////////////////////////////////////////////////////// fn: showDynamics
+function showDynamics(){
+ var D = gatherDistances();
+ var minDistance = Math.min(...D);
+ for (var eachnode in autodistance){ // loop through all the node addresses as strings (eg. "2,1,0")
+  if (autodistance[eachnode]==minDistance){
+   var to = stringListToArray(eachnode); // this is the new location
+   var from = thenodes[findNode(to,thenewnodeindex)];
+   var A = addArrow(labelNode(from),labelNode(to),false);
+   A.style.stroke = "#ffff";
+   A.setAttribute("stroke-width",8);
+  }
+ }
 }
 
 
