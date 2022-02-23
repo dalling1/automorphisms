@@ -103,7 +103,7 @@ function mkdot(withAutomorphism=false){
     if (findNode(thenewnodes[i],thenewnodeindex) >= NoriginalNodes) nodecolour = theautonodecolourextended; // use a different colour for extended nodes
     if (autodistance[thenewnodes[i].toString()]!=undefined){
      thisradius = 1/autodistance[thenewnodes[i].toString()];
-     if (thisradius==Infinity) thisradius = 1.25;
+     if (thisradius==Infinity) thisradius = 1.0; // was 1.25
      showdist = autodistance[thenewnodes[i].toString()];
     } else { // try the old label instead?
      if (autodistance[thenodes[i].toString()]!=undefined){
@@ -883,13 +883,23 @@ function decorateNodes(doAutomorphism=false){
  }
 
  // add classes depending on the radius of each node (ie. the distance it has moved)
- rclasses = [];
+ rclasses = []; // the set of radius classes used on the page
  var allnodes = document.getElementsByTagName("g");
  for (var i=0;i<allnodes.length;i++){
   if (allnodes[i].classList.contains("node") && allnodes[i].childElementCount==4){ // only want nodes (not edges), and only nodes with a label (4 children instead of 3) (ie. don't add radius class to non-transformed nodes)
    var rr = parseFloat(allnodes[i].querySelector("ellipse").attributes.rx.nodeValue); // get the radius of this node's ellipse
-   allnodes[i].classList.add("radius"+rr);
+   allnodes[i].classList.add("radius"+rr); // eg. radius36
    if (rclasses.indexOf("radius"+rr)==-1) rclasses.push("radius"+rr);
+  }
+ }
+
+ if (doAutomorphism){
+  // find fixed points and give them a specific class
+  for (var eachnode in autodistance){ // loop through all the labels
+   if (autodistance[eachnode]==0){
+    var svgid = findSVGNode(labelNode(stringListToArray(eachnode))); // transform; eg. "2,0" -> [2,0] -> "gr"
+    document.getElementById(svgid).classList.add("fixedpoint");
+   }
   }
  }
 
