@@ -1014,8 +1014,9 @@ function demo(n=1){
  demos.push([3,3,'Ø','r',[2,0,1],true,false]);               // 2 as for 1 but with cyclic LA
  demos.push([4,3,'bg','b',[1,0,2,3],true,true]);             // 3
  demos.push([3,7,'g','r',[1,2,0],true,true]);                // 4 translation
- demos.push([3,7,'gb','r',[1,2,0],true,true]);               // 5 reflection?
- demos.push([3,7,'g','g',[1,2,0],true,true]);                // 6 rotation
+// demos.push([3,7,'gb','r',[1,2,0],true,true]);               // 5 reflection?
+ demos.push([3,5,'b','r',[0,1,2],true,false]);
+ demos.push([3,5,'g','g',[1,2,0],true,true]);                // 6 rotation
 // demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6],true]);  // 6 pretty but too slow
 
  if (n<demos.length){
@@ -1123,7 +1124,7 @@ function showDynamics(){
   if (autodistance[eachnode]==minDistance){
    var to = stringListToArray(eachnode); // this is the new location
    var from = thenodes[findNode(to,thenewnodeindex)];
-   var A = addArrow(labelNode(from),labelNode(to),false);
+   var A = addArrow(labelNode(to),labelNode(from),false);
    A.style.stroke = "#ffff";
    A.setAttribute("stroke-width",8);
   }
