@@ -151,3 +151,9 @@ input:checked + .slider.round:before {
 button {
  font-family: inherit;
 }
+
+@media screen and (max-width: 1500px) {
+ #graphControls {
+  max-width: 1100px;
+ }
+}
