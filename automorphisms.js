@@ -219,6 +219,10 @@ async function run(doAutomorphism=false){
   } else {
    console.log("Error: invalid permutation specified for local action");
   }
+
+  // turn off the dynamics when re-drawing the graph (they are not drawn, just need to reset the 'dynamicsShown' flag
+  if (dynamicsShown) showDynamics(); // ie. turn them off if they were on
+
  } else {
 //  clearAutomorphism();
   if (autoFrom!=null && autoTo!=null){
@@ -1131,7 +1135,8 @@ function showDynamics(){
     var from = thenodes[findNode(to,thenewnodeindex)];
     var A = addArrow(labelNode(to),labelNode(from),false);
     A.style.stroke = "#ffff";
-    A.setAttribute("stroke-width",8);
+    A.setAttribute("stroke-width",4);
+    document.getElementById("arrowhead").getElementsByTagName("path")[0].setAttribute("fill","#ffff");
    }
   }
   dynamicsShown = true;
