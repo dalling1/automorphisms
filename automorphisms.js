@@ -1018,6 +1018,7 @@ function demo(n=1){
  demos.push([3,5,'b','r',[0,1,2],true,false]);
  demos.push([3,5,'g','g',[1,2,0],true,true]);                // 6 rotation
 // demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6],true]);  // 6 pretty but too slow
+ demos.push([4,3,'bm','mg',[0,1,2,3],true,false]);           // 7 translation
 
  if (n<demos.length){
   clearAutomorphism();
@@ -1118,16 +1119,22 @@ function autoType(){
 
 // function to show the movement of vertices /////////////////////////////////////////////////////// fn: showDynamics
 function showDynamics(){
- var D = gatherDistances();
- var minDistance = Math.min(...D);
- for (var eachnode in autodistance){ // loop through all the node addresses as strings (eg. "2,1,0")
-  if (autodistance[eachnode]==minDistance){
-   var to = stringListToArray(eachnode); // this is the new location
-   var from = thenodes[findNode(to,thenewnodeindex)];
-   var A = addArrow(labelNode(to),labelNode(from),false);
-   A.style.stroke = "#ffff";
-   A.setAttribute("stroke-width",8);
+ if (dynamicsShown){
+  clearArrows();
+  dynamicsShown = false;
+ } else {
+  var D = gatherDistances();
+  var minDistance = Math.min(...D);
+  for (var eachnode in autodistance){ // loop through all the node addresses as strings (eg. "2,1,0")
+   if (autodistance[eachnode]==minDistance){
+    var to = stringListToArray(eachnode); // this is the new location
+    var from = thenodes[findNode(to,thenewnodeindex)];
+    var A = addArrow(labelNode(to),labelNode(from),false);
+    A.style.stroke = "#ffff";
+    A.setAttribute("stroke-width",8);
+   }
   }
+  dynamicsShown = true;
  }
 }
 
@@ -1140,6 +1147,7 @@ thelocalaction = [];  // list of automorphism permutation at each node (local ac
 thelocalconstraint = []; // list of constraints imposed by neighbouring local actions
 setFrom = true;       // initial clicks on nodes will select the reference node
 setTo = false;        // after that the clicks will select the destination node
+dynamicsShown = false;
 
 setupColours();
 initPickers();
