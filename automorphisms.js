@@ -1132,7 +1132,7 @@ function showDynamics(){
   for (var eachnode in autodistance){ // loop through all the node addresses as strings (eg. "2,1,0")
    if (autodistance[eachnode]==minDistance){
     var to = stringListToArray(eachnode); // this is the new location
-    var from = thenodes[findNode(to,thenewnodeindex)];
+    var from = thenodes[thenewnodeindex[to]];
     var A = addArrow(labelNode(to),labelNode(from),false);
     A.style.stroke = "#fff8";
     A.setAttribute("stroke-width",4);
