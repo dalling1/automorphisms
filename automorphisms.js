@@ -50,6 +50,7 @@ function mkdot(withAutomorphism=false){
 
  var thisgraph = 'graph {\n';
  thisgraph += '\t// valency = '+valency+', depth = '+maxdepth+'\n\n';
+ thisgraph += '\tbgcolor=gray50\n\n';
  thisgraph += '\tedge [penwidth=1, color='+theedgecolour+']\n';
  thisgraph += '\tnode [shape=circle, fixedsize=true, color=none, style=filled, fillcolor="'+(withAutomorphism?thefadednodecolour:thenodecolour)+'"]\n';
  thisgraph += '\tnode [fontsize=14, fontcolor="'+(withAutomorphism?thefadedlabelcolour:thelabelcolour)+'"]\n';
