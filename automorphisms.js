@@ -1134,7 +1134,7 @@ function showDynamics(){
     var to = stringListToArray(eachnode); // this is the new location
     var from = thenodes[findNode(to,thenewnodeindex)];
     var A = addArrow(labelNode(to),labelNode(from),false);
-    A.style.stroke = "#ffff";
+    A.style.stroke = "#fff8";
     A.setAttribute("stroke-width",4);
     document.getElementById("arrowhead").getElementsByTagName("path")[0].setAttribute("fill","#ffff");
    }
