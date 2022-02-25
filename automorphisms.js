@@ -673,36 +673,42 @@ function addArrow(startNode,endNode,clearOldArrows=true){
  // create an SVG path between the given nodes (by label, eg. addArrow("br",labelNode([])) )
  startPosition=findCoords(startNode);
  endPosition=findCoords(endNode);
- d=createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],-1); // -1 for default curvature
+ if (startPosition[0]==undefined || endPosition[0]==undefined){
+  // not found, don't make the arrow
+  return null;
+ } else {
 
- // helper variables
- const ABS_PATH = 0;
- const RELATIVE_PATH = 1;
- const USE_OFFSET = -1; // -1 gives default curves in createPath()
+  d=createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],-1); // -1 for default curvature
 
- // generate the path that we want to draw:
- var thepathAbs = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,ABS_PATH);
- // generate the path that we want the label to follow:
- var thepathRel = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,RELATIVE_PATH);
+  // helper variables
+  const ABS_PATH = 0;
+  const RELATIVE_PATH = 1;
+  const USE_OFFSET = -1; // -1 gives default curves in createPath()
 
- // remove old arrows?
- if (clearOldArrows) clearArrows();
+  // generate the path that we want to draw:
+  var thepathAbs = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,ABS_PATH);
+  // generate the path that we want the label to follow:
+  var thepathRel = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,RELATIVE_PATH);
 
- // create a new one:
- var newpath = document.createElementNS("http://www.w3.org/2000/svg","path");
-// newpath.id = "thearrow";
- newpath.style.fill = "none";
- newpath.style.stroke = "#0003";
- newpath.setAttribute("stroke-width",3);
- newpath.setAttribute("d",d);
- newpath.setAttribute("marker-end","url(#arrowhead)");
- newpath.classList.add("graphArrow");
-// "class": "animpath",
-// "fromto": from+" "+to,
- var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
- svg.appendChild(newpath);
+  // remove old arrows?
+  if (clearOldArrows) clearArrows();
 
- return newpath;
+  // create a new one:
+  var newpath = document.createElementNS("http://www.w3.org/2000/svg","path");
+//  newpath.id = "thearrow"; // remember that this will give all arrows the same id...
+  newpath.style.fill = "none";
+  newpath.style.stroke = "#0003";
+  newpath.setAttribute("stroke-width",3);
+  newpath.setAttribute("d",d);
+  newpath.setAttribute("marker-end","url(#arrowhead)");
+  newpath.classList.add("graphArrow");
+//  "class": "animpath",
+//  "fromto": from+" "+to,
+  var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
+  svg.appendChild(newpath);
+
+  return newpath;
+ }
 }
 
 // function to remove all SVG arrows from the graph //////////////////////////////////////////////// fn: clearArrows
@@ -1135,9 +1141,11 @@ function showDynamics(){
     var to = stringListToArray(eachnode); // this is the new location
     var from = thenodes[thenewnodeindex[to]];
     var A = addArrow(labelNode(to),labelNode(from),false);
-    A.style.stroke = "#fff8";
-    A.setAttribute("stroke-width",4);
-    document.getElementById("arrowhead").getElementsByTagName("path")[0].setAttribute("fill","#ffff");
+    if (A!=null){ // fails if no arrow was created (to or from node not drawn on the screen)
+     A.style.stroke = "#fff8";
+     A.setAttribute("stroke-width",4);
+     document.getElementById("arrowhead").getElementsByTagName("path")[0].setAttribute("fill","#ffff");
+    }
    }
   }
   dynamicsShown = true;
