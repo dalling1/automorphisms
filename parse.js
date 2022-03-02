@@ -107,19 +107,26 @@ function parse(){
      // replace empty terms with the empty set symbol (for the root node):
      var showterm1 = (term1.length==0?'\u{d8}':term1);
      var showterm2 = (term2.length==0?'\u{d8}':term2);
-     // set the output display as the first term leading to the other with an arrow (\mapsto in Latex)
-     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
      // extract the automorphism entries
      var parselocalaction = stringListToArray(term2); // empty entries (the root node) become 'NaN'
      if (valencyEstimate==-1){
       // take the valency from the length of the first local action
-      var valency = parselocalaction.length;
+      var valencyEstimate = parselocalaction.length;
+      console.log('Estimating valency, from first local action, as '+valencyEstimate);
+      // okay: set the output display for this line as the first term leading to the other with an arrow (\mapsto in Latex)
+      output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
      } else {
-      if (parselocalaction.length != valency){
+      if (parselocalaction.length == valencyEstimate){
+       // okay: set the output display for this line as the first term leading to the other with an arrow (\mapsto in Latex)
+       output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
+      } else {
        var thenode = stringListToArray(term1);
-       console.log('ERROR: local action (for node '+thenode.join(',').replace('NaN','\u{d8}')+') is the wrong length (should be '+valency+').');
+       // not okay: show the error in the output xxx
+       output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="nomatch" title="Wrong valency for local action">[${showterm2}]</span>`;
       }
      }
+
+
 //     console.log('Node '+thenode.join(',').replace('NaN','\u{d8}')+' (N='+thenode.length+') has local action '+parselocalaction.join(',')+' (N='+parselocalaction.length+')');
      // add this local action to the global list (but only where the local action is actually defined; 0-length entries are placeholders for the next set of local actions)
      if (parselocalaction.length>0){
