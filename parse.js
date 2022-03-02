@@ -120,9 +120,10 @@ function parse(){
        // okay: set the output display for this line as the first term leading to the other with an arrow (\mapsto in Latex)
        output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
       } else {
+       // the valency is wrong (ie. the local action has the wrong length)
        var thenode = stringListToArray(term1);
-       // not okay: show the error in the output xxx
-       output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="nomatch" title="Wrong valency for local action">[${showterm2}]</span>`;
+       // not okay: show the error in the output
+       output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="wrongvalency" title="Wrong valency for local action">[${showterm2}]</span>`;
       }
      }
 
@@ -145,11 +146,7 @@ function parse(){
  }
 
  // display
- document.getElementById('parsingOutput').innerHTML = output;
- // scroll
- syncScroll();
- // typeset
- if (typeof(MathJax)) MathJax.typesetPromise([document.getElementById('parsingOutput')]);
+ setEditorOutput(output);
 
  // if the automorphism in the editor (whether read from the graph or typed/pasted in) is complete and legal,
  // then set some global variables which might be used for putting the editor's automorphism into the graph:
@@ -259,4 +256,73 @@ function stringListToArray(str){
  // deal with the empty string first
  if (str.length==0) return [];
  else return str.split(',').map(x=>parseInt(x));
+}
+
+function setEditorOutput(text=''){
+ if (text.length!=0){
+  // display
+  document.getElementById('parsingOutput').innerHTML = text;
+  // scroll
+  syncScroll();
+  // typeset
+  if (typeof(MathJax)) MathJax.typesetPromise([document.getElementById('parsingOutput')]);
+ } else {
+  // is there some default text we should show? probably not
+ }
+}
+
+// show some help text in the editor's output (this will get overwritten when the text input is changed)
+function showEditorHelp(){
+ var EOL = '<br/>'; //  var EOL = '\n';
+ var helptext = EOL+'\
+<b>Summary</b>'+EOL+'\
+-------'+EOL+'\
+Enter the reference and destination vertices using the special comments (see below), and then a series of vertices and their local actions, in the format "(0,1,2,1)&nbsp;->&nbsp;[2,0,1]", and then click "APPLY".'+EOL+'\
+'+EOL+'\
+'+EOL+'\
+<b>How to use the editor</b>'+EOL+'\
+---------------------'+EOL+'\
+This is the output for the text editor on the left. You can\'t change the text in this box. \
+It is updated when changes are made to the text on the left.'+EOL+'\
+'+EOL+'\
+Comments are allowed, preceeded by "//", but are not saved when switching between the graph and the text editor. White-space is largely ignored (and removed).'+EOL+'\
+'+EOL+'\
+Some elements of the output will be coloured, representing:'+EOL+'\
+&nbsp;- <span class="comment refnodecomment">a special comment</span> (defining reference/destination node)'+EOL+'\
+&nbsp;- <span class="comment">a comment</span>'+EOL+'\
+&nbsp;- <span class="nomatch">broken formatting for local action (eg. missing parentheses/bracket)</span>'+EOL+'\
+&nbsp;- <span class="wrongformat">broken formatting within vertex/permutation (eg. extra comma)</span>'+EOL+'\
+&nbsp;- <span id="term2" class="wrongvalency">the local action has the wrong valency (ie. length)</span>'+EOL+'\
+'+EOL+'\
+'+EOL+'\
+<b>AUTOMORPHISM</b>'+EOL+'\
+To define an automorphism, you need to specify the reference vertex and its destination using two special comments,'+EOL+'\
+'+EOL+'\
+<span class="comment refnodecomment">// Reference node: (0,1,2,1)</span>'+EOL+'\
+<span class="comment destnodecomment">// Destination node: (1,0)</span>'+EOL+'\
+'+EOL+'\
+followed by a list of vertices and their local action permutation, such as'+EOL+'\
+'+EOL+'\
+&nbsp;&nbsp;&nbsp;&nbsp;(0,1,2,1) -> [2,0,1]'+EOL+'\
+'+EOL+'\
+'+EOL+'\
+<b>FORMATS</b>'+EOL+'\
+Vertices are denoted by their address in parentheses, "(...)".'+EOL+'\
+Local actions are denoted by a permutation in brackets, "[...]".'+EOL+'\
+'+EOL+'\
+Each entry in the automorphism should consist of a vertex and its local action, separated by "->". Both of these use zero-indexed integers into the set of valencies. The root vertex should be denoted by "()" (and will be labelled "\u{d8}").'+EOL+'\
+'+EOL+'\
+For example,'+EOL+'\
+'+EOL+'\
+&nbsp;&nbsp;&nbsp;&nbsp;(0,1,2,1) -> [2,0,1]'+EOL+'\
+'+EOL+'\
+which specifies the local action permutation [0,1,2] $\\mapsto$ [2,0,1] for the vertex with address 0,1,2,1.'+EOL+'\
+'+EOL+'\
+'+EOL+'\
+'+EOL+'\
+'+EOL+'\
+'+EOL+'\
+';
+//is the address 0,1,2,1 (which might be red,green,blue,green) and the local action permutation [0,1,2]&nbsp;$\\mapsto$&nbsp;[2,0,1] (which might be (red,blue,green)&nbsp;$\\mapsto$&nbsp;(green,red,blue))'+EOL+'\
+ setEditorOutput(helptext);
 }
