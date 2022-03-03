@@ -269,6 +269,46 @@ function findNeighbours(node){
  return neighbours;
 }
 
+// find the common prefix of two nodes ///////////////////////////////////////////////////////////// fn: getPrefix
+function getPrefix(node1,node2){
+ // pass nodes as arrays, eg [0,1,0]
+ var prefix = [];
+ for (var i=0;i<Math.min(node1.length,node2.length);i++){
+  if (node1[i]==node2[i]){
+   prefix.push(node1[i]);
+  } else {
+   // stop
+   break;
+  }
+ }
+ return prefix;
+}
+
+// generate the path between two given nodes /////////////////////////////////////////////////////// fn: getPath
+function getPath(node1,node2){
+ // returns the path from node1 to node2 (inclusive on both ends)
+ // pass nodes as arrays, eg [0,1,0]
+ var path = [];
+ var prefix = getPrefix(node1,node2); // common prefix for both nodes
+ // add the nodes from node1 back to the prefix node
+ for (var i=node1.length;i>=prefix.length;i--){
+  var nextstep=[];
+  for (var j=0;j<i;j++){
+   nextstep.push(node1[j]); // construct the next node in the path
+  }
+  path.push(nextstep); // put that node into the path list
+ }
+ // add the nodes from the prefix node up to node2
+ for (var i=prefix.length;i<node2.length;i++){
+  var nextstep=[];
+  for (var j=0;j<=i;j++){
+   nextstep.push(node2[j]); // construct the next node in the path
+  }
+  path.push(nextstep); // put that node into the path list
+ }
+ return path;
+}
+
 // copy the clicked object's contents ////////////////////////////////////////////////////////////// fn: copy
 async function copy(targetId=null){
  // Modified from https://www.jasongaylord.com/blog/2020/05/21/copy-to-clipboard-using-javascript
