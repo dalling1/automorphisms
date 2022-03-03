@@ -6,6 +6,8 @@
  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/spectrum/1.8.1/spectrum.min.css">
  <link rel="stylesheet" href="graphControls.css">
  <link rel="stylesheet" href="localaction.css">
+ <link rel="stylesheet" href="nouislider.css">
+ <script src="nouislider.min.js"></script>
  <script>MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]},svg: {fontCache: 'global'}};</script>
  <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
  <style>
@@ -408,7 +410,20 @@
   font-weight: bold;
  }
 
-
+ #dynamicrangecontainer {
+  width: 18px;
+  height: 240px;
+  top: 40px;
+  right: 5px;
+ }
+ #dynamicrange {
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+ }
+ .noUi-connect {
+   background: #955;
+ }
 
  </style>
 </head>
@@ -575,6 +590,9 @@
   <button style="left:60px;" onclick="toggleLabels(2);" title="Toggle external labels">XLabels</button>
 <!--  <button style="right: -10px;" onclick="copy('thegraph');" title="Copy SVG code">Copy</button>-->
   <button style="right: -10px;" onclick="showDynamics();" title="Show movement of vertices">Dynamics</button>-->
+  <div id="dynamicrangecontainer">
+   <div id="dynamicrange"></div>
+  </div>
   <div style="left:10px;bottom:-10px;"><button onclick="toggleHelp();" title="Toggle display of instructions">Instructions</button></div>
   <div id="thedetails"><span id="fromto"></span><button style="margin-left:10px;" onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Reset Automorphism</button></div>
  </div>
@@ -624,6 +642,22 @@ function hideTextEditor(){
  document.getElementById('dotContainer').scrollIntoView({inline:'start',behavior:'smooth'});
  document.getElementById('graphControls').scrollIntoView({inline:'start',behavior:'smooth'});
 }
+</script>
+<script>
+ <!-- Slider by Léon Gersen  https://refreshless.com/nouislider/ -->
+ var dynamicrange = document.getElementById("dynamicrange");
+ noUiSlider.create(dynamicrange, {
+   start: [0, 50],
+   connect: true,
+   orientation: "vertical",
+   direction: "rtl",
+   range: {
+     "min": 0,
+     "max": 100
+   },
+   tooltips: true,
+ });
+ dynamicrange.noUiSlider.on("update", function(){showDynamics(null,true);});
 </script>
 </body>
 </html>

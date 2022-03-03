@@ -221,6 +221,11 @@ async function run(doAutomorphism=false){
    console.log("Error: invalid permutation specified for local action");
   }
 
+  // set the available dynamic range limits according to the just-drawn graph
+  // (note: always use a min and max limits for the slider of at least 0 and 6)
+  var D = gatherDistances();
+  document.getElementById('dynamicrange').noUiSlider.updateOptions({range:{'min':Math.min(...D,0),'max':Math.max(...D,6)},start:[D[0], D[1]]});
+
   // turn off the dynamics when re-drawing the graph (they are not drawn, just need to reset the 'dynamicsShown' flag
   if (dynamicsShown) showDynamics(); // ie. turn them off if they were on
 
@@ -1169,18 +1174,32 @@ function autoType(){
 }
 
 // function to show the movement of vertices /////////////////////////////////////////////////////// fn: showDynamics
-function showDynamics(useDistance=null){
+function showDynamics(useDistance=null,forceShow=false){
  if (dynamicsShown){
   clearArrows();
   dynamicsShown = false;
+  if (forceShow) showDynamics(useDistance); // arrows were cleared, now show them again
  } else {
   // if no distance is provided, use the minimum distance moved by any node
   if (useDistance==null){
-   var D = gatherDistances();
-   var useDistance = Math.min(...D);
+//   var D = gatherDistances();
+//   var useDistance = Math.min(...D);
+//or:
+//   var useDistance = [0, 10];
+//or:
+   useDistance = document.getElementById('dynamicrange').noUiSlider.get(true);
   }
+
+  // make useDistance a range (even if it is zero-length):
+  var showRange = useDistance;
+  if (useDistance.length==1){
+   showRange = [useDistance, useDistance];
+  }
+
+  // for each node which moved the specified distance, draw an arrow between its starting and finishing locations
   for (var eachnode in autodistance){ // loop through all the node addresses as strings (eg. "2,1,0")
-   if (autodistance[eachnode]==useDistance){
+//   if (autodistance[eachnode]==useDistance){
+   if (autodistance[eachnode]>=showRange[0] && autodistance[eachnode]<=showRange[1]){
     var to = stringListToArray(eachnode); // this is the new location
     var from = thenodes[thenewnodeindex[to]];
     var A = addArrow(labelNode(to),labelNode(from),false);
