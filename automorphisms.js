@@ -1169,15 +1169,18 @@ function autoType(){
 }
 
 // function to show the movement of vertices /////////////////////////////////////////////////////// fn: showDynamics
-function showDynamics(){
+function showDynamics(useDistance=null){
  if (dynamicsShown){
   clearArrows();
   dynamicsShown = false;
  } else {
-  var D = gatherDistances();
-  var minDistance = Math.min(...D);
+  // if no distance is provided, use the minimum distance moved by any node
+  if (useDistance==null){
+   var D = gatherDistances();
+   var useDistance = Math.min(...D);
+  }
   for (var eachnode in autodistance){ // loop through all the node addresses as strings (eg. "2,1,0")
-   if (autodistance[eachnode]==minDistance){
+   if (autodistance[eachnode]==useDistance){
     var to = stringListToArray(eachnode); // this is the new location
     var from = thenodes[thenewnodeindex[to]];
     var A = addArrow(labelNode(to),labelNode(from),false);
