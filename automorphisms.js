@@ -714,7 +714,7 @@ function lineMidPoint(start,end,factor=0.5){
 }
 
 // function to create an arrow between two nodes /////////////////////////////////////////////////// fn: addArrow
-function addArrow(startNode,endNode,clearOldArrows=true){
+function addArrow(startNode,endNode,clearOldArrows=false){
  // create an SVG path between the given nodes (by label, eg. addArrow("br",labelNode([])) )
  startPosition=findCoords(startNode);
  endPosition=findCoords(endNode);
@@ -931,7 +931,7 @@ function decorateNodes(doAutomorphism=false){
   if (fromNode!=null && toNode!=null){
    var fromstring = labelNode(autoFrom);
    var tostring = labelNode(autoTo);
-   addArrow(fromstring,tostring);
+   addArrow(fromstring,tostring,true);
   }
   // add local action decorations where warranted: [remove, now done by styleActions]
   for (thenodestr in thelocalaction){
@@ -1204,7 +1204,7 @@ function showDynamics(useDistance=null,forceShow=false){
    if (autodistance[eachnode]>=showRange[0] && autodistance[eachnode]<=showRange[1]){
     var to = stringListToArray(eachnode); // this is the new location
     var from = thenodes[thenewnodeindex[to]];
-    var A = addArrow(labelNode(to),labelNode(from),false);
+    var A = addArrow(labelNode(to),labelNode(from));
     if (A!=null){ // fails if no arrow was created (to or from node not drawn on the screen)
      A.style.stroke = "#fff8";
      A.setAttribute("stroke-width",4);
