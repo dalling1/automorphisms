@@ -410,11 +410,16 @@
   font-weight: bold;
  }
 
+ .hiddencontainer {
+  opacity: 0;
+  transition: opacity ease 0.5s;
+ }
  #dynamicrangecontainer {
   width: 18px;
   height: 240px;
   top: 40px;
   right: 5px;
+  transition: opacity ease 0.5s;
  }
  #dynamicrange {
   width: 100%;
@@ -422,8 +427,18 @@
   z-index: 100;
  }
  .noUi-connect {
-   background: #955;
+  background: #955;
  }
+ /* use these to only show the dynamic range tooltips when they are active: */
+/*
+ .noUi-tooltip {
+  display: none;
+ }
+ .noUi-active .noUi-tooltip {
+  display: block;
+ }
+*/
+
 
  </style>
 </head>
@@ -590,7 +605,7 @@
   <button style="left:60px;" onclick="toggleLabels(2);" title="Toggle external labels">XLabels</button>
 <!--  <button style="right: -10px;" onclick="copy('thegraph');" title="Copy SVG code">Copy</button>-->
   <button style="right: -10px;" onclick="showDynamics();" title="Show movement of vertices">Dynamics</button>-->
-  <div id="dynamicrangecontainer">
+  <div id="dynamicrangecontainer" class="hiddencontainer">
    <div id="dynamicrange"></div>
   </div>
   <div style="left:10px;bottom:-10px;"><button onclick="toggleHelp();" title="Toggle display of instructions">Instructions</button></div>
@@ -644,8 +659,9 @@ function hideTextEditor(){
 }
 </script>
 <script>
- <!-- Slider by Léon Gersen  https://refreshless.com/nouislider/ -->
+ // Slider by Léon Gersen  https://refreshless.com/nouislider/
  var dynamicrange = document.getElementById("dynamicrange");
+ // show/hide tooltips are also enabled, see the <style> section (.noUi-tooltip)
  noUiSlider.create(dynamicrange, {
    start: [0, 50],
    connect: true,
@@ -655,9 +671,13 @@ function hideTextEditor(){
      "min": 0,
      "max": 100
    },
-   tooltips: true,
+   step: 1,
+   tooltips: [
+    {to: function (value) {return value.toFixed(0);}},
+    {to: function (value) {return value.toFixed(0);}},
+   ],
  });
- dynamicrange.noUiSlider.on("update", function(){showDynamics(null,true);});
+ dynamicrange.noUiSlider.on("update", function(){if(dynamicsShown)showDynamics(null,true);});
 </script>
 </body>
 </html>

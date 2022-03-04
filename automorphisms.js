@@ -1178,6 +1178,8 @@ function showDynamics(useDistance=null,forceShow=false){
  if (dynamicsShown){
   clearArrows();
   dynamicsShown = false;
+  // hide the slider controls:
+  document.getElementById("dynamicrangecontainer").classList.add("hiddencontainer");
   if (forceShow) showDynamics(useDistance); // arrows were cleared, now show them again
  } else {
   // if no distance is provided, use the minimum distance moved by any node
@@ -1211,6 +1213,8 @@ function showDynamics(useDistance=null,forceShow=false){
    }
   }
   dynamicsShown = true;
+  // unhide the slider controls:
+  document.getElementById("dynamicrangecontainer").classList.remove("hiddencontainer")
  }
 }
 
