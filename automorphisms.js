@@ -1189,7 +1189,7 @@ function showDynamics(useDistance=null,forceShow=false){
 //or:
 //   var useDistance = [0, 10];
 //or:
-   useDistance = document.getElementById('dynamicrange').noUiSlider.get(true);
+   useDistance = document.getElementById('dynamicrange').noUiSlider.get(true).map(t=>Math.round(t));
   }
 
   // make useDistance a range (even if it is zero-length):
