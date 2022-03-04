@@ -756,6 +756,25 @@ function addArrow(startNode,endNode,clearOldArrows=false){
  }
 }
 
+// function to style an SVG arrow
+function styleArrow(arrow=null,width=4,colour=null,headcolour=null){
+ // parameters are an HTML element, integer and colour strings
+ if (arrow!=null){
+  // set the arrow's colour
+  if (colour!=null){
+   arrow.style.stroke = colour;
+  }
+  // set the arrow's width
+  arrow.setAttribute("stroke-width",width);
+  // use the stroke colour for the arrow's head as well
+  if (headcolour==null && colour!=null) headcolour = colour;
+  if (headcolour!=null){
+   // yes, this will change the colour of every arrowhead on the graph... need to create duplicates when the arrow is created
+   document.getElementById("arrowhead").getElementsByTagName("path")[0].setAttribute("fill",headcolour);
+  }
+ }
+}
+
 // function to remove all SVG arrows from the graph //////////////////////////////////////////////// fn: clearArrows
 function clearArrows(){
  var oldarrows = document.getElementsByClassName("graphArrow");
@@ -1200,16 +1219,11 @@ function showDynamics(useDistance=null,forceShow=false){
 
   // for each node which moved the specified distance, draw an arrow between its starting and finishing locations
   for (var eachnode in autodistance){ // loop through all the node addresses as strings (eg. "2,1,0")
-//   if (autodistance[eachnode]==useDistance){
    if (autodistance[eachnode]>=showRange[0] && autodistance[eachnode]<=showRange[1]){
     var to = stringListToArray(eachnode); // this is the new location
     var from = thenodes[thenewnodeindex[to]];
     var A = addArrow(labelNode(to),labelNode(from));
-    if (A!=null){ // fails if no arrow was created (to or from node not drawn on the screen)
-     A.style.stroke = "#fff8";
-     A.setAttribute("stroke-width",4);
-     document.getElementById("arrowhead").getElementsByTagName("path")[0].setAttribute("fill","#ffff");
-    }
+    styleArrow(A,6,"#fff8","#ffff");
    }
   }
   dynamicsShown = true;
