@@ -5,9 +5,11 @@ function parse(){
  var input = rawinput.split('\n').map(X=>X.trim());
  var comments = []
  var output = ''
- var parseReferenceNode = '';
- var parseDestinationNode = '';
+ var parseReferenceNodeString = '';
+ var parseDestinationNodeString = '';
  var valencyEstimate = -1;
+
+ var debug = false;
 
  // global variables for taking the editor's automorphism and putting it into the graph
  editorAutomorphismValid = false;
@@ -76,10 +78,12 @@ function parse(){
 
     if (tmpreference && tmpreference.length>0){
      comments[i] = ' <span class="comment refnodecomment">// Set reference node: ('+(tmpreference[1].trim()==''?'\u{d8}':tmpreference[1].trim())+')</span>';
-     parseReferenceNode = tmpreference[1].trim();
+     parseReferenceNodeString = tmpreference[1].trim();
+     parseReferenceNode = stringListToArray(parseReferenceNodeString);
     } else if (tmpdestination && tmpdestination.length>0) {
      comments[i] = ' <span class="comment destnodecomment">// Set destination node: ('+(tmpdestination[1].trim()==''?'\u{d8}':tmpdestination[1].trim())+')</span>';
-     parseDestinationNode = tmpdestination[1].trim();
+     parseDestinationNodeString = tmpdestination[1].trim();
+     parseDestinationNode = stringListToArray(parseDestinationNodeString);
     } else if (tmpconstantaction && tmpconstantaction.length>0) {
      editorConstantLocalAction = true;
      comments[i] = ' <span class="comment constantactioncomment">// Local action is constant</span>';
@@ -99,6 +103,7 @@ function parse(){
     // remove the () or [] and spaces around commas
     var term1 = tmp[1].replace(spacedcommas,',').trim().slice(1,-1).trim();
     var term2 = tmp[2].replace(spacedcommas,',').trim().slice(1,-1).trim();
+    var node1 = stringListToArray(term1);
     // check that each term's contents are legal: a list of numbers separated by commas
     // - three options here: a list of comma-separated numbers/letters, and a single number with optional comma, or empty
     var checkterm1 = listformat.exec(term1);
@@ -115,24 +120,61 @@ function parse(){
       console.log('Estimating valency, from first local action, as '+valencyEstimate);
       // okay: set the output display for this line as the first term leading to the other with an arrow (\mapsto in Latex)
       output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
+      // and add the local action for the reference node to the stored list:
+      editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
      } else {
       if (parselocalaction.length == valencyEstimate){
-       // okay: set the output display for this line as the first term leading to the other with an arrow (\mapsto in Latex)
-       output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
+       // okay format- and length-wise, now need to test constraints (if any):
+
+
+       var actionOkay = false;
+       if (parselocalaction.length>0){
+        if (term1==parseReferenceNodeString){
+         // found local action for the reference node, no need to test it
+         if (debug) console.log("PARSE: Local action for reference node "+showterm1+": "+parselocalaction.toString());
+         actionOkay = true;
+        } else {
+         // found a local action for a non-reference node: need to make sure it obeys any constraints imposed on it by the node nearer the reference node
+         var pathToRef = getPath(node1,parseReferenceNode);
+         if (pathToRef.length>1){
+          if (debug) console.log("PARSE: Test local action for ["+term1+"]: ["+parselocalaction.toString()+"]");
+          var thisEdge = node1.length>pathToRef[1]?node1.slice(-1):pathToRef[1].slice(-1);
+          if (debug) console.log("CONSTRAINT: constraint comes from local action at "+pathToRef[1].toString());
+          // local action for the constraining vertex must exist!
+          if (Object.keys(editorLocalAction).indexOf(pathToRef[1].toString())!=-1){
+           var thisconstraint = [thisEdge[0] , editorLocalAction[pathToRef[1]][thisEdge[0]]];
+           if (debug) console.log("CONSTRAINT: "+parselocalaction.toString()+" must comply with "+thisconstraint.toString());
+           if (testLocalAction(parselocalaction,thisconstraint)){ // test the local action against its constraint
+            if (debug) console.log("TEST: passed constraint");
+            actionOkay = true;
+           } else {
+            if (debug) console.log("TEST: failed constraint");
+            actionOkay = false; // this local action failed its constraint test
+           }
+          }
+         }
+        }
+        if (actionOkay){
+         // constraints (if any) are satisfied:
+         // add this local action to the global list (but only where the local action is actually defined; 0-length entries are placeholders for the next set of local actions)
+         editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
+         // and set the output display for this line as the first term leading to the other with an arrow (\mapsto in Latex)
+         output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
+        } else {
+         output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Permutation fails constraint">[${showterm2}]</span> // FAILS CONSTRAINT FROM (`+pathToRef[1].toString()+`)`;
+        }
+       }
+
+
+
       } else {
        // the valency is wrong (ie. the local action has the wrong length)
-       var thenode = stringListToArray(term1);
        // not okay: show the error in the output
        output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="wrongvalency" title="Wrong valency for local action">[${showterm2}]</span>`;
       }
      }
 
 
-//     console.log('Node '+thenode.join(',').replace('NaN','\u{d8}')+' (N='+thenode.length+') has local action '+parselocalaction.join(',')+' (N='+parselocalaction.length+')');
-     // add this local action to the global list (but only where the local action is actually defined; 0-length entries are placeholders for the next set of local actions)
-     if (parselocalaction.length>0){
-      editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
-     }
 
     } else {
      output += '<span class="wrongformat" title="Wrong format for lists within (...) and/or [...]">'+input[i]+'</span>';
@@ -150,9 +192,9 @@ function parse(){
 
  // if the automorphism in the editor (whether read from the graph or typed/pasted in) is complete and legal,
  // then set some global variables which might be used for putting the editor's automorphism into the graph:
- editorReferenceNode = stringListToArray(parseReferenceNode); // store an array of integers, not a string
- editorDestinationNode = stringListToArray(parseDestinationNode);
- if (parseReferenceNode!="NOT SET" && parseDestinationNode!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[parseReferenceNode.toString()]!=undefined){
+ editorReferenceNode = parseReferenceNode; // this is the array of integers, not the string
+ editorDestinationNode = parseDestinationNode;
+ if (parseReferenceNodeString!="NOT SET" && parseDestinationNodeString!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[parseReferenceNodeString.toString()]!=undefined){
   editorAutomorphismValid = true;
  } else {
   // not complete
