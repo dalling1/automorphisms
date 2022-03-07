@@ -476,8 +476,8 @@ function permutationRandom(list){
 }
 
 // test a permutation vector for legality ////////////////////////////////////////////////////////// fn: testPermuation
-function testPermutation(perm=null){
- var valency = parseInt(document.getElementById("input_valency").value);
+function testPermutation(perm=null,valency=null){
+ if (valency==null) valency = parseInt(document.getElementById("input_valency").value);
  var debug = false;
 
  if (perm!=null){
