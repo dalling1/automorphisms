@@ -725,20 +725,10 @@ function addArrow(startNode,endNode,clearOldArrows=false){
 
   d=createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],-1); // -1 for default curvature
 
-  // helper variables
-  const ABS_PATH = 0;
-  const RELATIVE_PATH = 1;
-  const USE_OFFSET = -1; // -1 gives default curves in createPath()
-
   // get the element which we will append the arrow to
   var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
   // get the DEFS which we will append the arrow heads to
   var svgdefs = document.getElementById("arrowhead").parentElement
-
-  // generate the path that we want to draw:
-  var thepathAbs = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,ABS_PATH);
-  // generate the path that we want the label to follow:
-  var thepathRel = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,RELATIVE_PATH);
 
   // remove old arrows?
   if (clearOldArrows) clearArrows();
