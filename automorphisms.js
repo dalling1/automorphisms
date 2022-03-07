@@ -730,6 +730,11 @@ function addArrow(startNode,endNode,clearOldArrows=false){
   const RELATIVE_PATH = 1;
   const USE_OFFSET = -1; // -1 gives default curves in createPath()
 
+  // get the element which we will append the arrow to
+  var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
+  // get the DEFS which we will append the arrow heads to
+  var svgdefs = document.getElementById("arrowhead").parentElement
+
   // generate the path that we want to draw:
   var thepathAbs = createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],USE_OFFSET,ABS_PATH);
   // generate the path that we want the label to follow:
@@ -738,18 +743,34 @@ function addArrow(startNode,endNode,clearOldArrows=false){
   // remove old arrows?
   if (clearOldArrows) clearArrows();
 
+  // make a copy of the arrowhead
+  var Narrowheads = document.getElementsByClassName("arrowhead").length;
+  var newarrowhead = document.getElementById("arrowhead").cloneNode();
+  var newarrowheadid = "arrowhead"+Narrowheads.toString();
+  newarrowhead.id = newarrowheadid; // set id
+  newarrowhead.classList.add("arrowhead"); // set class
+  // need to clone the children of the original arrowhead too (includes the path)
+  var newarrowheadchildren = document.getElementById("arrowhead").children;
+  for (var j=0;j<newarrowheadchildren.length;j++){
+   var newchild = newarrowheadchildren[j].cloneNode();
+   if (newchild.tagName=="path"){
+//    newchild.setAttribute("fill","#f30"); // set the colour as well?
+   }
+   newarrowhead.append(newchild);
+  }
+  svgdefs.appendChild(newarrowhead);
+
   // create a new one:
   var newpath = document.createElementNS("http://www.w3.org/2000/svg","path");
-//  newpath.id = "thearrow"; // remember that this will give all arrows the same id...
   newpath.style.fill = "none";
   newpath.style.stroke = "#0003";
   newpath.setAttribute("stroke-width",3);
   newpath.setAttribute("d",d);
-  newpath.setAttribute("marker-end","url(#arrowhead)");
+//  newpath.setAttribute("marker-end","url(#arrowhead)"); // use the same head for all arrows
+  newpath.setAttribute("marker-end","url(#"+newarrowheadid+")");
   newpath.classList.add("graphArrow");
 //  "class": "animpath",
 //  "fromto": from+" "+to,
-  var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
   svg.appendChild(newpath);
 
   return newpath;
@@ -780,6 +801,11 @@ function clearArrows(){
  var oldarrows = document.getElementsByClassName("graphArrow");
  for (var i=oldarrows.length;i>0;i--){
   oldarrows[i-1].remove();
+ }
+ // and their arrowheads
+ var oldarrowheads = document.getElementsByClassName("arrowhead");
+ for (var i=oldarrowheads.length;i>0;i--){
+  oldarrowheads[i-1].remove();
  }
 }
 
@@ -1223,7 +1249,7 @@ function showDynamics(useDistance=null,forceShow=false){
     var to = stringListToArray(eachnode); // this is the new location
     var from = thenodes[thenewnodeindex[to]];
     var A = addArrow(labelNode(to),labelNode(from));
-    styleArrow(A,6,"#fff8","#ffff");
+    styleArrow(A,4,"#fff8","#ffff");
    }
   }
   dynamicsShown = true;
