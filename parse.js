@@ -254,14 +254,14 @@ function actionToEditor(){
   } else {
    // calculate the distances of each node from the reference node, and put them into the output in ascending distance order:
    // ie. starting with the reference node and working outwards (so that the required constraints are present for parsing in the text editor)
-   var nodeDistances = Object.keys(thelocalaction).map(t=>nodeDistance(autoFrom,t));
+   var nodeDistances = Object.keys(thelocalaction).map(t=>nodeDistance(autoFrom,stringListToArray(t)));
    var maxDistance = Math.max(...nodeDistances);
 
    for (var d=0;d<=maxDistance;d++){
     // get nodes at distance d from the reference node:
-    var thisball = Object.keys(thelocalaction).filter(t=>nodeDistance(autoFrom,t)==d);
-    for (var t=0;t<thisball.length;t++){
-     var thisnodeaddress = thisball[t];
+    var thisball = Object.keys(thelocalaction).filter(t=>nodeDistance(autoFrom,stringListToArray(t))==d);
+    for (var i=0;i<thisball.length;i++){
+     var thisnodeaddress = thisball[i];
      if (thelocalaction[thisnodeaddress].length){
       output += `(${thisnodeaddress}) -> [${thelocalaction[thisnodeaddress]}]\n`;
      }
