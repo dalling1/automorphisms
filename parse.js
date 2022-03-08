@@ -5,8 +5,8 @@ function parse(){
  var input = rawinput.split('\n').map(X=>X.trim());
  var comments = []
  var output = ''
- var parseReferenceNodeString = '';
- var parseDestinationNodeString = '';
+ var parseReferenceNodeString = 'NOT SET';
+ var parseDestinationNodeString = 'NOT SET';
  var valencyEstimate = -1;
 
  // global variables for taking the editor's automorphism and putting it into the graph
@@ -134,10 +134,14 @@ function parse(){
      var parselocalaction = stringListToArray(term2); // empty entries (the root node) become 'NaN'
      if (valencyEstimate==-1){
       // take the valency from the length of the first local action
-      testlineReference = true;
       valencyEstimate = parselocalaction.length;
       console.log('Estimating valency, from first local action, as '+valencyEstimate);
      }
+    }
+
+    // 1.5. is this the reference node?
+    if (parseReferenceNodeString!="NOT SET" && term1==parseReferenceNodeString){
+     testlineReference = true;
     }
 
     // 2. valid permutation?
@@ -155,7 +159,7 @@ function parse(){
        if (Object.keys(editorLocalAction).indexOf(pathToRef[1].toString())!=-1){
         testlineNeighbour = true;
        } else {
-        var missingneighbour = pathToRef[1];
+        var missingneighbour = pathToRef[1].toString();
        }
       }
      }
@@ -189,7 +193,7 @@ console.log("TESTING entry is: "+parselocalaction[thisconstraint[0]].toString()+
      output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="wrongvalency" title="Invalid local action">[${showterm2}]</span> <style="color:#900;">// invalid permutation</span>`;
     } else if (!testlineNeighbour && !testlineReference){
      // required constraining neighbour has no entry (and this isn't the reference node)
-     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Missing constraint">[${showterm2}]</span> <span style="color:#900;">// LOCAL ACTION OF REQUIRED NEIGHBOUR `+missingneighbour.toString()+` NOT FOUND ABOVE`;
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Missing constraint">[${showterm2}]</span> <span style="color:#900;">// LOCAL ACTION OF REQUIRED NEIGHBOUR (`+(missingneighbour.length==0?'\u{d8}':missingneighbour)+`) NOT FOUND ABOVE`;
     } else if (!testlineConstraint && !testlineReference){
      // local action does not meet the required constraint (and this isn't the reference node)
      var Ntmp = 1+parseInt(thisconstraint[0]);
@@ -197,7 +201,7 @@ console.log("TESTING entry is: "+parselocalaction[thisconstraint[0]].toString()+
     } else {
      // okay! store the local action
      editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
-     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`+(testlineReference?' <span class="comment refnodecomment">// reference vertex</span>':'');
     }
    } else {
     output += '<span class="nomatch" title="No match for the format (list1),[list2] or (list1)->[list2]">'+input[i]+'</span>';
