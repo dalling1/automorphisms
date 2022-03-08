@@ -262,7 +262,6 @@ function actionToEditor(){
     var thisball = Object.keys(thelocalaction).filter(t=>nodeDistance(autoFrom,t)==d);
     for (var t=0;t<thisball.length;t++){
      var thisnodeaddress = thisball[t];
-     console.log("distance "+d.toString()+", using "+thisnodeaddress.toString());
      if (thelocalaction[thisnodeaddress].length){
       output += `(${thisnodeaddress}) -> [${thelocalaction[thisnodeaddress]}]\n`;
      }
