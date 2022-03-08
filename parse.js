@@ -9,8 +9,6 @@ function parse(){
  var parseDestinationNodeString = '';
  var valencyEstimate = -1;
 
- var debug = false;
-
  // global variables for taking the editor's automorphism and putting it into the graph
  editorAutomorphismValid = false;
  editorReferenceNode = null;
@@ -97,6 +95,7 @@ function parse(){
     comments[i] = '';
    }
 
+
    // comments have been stored and removed, now look for the ()->[] entries
    var tmp = automorphismformat.exec(input[i].replaceAll('"','')); // find matches, ignore quotation marks
    if (tmp && tmp[1].length && tmp[2].length){
@@ -108,7 +107,26 @@ function parse(){
     // - three options here: a list of comma-separated numbers/letters, and a single number with optional comma, or empty
     var checkterm1 = listformat.exec(term1);
     var checkterm2 = listformat.exec(term2);
-    if (checkterm1 && checkterm2){
+
+    /*
+     We will do a series of tests to see if this is a valid local action:
+      - check that the overall format is okay: brackets, parentheses, commas, two terms [testlineFormat]
+      - check that the permutation is valid [testlinePermutation]
+      - no constraint on the first (reference vertex) entry [testlineReference]
+      - otherwise, check that we have a local action for the neighbour in the direction of the reference vertex, to provide the constraint [testlineNeighbour]
+      - test if the constraint imposed by the neighbour is satisfied [testlineConstraint]
+    */
+    // initialise
+    var testlineFormat = false;
+    var testlinePermutation = false;
+    var testlineReference = false;
+    var testlineNeighbour = false;
+    var testlineConstraint = false;
+
+
+    // 1. valid line format?
+    var testlineFormat = (checkterm1 && checkterm2);
+    if (testlineFormat){
      // replace empty terms with the empty set symbol (for the root node):
      var showterm1 = (term1.length==0?'\u{d8}':term1);
      var showterm2 = (term2.length==0?'\u{d8}':term2);
@@ -116,70 +134,68 @@ function parse(){
      var parselocalaction = stringListToArray(term2); // empty entries (the root node) become 'NaN'
      if (valencyEstimate==-1){
       // take the valency from the length of the first local action
-      var valencyEstimate = parselocalaction.length;
+      testlineReference = true;
+      valencyEstimate = parselocalaction.length;
       console.log('Estimating valency, from first local action, as '+valencyEstimate);
-      // okay: set the output display for this line as the first term leading to the other with an arrow (\mapsto in Latex)
-      output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
-      // and add the local action for the reference node to the stored list:
-      editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
-     } else {
-      if (parselocalaction.length == valencyEstimate){
-       // okay format- and length-wise, now need to test constraints (if any):
-
-
-       var actionOkay = false;
-       if (parselocalaction.length>0){
-        if (term1==parseReferenceNodeString){
-         // found local action for the reference node, no need to test it
-         if (debug) console.log("PARSE: Local action for reference node "+showterm1+": "+parselocalaction.toString());
-         actionOkay = true;
-        } else {
-         // found a local action for a non-reference node: need to make sure it obeys any constraints imposed on it by the node nearer the reference node
-         var pathToRef = getPath(node1,parseReferenceNode);
-         if (pathToRef.length>1){
-          if (debug) console.log("PARSE: Test local action for ["+term1+"]: ["+parselocalaction.toString()+"]");
-          var thisEdge = node1.length>pathToRef[1]?node1.slice(-1):pathToRef[1].slice(-1);
-          if (debug) console.log("CONSTRAINT: constraint comes from local action at "+pathToRef[1].toString());
-          // local action for the constraining vertex must exist!
-          if (Object.keys(editorLocalAction).indexOf(pathToRef[1].toString())!=-1){
-           var thisconstraint = [thisEdge[0] , editorLocalAction[pathToRef[1]][thisEdge[0]]];
-           if (debug) console.log("CONSTRAINT: "+parselocalaction.toString()+" must comply with "+thisconstraint.toString());
-           if (testLocalAction(parselocalaction,thisconstraint)){ // test the local action against its constraint
-            if (debug) console.log("TEST: passed constraint");
-            actionOkay = true;
-           } else {
-            if (debug) console.log("TEST: failed constraint");
-            actionOkay = false; // this local action failed its constraint test
-           }
-          }
-         }
-        }
-        if (actionOkay){
-         // constraints (if any) are satisfied:
-         // add this local action to the global list (but only where the local action is actually defined; 0-length entries are placeholders for the next set of local actions)
-         editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
-         // and set the output display for this line as the first term leading to the other with an arrow (\mapsto in Latex)
-         output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
-        } else {
-         output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Permutation fails constraint">[${showterm2}]</span> // FAILS CONSTRAINT FROM (`+pathToRef[1].toString()+`)`;
-        }
-       }
-
-
-
-      } else {
-       // the valency is wrong (ie. the local action has the wrong length)
-       // not okay: show the error in the output
-       output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="wrongvalency" title="Wrong valency for local action">[${showterm2}]</span>`;
-      }
      }
-
-
-
-    } else {
-     output += '<span class="wrongformat" title="Wrong format for lists within (...) and/or [...]">'+input[i]+'</span>';
     }
 
+    // 2. valid permutation?
+    if (testlineFormat) testlinePermutation = testPermutation(parselocalaction,valencyEstimate);
+
+    // 3. find neighbour towards reference node (this test is skipped for the reference node)
+    if (testlineFormat && testlinePermutation){
+     // 3a. is this the reference vertex? no neighbour required
+     if (!testlineReference){
+      // 3b. not the reference vertex, find the neighbour towards the reference node
+      // find the neighbouring node in the direction of the reference node and check that it has a local action defined for it
+      var pathToRef = getPath(node1,parseReferenceNode);
+      if (pathToRef.length>1){
+       // local action for the constraining vertex must exist!
+       if (Object.keys(editorLocalAction).indexOf(pathToRef[1].toString())!=-1){
+        testlineNeighbour = true;
+       }
+      }
+     }
+    }
+
+    // 4. is the constraint satisfied?
+    if (testlineFormat && testlinePermutation && testlineNeighbour){
+     var failedconstraint = [];
+     // get the local action of the constraining neighbour
+     var neighbourLocalAction = editorLocalAction[pathToRef[1].toString()]; // from the stored list of local actions which passed all the tests
+     // which entry is the constraint? the one corresponding to the edge joining these neighbours
+     var thisedge = (node1.length>pathToRef[1] ? node1.slice(-1)[0] : pathToRef[1].slice(-1)[0] ); // take [0] since slice returns an array
+     // so the constraint is neighbourLocalAction[thisedge]
+     var thisconstraint = [thisedge , neighbourLocalAction[thisedge]];
+/*
+console.log("TESTING local action: "+parselocalaction.toString());
+console.log("AGAINST: "+neighbourLocalAction.toString());
+console.log("TESTING entry (0-indexed): "+thisconstraint[0].toString());
+console.log("TESTING entry should be: "+thisconstraint[1].toString());
+console.log("TESTING entry is: "+parselocalaction[thisconstraint[0]].toString()+" ("+(testLocalAction(parselocalaction,thisconstraint)?"passed":"failed")+")");
+*/
+     testlineConstraint = testLocalAction(parselocalaction,thisconstraint); // perform the test
+    }
+
+    // 5. report
+    if (!testlineFormat){
+     // line format is wrong
+     output += '<span class="wrongformat" title="Wrong format for lists within (...) and/or [...]">'+input[i]+'</span>';
+    } else if (!testlinePermutation){
+     // permutation is invalid
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="wrongvalency" title="Invalid local action">[${showterm2}]</span> <style="color:#900;">// invalid permutation</span>`;
+    } else if (!testlineNeighbour && !testlineReference){
+     // required constraining neighbour has no entry (and this isn't the reference node)
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Missing constraint">[${showterm2}]</span> <span style="color:#900;">// LOCAL ACTION OF REQUIRED NEIGHBOUR NOT FOUND`;
+    } else if (!testlineConstraint && !testlineReference){
+     // local action does not meet the required constraint (and this isn't the reference node)
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Permutation fails constraint">[${showterm2}]</span> <span style="color:#900;">// FAILS CONSTRAINT FROM (`+pathToRef[1].toString()+`): entry `+(1+parseInt(thisconstraint[0]))+` must be `+thisconstraint[1]+`</span>`;
+    } else {
+     // okay! store the local action
+     editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">[${showterm2}]</span>`;
+    }
    } else {
     output += '<span class="nomatch" title="No match for the format (list1),[list2] or (list1)->[list2]">'+input[i]+'</span>';
    }
