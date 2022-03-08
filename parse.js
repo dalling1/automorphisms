@@ -154,6 +154,8 @@ function parse(){
        // local action for the constraining vertex must exist!
        if (Object.keys(editorLocalAction).indexOf(pathToRef[1].toString())!=-1){
         testlineNeighbour = true;
+       } else {
+        var missingneighbour = pathToRef[1];
        }
       }
      }
@@ -187,10 +189,11 @@ console.log("TESTING entry is: "+parselocalaction[thisconstraint[0]].toString()+
      output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="wrongvalency" title="Invalid local action">[${showterm2}]</span> <style="color:#900;">// invalid permutation</span>`;
     } else if (!testlineNeighbour && !testlineReference){
      // required constraining neighbour has no entry (and this isn't the reference node)
-     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Missing constraint">[${showterm2}]</span> <span style="color:#900;">// LOCAL ACTION OF REQUIRED NEIGHBOUR NOT FOUND`;
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Missing constraint">[${showterm2}]</span> <span style="color:#900;">// LOCAL ACTION OF REQUIRED NEIGHBOUR `+missingneighbour.toString()+` NOT FOUND ABOVE`;
     } else if (!testlineConstraint && !testlineReference){
      // local action does not meet the required constraint (and this isn't the reference node)
-     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Permutation fails constraint">[${showterm2}]</span> <span style="color:#900;">// FAILS CONSTRAINT FROM (`+pathToRef[1].toString()+`): entry `+(1+parseInt(thisconstraint[0]))+` must be `+thisconstraint[1]+`</span>`;
+     var Ntmp = 1+parseInt(thisconstraint[0]);
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Permutation fails constraint">[${showterm2}]</span> <span style="color:#900;">// FAILS CONSTRAINT FROM (`+(pathToRef[1].length==0?'\u{d8}':pathToRef[1].toString())+`): the `+nth(Ntmp)+` entry must be `+thisconstraint[1]+` not `+parselocalaction[parseInt(thisconstraint[0])]+`</span>`;
     } else {
      // okay! store the local action
      editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
@@ -350,7 +353,10 @@ Some elements of the output will be coloured, representing:'+EOL+'\
 &nbsp;- <span class="comment">a comment</span>'+EOL+'\
 &nbsp;- <span class="nomatch">broken formatting for local action (eg. missing parentheses/bracket)</span>'+EOL+'\
 &nbsp;- <span class="wrongformat">broken formatting within vertex/permutation (eg. extra comma)</span>'+EOL+'\
-&nbsp;- <span id="term2" class="wrongvalency">the local action has the wrong valency (ie. length)</span>'+EOL+'\
+&nbsp;- <span id="term2" class="wrongvalency">the local action permutation is invalid (eg. repeated entries, wrong length)</span>'+EOL+'\
+&nbsp;- <span id="term2" class="failsconstraint">fails to meet constraint of neighbouring local action</span>'+EOL+'\
+'+EOL+'\
+Erroneous entries will not be added to the list of local actions, which may cause subsequent constraint failures.'+EOL+'\
 '+EOL+'\
 '+EOL+'\
 <b>AUTOMORPHISM</b>'+EOL+'\
@@ -362,6 +368,8 @@ To define an automorphism, you need to specify the reference vertex and its dest
 followed by a list of vertices and their local action permutation, such as'+EOL+'\
 '+EOL+'\
 &nbsp;&nbsp;&nbsp;&nbsp;(0,1,2,1) -> [2,0,1]'+EOL+'\
+'+EOL+'\
+The order of entries must be outwards from the reference vertex, so that constraints are satisfied (that is, each vertex must be connected to the reference vertex by the entries above it). '+EOL+'\
 '+EOL+'\
 '+EOL+'\
 <b>FORMATS</b>'+EOL+'\
@@ -383,4 +391,17 @@ which specifies the local action permutation [0,1,2] $\\mapsto$ [2,0,1] for the 
 ';
 //is the address 0,1,2,1 (which might be red,green,blue,green) and the local action permutation [0,1,2]&nbsp;$\\mapsto$&nbsp;[2,0,1] (which might be (red,blue,green)&nbsp;$\\mapsto$&nbsp;(green,red,blue))'+EOL+'\
  setEditorOutput(helptext);
+}
+
+// ordinal string function (by kennebec https://stackoverflow.com/a/15810761)
+function nth(n){
+    if(isNaN(n) || n%1) return n;
+    var s= n%100;
+    if(s>3 && s<21) return n+'th';
+    switch(s%10){
+        case 1: return n+'st';
+        case 2: return n+'nd';
+        case 3: return n+'rd';
+        default: return n+'th';
+    }
 }
