@@ -171,7 +171,7 @@ function parse(){
      // get the local action of the constraining neighbour
      var neighbourLocalAction = editorLocalAction[pathToRef[1].toString()]; // from the stored list of local actions which passed all the tests
      // which entry is the constraint? the one corresponding to the edge joining these neighbours
-     var thisedge = (node1.length>pathToRef[1] ? node1.slice(-1)[0] : pathToRef[1].slice(-1)[0] ); // take [0] since slice returns an array
+     var thisedge = (node1.length>pathToRef[1].length ? node1.slice(-1)[0] : pathToRef[1].slice(-1)[0] ); // take [0] since slice returns an array
      // so the constraint is neighbourLocalAction[thisedge]
      var thisconstraint = [thisedge , neighbourLocalAction[thisedge]];
 /*
@@ -197,7 +197,7 @@ console.log("TESTING entry is: "+parselocalaction[thisconstraint[0]].toString()+
     } else if (!testlineConstraint && !testlineReference){
      // local action does not meet the required constraint (and this isn't the reference node)
      var Ntmp = 1+parseInt(thisconstraint[0]);
-     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Permutation fails constraint">[${showterm2}]</span> <span style="color:#900;">// FAILS CONSTRAINT FROM (`+(pathToRef[1].length==0?'\u{d8}':pathToRef[1].toString())+`): the `+nth(Ntmp)+` entry must be `+thisconstraint[1]+` not `+parselocalaction[parseInt(thisconstraint[0])]+`</span>`;
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2" class="failsconstraint" title="Permutation fails constraint">[${showterm2}]</span> <span style="color:#900;">// FAILS CONSTRAINT [`+thisedge.toString()+`] FROM (`+(pathToRef[1].length==0?'\u{d8}':pathToRef[1].toString())+`): the `+nth(Ntmp)+` entry must be `+thisconstraint[1]+` not `+parselocalaction[parseInt(thisconstraint[0])]+`</span>`;
     } else {
      // okay! store the local action
      editorLocalAction[term1] = parselocalaction; // array index is a string, entry is an array (with length equal to the valency)
@@ -237,8 +237,7 @@ function actionToEditor(){
  output += '// Reference node: ('+(autoFrom==null?'NOT SET':autoFrom.toString())+')\n';
  output += '// Destination node: ('+(autoTo==null?'NOT SET':autoTo.toString())+')\n';
 
- // check that we have some (potentially valid) local actions by making sure that all entries are not
- // empty arrays:
+ // check that we have some (potentially valid) local actions by making sure that all entries are not empty arrays (ie. placeholders):
  var haveLAs = false;
  for (L in thelocalaction){
   if (thelocalaction[L].length > 0){
@@ -246,18 +245,30 @@ function actionToEditor(){
   }
  }
 
- // now, if some local actions exist, add them to the editor contents:
+ // if some local actions exist, add them to the editor contents, ordered by distance from the reference node:
  if (haveLAs){
   if (constantActionEnabled()){
    output += '// constant action enabled\n';
    var t = autoFrom.toString();
    output += `(${t}) -> [${thelocalaction[t]}]\n`;
   } else {
-   for (var t in thelocalaction){
-    if (thelocalaction[t].length){
-     output += `(${t}) -> [${thelocalaction[t]}]\n`;
+   // calculate the distances of each node from the reference node, and put them into the output in ascending distance order:
+   // ie. starting with the reference node and working outwards (so that the required constraints are present for parsing in the text editor)
+   var nodeDistances = Object.keys(thelocalaction).map(t=>nodeDistance(autoFrom,t));
+   var maxDistance = Math.max(...nodeDistances);
+
+   for (var d=0;d<=maxDistance;d++){
+    // get nodes at distance d from the reference node:
+    var thisball = Object.keys(thelocalaction).filter(t=>nodeDistance(autoFrom,t)==d);
+    for (var t=0;t<thisball.length;t++){
+     var thisnodeaddress = thisball[t];
+     console.log("distance "+d.toString()+", using "+thisnodeaddress.toString());
+     if (thelocalaction[thisnodeaddress].length){
+      output += `(${thisnodeaddress}) -> [${thelocalaction[thisnodeaddress]}]\n`;
+     }
     }
    }
+
   }
  }
  document.getElementById('theinput').value = output;
