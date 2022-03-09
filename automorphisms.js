@@ -1100,16 +1100,18 @@ function testAutomorphism(){
 function demo(n=1){
  n = n-1; // call the function using values 1, 2, etc., but internally use zero-indexing: demos[0], demos[1], etc.
  var demos = [];
- // format is [valency, depth, autoFrom, autoTo, localAction, constantLA, originalNodesOnly]:
- demos.push([3,3,'Ø','r',[0,1,2],true,false]);               // 1
- demos.push([3,3,'Ø','r',[2,0,1],true,false]);               // 2 as for 1 but with cyclic LA
- demos.push([4,3,'bg','b',[1,0,2,3],true,true]);             // 3
- demos.push([3,7,'g','r',[1,2,0],true,true]);                // 4 translation
-// demos.push([3,7,'gb','r',[1,2,0],true,true]);               // 5 reflection?
- demos.push([3,5,'b','r',[0,1,2],true,false]);
- demos.push([3,5,'g','g',[1,2,0],true,true]);                // 6 rotation
-// demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6],true]);  // 6 pretty but too slow
- demos.push([4,3,'bm','mg',[0,1,2,3],true,false]);           // 7 translation
+ // format is [valency, depth, autoFrom, autoTo, localAction, constantLA, originalNodesOnly, extendGraph]:
+ demos.push([3,3,'Ø','r',[0,1,2],true,false,false]);               // 1
+ demos.push([3,3,'Ø','r',[2,0,1],true,false,false]);               // 2 as for 1 but with cyclic LA
+ demos.push([4,3,'bg','b',[1,0,2,3],true,true,false]);             // 3
+ demos.push([3,7,'g','r',[1,2,0],true,true,false]);                // 4 translation
+// demos.push([3,7,'gb','r',[1,2,0],true,true,false]);               // 5 reflection?
+ demos.push([3,5,'b','r',[0,1,2],true,false,false]);
+ demos.push([3,5,'g','g',[1,2,0],true,true,false]);                // 6 rotation
+// demos.push([7,4,'bkyk','kmck',[1,0,2,4,3,5,6],true,false]);  // 6 pretty but too slow
+ demos.push([4,3,'bm','mg',[0,1,2,3],true,false,false]);           // 7 translation
+ demos.push([3,5,'','r',[0,1,2],true,false,true]);                 // 8 reflection - draw with twopi and turn on dynamics
+
 
  if (n<demos.length){
   clearAutomorphism();
@@ -1119,7 +1121,7 @@ function demo(n=1){
   document.getElementById("input_maxdepth").value = demos[n][1]; // set depth
   document.getElementById("input_constantauto").checked = demos[n][5]; // turn constantauto on or off
   document.getElementById("input_extent").checked = demos[n][6]; // turn "original nodes only" on or off
-  document.getElementById("input_extendgraph").checked = false; // always off in demos, for now
+  document.getElementById("input_extendgraph").checked = demos[n][7]; // turn "extend graph" on or off
   setOutputValues();
   manageControls();
   run(false); // create the original (non-transformed) graph
