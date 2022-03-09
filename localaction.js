@@ -722,6 +722,7 @@ function setRandomLocalActions(){
     // 4. store it in thelocalaction
     if (testPermutation(newlocalaction,valency)){ // make sure it is okay
      if (debug) console.log("RLA: New local action at "+labelNode(thisnode)+": ["+newlocalaction.toString()+"]");
+     console.log("Random local action at "+labelNode(thisnode)+": ["+newlocalaction.toString()+"]");
      saveLocalAction(thisnode,newlocalaction);
     } else {
      if (debug) console.log("RLA: Error: an invalid permutation was generated");
