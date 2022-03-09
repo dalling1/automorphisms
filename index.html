@@ -453,17 +453,17 @@
  </div>
 
  <div id="graphControls">
-  <div class="onecontrol">Valency:<br/>
-   <input type="range" id="input_valency" value="3" min="2" max="10" oninput="setOutputValues();"/>
-   <output id="output_valency"></output>
-  </div>
-  <div class="onecontrol">Depth:<br/>
-   <input type="range" id="input_maxdepth" value="5" min="0" max="10" oninput="setOutputValues();"/>
-   <output id="output_maxdepth"></output>
-  </div>
-
-  <div class="onecontrol">Nodes:<br/>
-   <output id="output_Nnodes"></output>
+  <div class="onecontrol controlwrapper">
+   <div class="onecontrol">Valency:<br/>
+    <input type="range" id="input_valency" value="3" min="2" max="10" oninput="setOutputValues();"/>
+    <output id="output_valency"></output>
+   </div>
+   <div class="onecontrol">Depth:<br/>
+    <input type="range" id="input_maxdepth" value="5" min="0" max="10" oninput="setOutputValues();"/>
+    <output id="output_maxdepth"></output>
+   </div>
+   <br/>
+   <div class="onecontrol" style="color:#000;width:100%;text-align:center;">Nodes:<output id="output_Nnodes"></output></div>
   </div>
 
   <div class="onecontrol">Original<br/>nodes only:<br/>
