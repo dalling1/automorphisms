@@ -467,12 +467,24 @@ function permutationCyclic(list,dist=0){
 }
 
 // randomly permute a given list /////////////////////////////////////////////////////////////////// fn: permutationRandom
-function permutationRandom(list){
+function permutationRandom(list,fixlist=[]){
+ // elements of 'list' whose indices are given in 'fixlist' are not moved
+
+ if (typeof(fixlist=="number")) fixlist = [fixlist]; // in case just an index is given, not as an array
+
  var inlist = Array(list.length); // initialise
- var out = Array(list.length); // initialise
- for (var i=0;i<list.length;i++) inlist[i] = list[i]; // make a copy
- for (var i=0;i<list.length;i++) out[i] = inlist.splice(randomInt(inlist.length),1); // extract the elements in random order
- return out;
+ var outlist = Array(list.length); // initialise
+ for (var i=0;i<list.length;i++) inlist[i] = list[i]; // make a copy which will be chopped up to make the output
+ for (var i=0;i<outlist.length;i++) outlist[i] = inlist.splice(randomInt(inlist.length),1)[0]; // extract the elements in random order
+ // put fixed entries back where they belong (swap them with the random values found in their place)
+ for (var i=0;i<fixlist.length;i++){
+  var fixvalue = list[fixlist[i]]; // what is the value?
+  var indx = outlist.indexOf(fixvalue); // where is it now?
+  var swapvalue = outlist[fixlist[i]]; // what is in its place?
+  outlist[fixlist[i]] = fixvalue; // put it where it belongs
+  outlist[indx] = swapvalue; // but swap with the value in that place
+ }
+ return outlist;
 }
 
 // test a permutation vector for legality ////////////////////////////////////////////////////////// fn: testPermuation
@@ -649,4 +661,121 @@ function manageConstant(){
 
  // update the local action editor
  actionToEditor();
+}
+
+// add random local actions (subject to constraints) for all drawn vertices //////////////////////// fn: setRandomLocalActions()
+function setRandomLocalActions(){
+ /*
+  Work outward from the reference node, checking constraints and adding random local actions as we go,
+  much like the way that constraints in the text editor are tested.
+ */
+ var debug = false;
+ if (autoFrom!=null && autoTo!=null){ // reference and destination vertices must be defined
+
+ // calculate the distances of each node from the reference node, and put them into the output in ascending distance order:
+ // ie. starting with the reference node and working outwards (so that the required constraints are present for parsing in the text editor)
+ var nodeDistances = thenodes.map(t=>nodeDistance(autoFrom,t));
+ var maxDistance = Math.max(...nodeDistances);
+ var valency = parseInt(document.getElementById("input_valency").value);
+ var initialperm = [];
+ for (var i=0;i<valency;i++) initialperm[i] = i; // make a list which we can (randomly) permute
+
+ // 0. see if there is a local action at the reference node, and generate a random one if there isn't:
+ if (thelocalaction[autoFrom.toString()].length==0){
+  var newlocalaction = permutationRandom(initialperm);
+  if (debug) console.log("RLA: New local action at reference vertex "+labelNode(autoFrom)+": ["+newlocalaction.toString()+"]");
+  saveLocalAction(autoFrom,newlocalaction);
+ }
+
+ for (var d=0;d<=maxDistance;d++){
+  // get nodes at distance d from the reference node:
+  var thisball = thenodes.filter(t=>nodeDistance(autoFrom,t)==d);
+  // loop through the nodes at distance d from reference node
+  for (var t=0;t<thisball.length;t++){
+   var thisnode = thisball[t]; // array, not string
+   var thisnodeaddress = thisball[t].toString();
+   var existencecheck = false;
+   try{
+    if (thelocalaction[thisnodeaddress].length>0){
+     if (debug) console.log("RLA: LA exists at "+labelNode(thisnode));
+     existencecheck=true;
+    } else {
+     if (debug) console.log("RLA: placeholder LA at "+labelNode(thisnode));
+    }
+   }
+   catch(error){
+    existencecheck=false;
+   }
+   if (existencecheck){ // returns true if the entry exists AND has length > 0
+    // this node has a local action already, nothing to do
+    if (debug) console.log("RLA: Random local actions: skipping node "+labelNode(thisnode)+" (local action already exists)");
+   } else {
+    // this node either has a placeholder or no local action, so get its constraint and then generate a complying local action
+    var neighbourLocalAction = getLocalAction(getNeighbour(thisnode));
+    if (debug) console.log("RLA: neighbouring local action is ["+neighbourLocalAction.toString()+"]");
+    var thisconstraint = getLocalActionConstraint(thisnode);
+    var thisedge = thisconstraint[0];
+    if (debug) console.log("RLA: Constraint at "+labelNode(thisnode)+": ["+thisconstraint.toString()+"]");
+
+    // 3. generate a complying random permutation
+    var newlocalaction = permutationRandom(neighbourLocalAction,[thisedge]); // fix the value in position 'thisedge'
+    // 4. store it in thelocalaction
+    if (testPermutation(newlocalaction,valency)){ // make sure it is okay
+     if (debug) console.log("RLA: New local action at "+labelNode(thisnode)+": ["+newlocalaction.toString()+"]");
+     saveLocalAction(thisnode,newlocalaction);
+    } else {
+     if (debug) console.log("RLA: Error: an invalid permutation was generated");
+    }
+   }
+  }
+ }
+
+ // all done, set the display
+ decorateNodes();
+ }
+}
+
+// get the neighbour of a node towards the reference vertex //////////////////////////////////////// fn: getNeighbour()
+// returns null if the reference vertex is not set or the reference vertex is given as the argument
+function getNeighbour(node){
+ if (autoFrom!=null){
+  // find the neighbour in the direction of the reference vertex:
+  var pathToRef = getPath(node,autoFrom);
+
+  if (pathToRef.length<2){
+   // this IS the reference node
+   return null;
+  } else {
+   var neighbour = pathToRef[1];
+   return neighbour;
+  }
+ } else {
+  return null;
+ }
+}
+
+// get the local action of a node ////////////////////////////////////////////////////////////////// fn: getLocalAction()
+// returns null if the local action is not set (undefined or has an empty placeholder local action)
+function getLocalAction(node){
+ if (node!=null && Object.keys(thelocalaction).indexOf(node.toString())!=-1 && thelocalaction[node.toString()].length>0){
+  return thelocalaction[node.toString()];
+  } else {
+  return null;
+ }
+}
+
+// get the local action constraint at a given node from its neighbour ////////////////////////////// fn: getLocalActionConstraint()
+function getLocalActionConstraint(node){
+ var neighbour = getNeighbour(node);
+ var neighbourlocalaction = getLocalAction(neighbour);
+ if (neighbourlocalaction!=null){
+  // which element of the local action is the constraint?
+  // the one associated with the edge joining these nodes:
+  var edge = (node.length>neighbour.length ? node.slice(-1)[0] : neighbour.slice(-1)[0] ); // take [0] since slice returns an array
+  var constraint = [edge, neighbourlocalaction[edge]];
+//  console.log("getLA: Nodes "+labelNode(node)+" and "+labelNode(neighbour)+" are connected by the "+labelNode([edge])+" edge (ie. "+edge.toString()+")");
+  return constraint;
+ } else {
+  return null;
+ }
 }
