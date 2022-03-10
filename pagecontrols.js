@@ -137,10 +137,11 @@ function startDragGraph(){
 }
 function dragGraph(){
  if (dragging){
+  var dragStrength = 2;
   var offsetX = Math.round(event.clientX-dragX0);
   var offsetY = Math.round(event.clientY-dragY0);
   console.log("Drag offset is "+offsetX.toString()+", "+offsetY.toString());
-  setTransform("graph0",[dragOrigin[0]+offsetX,dragOrigin[1]+offsetY]); // could add scale, rotate
+  setTransform("graph0",[dragOrigin[0]+dragStrength*offsetX,dragOrigin[1]+dragStrength*offsetY]); // could add scale, rotate
  }
 }
 function endDragGraph(){
