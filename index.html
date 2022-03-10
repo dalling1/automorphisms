@@ -642,29 +642,7 @@
 <script src="automorphisms.js"></script>
 <script src="managefonts.js"></script>
 <script src="parse.js"></script>
-<script>
-function toggleEditor(){
- var btn = document.getElementById('toggleeditorbutton');
- if (btn.innerHTML == 'Show editor'){
-  showTextEditor();
- } else {
-  hideTextEditor();
- }
-}
-function showTextEditor(){
- var btn = document.getElementById('toggleeditorbutton');
- btn.innerHTML = 'Hide editor';
- actionToEditor();
- document.getElementById('parsingInput').scrollIntoView({inline:'start',behavior:'smooth'});
- document.getElementById('graphControls').scrollIntoView({inline:'start',behavior:'smooth'});
-}
-function hideTextEditor(){
- var btn = document.getElementById('toggleeditorbutton');
- btn.innerHTML = 'Show editor';
- document.getElementById('dotContainer').scrollIntoView({inline:'start',behavior:'smooth'});
- document.getElementById('graphControls').scrollIntoView({inline:'start',behavior:'smooth'});
-}
-</script>
+<script src="pagecontrols.js"></script>
 <script>
  // Slider by Léon Gersen  https://refreshless.com/nouislider/
  var dynamicrange = document.getElementById("dynamicrange");
