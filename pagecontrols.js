@@ -152,8 +152,8 @@ function endDragGraph(){
 function wheelZoom(){
  // zoom the graph when the mouse wheel scrolls: note that positive deltaY is turned into "zoom OUT"
  var zoomStrength = 0.25; // change the scroll by this in a step-wise manner
- if (event.deltaY!=0){
-  var scale = getScale("graph0");
+ var scale = getScale("graph0");
+ if (scale!=null && event.deltaY!=0){
   scale[0] += (event.deltaY>0? -zoomStrength : zoomStrength);
   scale[0] = Math.min(10.0,Math.max(0.1,scale[0])); // minimum scale 0.1, maximum scale 10.0
   scale[1] = scale[0];
