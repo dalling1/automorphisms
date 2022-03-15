@@ -819,6 +819,11 @@ function createSVGPath(startX,startY,endX,endY,offset=0,relativePath=false){
   // else don't subtract the starting point
  }
 
+ // is the path actually a loop back to the same place?
+ var selfConnectedPath = true;
+ for (var d=0;d<startPos.length;d++){
+  if (startPos[d]!=endPos[d]) selfConnectedPath = false;
+ }
 
  // taken from https://stackoverflow.com/a/49286885
  if (offset==-1){
@@ -835,32 +840,47 @@ function createSVGPath(startX,startY,endX,endY,offset=0,relativePath=false){
  var mpx=midpt[0];
  var mpy=midpt[1];
 
- // angle of the perpendicular to line joining start and end:
- var theta = -Math.atan2(p2y - p1y, p2x - p1x) - Math.PI / 2;
+ if (selfConnectedPath){
+  // location of control points:
+  var edgeRadius = 500; // say
+  var selfc1X = Math.round(p1x+(Math.random()-0.5)*edgeRadius);
+  var selfc1Y = Math.round(p1y+(Math.random()-0.5)*edgeRadius);
+  var selfc2X = Math.round(p2x+(Math.random()-0.5)*edgeRadius);
+  var selfc2Y = Math.round(p2y+(Math.random()-0.5)*edgeRadius);
+  var c1 = [selfc1X,selfc1Y].join(",");
+  var c2 = [selfc2X,selfc2Y].join(",");
 
- // location of control point:
- var c1x = Math.round(mpx + offset * Math.cos(theta));
- var c1y = Math.round(mpy - offset * Math.sin(theta)); // fixed
+  // create a looping path with a cubic Bezier curve
+  var thepath = "M "+p1x+","+p1y+" C "+c1+" "+c2+" "+p2x+","+p2y; // "C" for cubic; higher orders are available but require more control points
 
- // location of alternative control point:
- var c1xALT = Math.round(mpx - offset * Math.cos(theta));
- var c1yALT = Math.round(mpy + offset * Math.sin(theta)); // fixed
+ } else {
+  // angle of the perpendicular to line joining start and end:
+  var theta = -Math.atan2(p2y - p1y, p2x - p1x) - Math.PI / 2;
 
- // we want arrows to curve away from the centre, so test which side of the arrow the control point is
- if (euclideanDistance(findCoords(labelNode([])),[c1x,c1y])<euclideanDistance(findCoords(labelNode([])),[c1xALT,c1yALT])){
-  // swap
-  c1x = c1xALT;
-  c1y = c1yALT;
+  // location of control point:
+  var c1x = Math.round(mpx + offset * Math.cos(theta));
+  var c1y = Math.round(mpy - offset * Math.sin(theta)); // fixed
+
+  // location of alternative control point:
+  var c1xALT = Math.round(mpx - offset * Math.cos(theta));
+  var c1yALT = Math.round(mpy + offset * Math.sin(theta)); // fixed
+
+  // we want arrows to curve away from the centre, so test which side of the arrow the control point is
+  if (euclideanDistance(findCoords(labelNode([])),[c1x,c1y])<euclideanDistance(findCoords(labelNode([])),[c1xALT,c1yALT])){
+   // swap
+   c1x = c1xALT;
+   c1y = c1yALT;
+  }
+
+  // end points:
+  p1x = Math.round(p1x);
+  p1y = Math.round(p1y);
+  p2x = Math.round(p2x);
+  p2y = Math.round(p2y);
+
+  // construct the command to draw a quadratic curve
+  var thepath = "M " + p1x + " " + p1y + " Q " + c1x + " " + c1y + " " + p2x + " " + p2y;
  }
-
- // end points:
- p1x = Math.round(p1x);
- p1y = Math.round(p1y);
- p2x = Math.round(p2x);
- p2y = Math.round(p2y);
-
- // construct the command to draw a quadratic curve
- var thepath = "M " + p1x + " " + p1y + " Q " + c1x + " " + c1y + " " + p2x + " " + p2y;
  if (debug) console.log(" PATH: "+thepath);
 
  return thepath;
