@@ -109,12 +109,14 @@ input:checked + .slider:before {
  border-radius: 50%;
  /* box-shadow: 3px 3px 2px #555, 4px 4px 1px #111;*/
  box-shadow: -1px -1px 2px #999;
+ box-shadow: 1px 1px 2px #999;
 }
 
 input:checked + .slider.round:before {
  border-radius: 50%;
  /* box-shadow: 3px 3px 2px #555, 4px 4px 1px #111;*/
  box-shadow: -1px -1px 2px #555;
+ box-shadow: 1px 1px 2px #555;
 }
 
 /* put a frame around controlwrappers */
