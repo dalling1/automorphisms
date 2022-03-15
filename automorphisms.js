@@ -723,7 +723,7 @@ function addArrow(startNode,endNode,clearOldArrows=false){
   return null;
  } else {
 
-  d=createPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],-1); // -1 for default curvature
+  d=createSVGPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],-1); // -1 for default curvature
 
   // get the element which we will append the arrow to
   var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
@@ -799,8 +799,8 @@ function clearArrows(){
  }
 }
 
-// function to compute the path between given endpoints [from focusmodels] ///////////////////////// fn: createPath
-function createPath(startX,startY,endX,endY,offset=0,relativePath=false){
+// function to compute the path between given endpoints [from focusmodels] ///////////////////////// fn: createSVGPath
+function createSVGPath(startX,startY,endX,endY,offset=0,relativePath=false){
  var startPos = Array(startX,startY);
  var endPos = Array(endX,endY);
  // startPos and endPos are two-element positions
