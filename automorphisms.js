@@ -824,7 +824,7 @@ function createSVGPath(startX,startY,endX,endY,offset=0,relativePath=false){
  // is the path actually a loop back to the same place?
  var selfConnectedPath = true;
  for (var d=0;d<startPos.length;d++){
-  if (startPos[d]!=endPos[d]) selfConnectedPath = false;
+  if (startPos[d]!=endPos[d]) selfConnectedPath = false; // no, it isn't
  }
 
  // taken from https://stackoverflow.com/a/49286885
@@ -844,13 +844,27 @@ function createSVGPath(startX,startY,endX,endY,offset=0,relativePath=false){
 
  if (selfConnectedPath){
   // location of control points:
-  var edgeRadius = 500; // say
-  var selfc1X = Math.round(p1x+(Math.random()-0.5)*edgeRadius);
-  var selfc1Y = Math.round(p1y+(Math.random()-0.5)*edgeRadius);
-  var selfc2X = Math.round(p2x+(Math.random()-0.5)*edgeRadius);
-  var selfc2Y = Math.round(p2y+(Math.random()-0.5)*edgeRadius);
-  var c1 = [selfc1X,selfc1Y].join(",");
-  var c2 = [selfc2X,selfc2Y].join(",");
+  var useRandom = false;
+  if (useRandom){
+   var controlPtRadius = 500; // say
+   // a bit more personable but the (looping) arrows are re-generated every time they are drawn
+   // ie. whenever the dynamic range slider is moved
+   var selfc1X = Math.round(p1x+(Math.random()-0.5)*controlPtRadius);
+   var selfc1Y = Math.round(p1y+(Math.random()-0.5)*controlPtRadius);
+   var selfc2X = Math.round(p2x+(Math.random()-0.5)*controlPtRadius);
+   var selfc2Y = Math.round(p2y+(Math.random()-0.5)*controlPtRadius);
+  } else {
+   // self-connnecting arrows are drawn the same way every time
+   // try +/- 45deg "above" the node (on the screen)
+   var angle = 45;
+   var controlPtRadius = 250; // say
+   var selfc1X = Math.round(p1x-Math.sin(2*Math.PI*(angle/360))*controlPtRadius);
+   var selfc1Y = Math.round(p1y+Math.sin(2*Math.PI*(angle/360))*controlPtRadius);
+   var selfc2X = Math.round(p1x+Math.sin(2*Math.PI*(angle/360))*controlPtRadius);
+   var selfc2Y = Math.round(p1y+Math.sin(2*Math.PI*(angle/360))*controlPtRadius);
+  }
+  var c1 = [selfc1X,selfc1Y].join(","); // control point 1
+  var c2 = [selfc2X,selfc2Y].join(","); // control point 2
 
   // create a looping path with a cubic Bezier curve
   var thepath = "M "+p1x+","+p1y+" C "+c1+" "+c2+" "+p2x+","+p2y; // "C" for cubic; higher orders are available but require more control points
