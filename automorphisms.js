@@ -719,7 +719,7 @@ function addArrow(startNode,endNode,clearOldArrows=false){
  startPosition=findCoords(startNode);
  endPosition=findCoords(endNode);
  if (startPosition[0]==undefined || endPosition[0]==undefined){
-  // not found, don't make the arrow
+  // not found, don't make the arrow (probably tried to draw an arrow to a node which is not drawn)
   return null;
  } else {
 
@@ -736,10 +736,10 @@ function addArrow(startNode,endNode,clearOldArrows=false){
   // make a copy of the arrowhead
   var Narrowheads = document.getElementsByClassName("arrowhead").length;
   var newarrowhead = document.getElementById("arrowhead").cloneNode();
-  var newarrowheadid = "arrowhead"+Narrowheads.toString();
+  var newarrowheadid = "arrow"+Narrowheads.toString()+"head";
   newarrowhead.id = newarrowheadid; // set id
   newarrowhead.classList.add("arrowhead"); // set class
-  // need to clone the children of the original arrowhead too (includes the path)
+  // need to clone the children (including the path) of the original arrowhead too
   var newarrowheadchildren = document.getElementById("arrowhead").children;
   for (var j=0;j<newarrowheadchildren.length;j++){
    var newchild = newarrowheadchildren[j].cloneNode();
@@ -756,6 +756,8 @@ function addArrow(startNode,endNode,clearOldArrows=false){
   newpath.style.stroke = "#0003";
   newpath.setAttribute("stroke-width",3);
   newpath.setAttribute("d",d);
+  var Narrows = document.getElementsByClassName("graphArrow").length;
+  newpath.setAttribute("id","arrow"+Narrows.toString());
 //  newpath.setAttribute("marker-end","url(#arrowhead)"); // use the same head for all arrows
   newpath.setAttribute("marker-end","url(#"+newarrowheadid+")");
   newpath.classList.add("graphArrow");
@@ -780,8 +782,8 @@ function styleArrow(arrow=null,width=4,colour=null,headcolour=null){
   // use the stroke colour for the arrow's head as well
   if (headcolour==null && colour!=null) headcolour = colour;
   if (headcolour!=null){
-   // yes, this will change the colour of every arrowhead on the graph... need to create duplicates when the arrow is created
-   document.getElementById("arrowhead").getElementsByTagName("path")[0].setAttribute("fill",headcolour);
+   // arrow head IDs are formed from the arrow ID by appending "head"
+   document.getElementById(arrow.id+"head").getElementsByTagName("path")[0].setAttribute("fill",headcolour);
   }
  }
 }
