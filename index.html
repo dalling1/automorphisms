@@ -448,7 +448,15 @@
  }
 */
 
+  .animatedArrow {
+   animation: movearrow linear 1s forwards;
+  }
 
+  @keyframes movearrow {
+   100% {
+    stroke-dashoffset: 0;
+   }
+  }
  </style>
 </head>
 <body onload="hideTextEditor();">

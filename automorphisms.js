@@ -714,7 +714,7 @@ function lineMidPoint(start,end,factor=0.5){
 }
 
 // function to create an arrow between two nodes /////////////////////////////////////////////////// fn: addArrow
-function addArrow(startNode,endNode,clearOldArrows=false){
+function addArrow(startNode,endNode,clearOldArrows=false,doAnimate=true){
  // create an SVG path between the given nodes (by label, eg. addArrow("br",labelNode([])) )
  startPosition=findCoords(startNode);
  endPosition=findCoords(endNode);
@@ -733,39 +733,51 @@ function addArrow(startNode,endNode,clearOldArrows=false){
   // remove old arrows?
   if (clearOldArrows) clearArrows();
 
+  // what will the ID of the new arrow (line) be?
+  var Narrows = document.getElementsByClassName("graphArrow").length;
+  var newarrowid = "arrow"+Narrows.toString();
+  // and of the head?
+  var newarrowheadid = newarrowid+"head";
+
   // make a copy of the arrowhead
   var Narrowheads = document.getElementsByClassName("arrowhead").length;
   var newarrowhead = document.getElementById("arrowhead").cloneNode();
-  var newarrowheadid = "arrow"+Narrowheads.toString()+"head";
+  var newarrowheadid = newarrowid+"head";
   newarrowhead.id = newarrowheadid; // set id
   newarrowhead.classList.add("arrowhead"); // set class
   // need to clone the children (including the path) of the original arrowhead too
   var newarrowheadchildren = document.getElementById("arrowhead").children;
   for (var j=0;j<newarrowheadchildren.length;j++){
    var newchild = newarrowheadchildren[j].cloneNode();
-   if (newchild.tagName=="path"){
-//    newchild.setAttribute("fill","#f30"); // set the colour as well?
-   }
+//   if (newchild.tagName=="path"){
+//    newchild.setAttribute("fill","#f30"); // set the colour while we are cloning?
+//   }
    newarrowhead.append(newchild);
   }
   svgdefs.appendChild(newarrowhead);
 
-  // create a new one:
-  var newpath = document.createElementNS("http://www.w3.org/2000/svg","path");
-  newpath.style.fill = "none";
-  newpath.style.stroke = "#0003";
-  newpath.setAttribute("stroke-width",3);
-  newpath.setAttribute("d",d);
-  var Narrows = document.getElementsByClassName("graphArrow").length;
-  newpath.setAttribute("id","arrow"+Narrows.toString());
-//  newpath.setAttribute("marker-end","url(#arrowhead)"); // use the same head for all arrows
-  newpath.setAttribute("marker-end","url(#"+newarrowheadid+")");
-  newpath.classList.add("graphArrow");
+  // create a new arrow (the line):
+  var newarrow = document.createElementNS("http://www.w3.org/2000/svg","path");
+  newarrow.style.fill = "none";
+  newarrow.style.stroke = "#0003";
+  newarrow.setAttribute("stroke-width",3);
+  newarrow.setAttribute("d",d);
+  newarrow.setAttribute("id",newarrowid);
+//  newarrow.setAttribute("marker-end","url(#arrowhead)"); // use the same head for all arrows
+  newarrow.setAttribute("marker-end","url(#"+newarrowheadid+")");
+  newarrow.classList.add("graphArrow");
 //  "class": "animpath",
 //  "fromto": from+" "+to,
-  svg.appendChild(newpath);
+  svg.appendChild(newarrow);
 
-  return newpath;
+  if (doAnimate){
+   var L = newarrow.getTotalLength();
+   newarrow.setAttribute("stroke-dasharray",L);
+   newarrow.setAttribute("stroke-dashoffset",L);
+   newarrow.classList.add("animatedArrow");
+  }
+
+  return newarrow;
  }
 }
 
@@ -1002,7 +1014,7 @@ function decorateNodes(doAutomorphism=false){
   if (fromNode!=null && toNode!=null){
    var fromstring = labelNode(autoFrom);
    var tostring = labelNode(autoTo);
-   addArrow(fromstring,tostring,true);
+   addArrow(fromstring,tostring,true,false); // true: clear old arrows; false: do not animate
   }
   // add local action decorations where warranted: [remove, now done by styleActions]
   for (thenodestr in thelocalaction){
