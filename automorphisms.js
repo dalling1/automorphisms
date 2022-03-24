@@ -723,7 +723,7 @@ function addArrow(startNode,endNode,clearOldArrows=false,doAnimate=true){
   return null;
  } else {
 
-  d=createSVGPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],-1); // -1 for default curvature
+  var arrowPath = createSVGPath(startPosition[0],startPosition[1],endPosition[0],endPosition[1],-1); // -1 for default curvature
 
   // get the element which we will append the arrow to
   var svg = document.getElementById("graph0"); // this is the main SVG element from GraphViz
@@ -761,7 +761,7 @@ function addArrow(startNode,endNode,clearOldArrows=false,doAnimate=true){
   newarrow.style.fill = "none";
   newarrow.style.stroke = "#0003";
   newarrow.setAttribute("stroke-width",3);
-  newarrow.setAttribute("d",d);
+  newarrow.setAttribute("d",arrowPath);
   newarrow.setAttribute("id",newarrowid);
 //  newarrow.setAttribute("marker-end","url(#arrowhead)"); // use the same head for all arrows
   newarrow.setAttribute("marker-end","url(#"+newarrowheadid+")");
