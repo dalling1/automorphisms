@@ -204,31 +204,42 @@ async function run(doAutomorphism=false){
  }
 
  if (doAutomorphism && autoFrom!=null && autoTo!=null){
-  // the new approach to performing the automorphism:
-  thenewnodes[findNode(autoTo,thenodeindex)] = autoFrom; // set the label at the destination
-  thenewnodeindex[autoFrom.toString()] = findNode(autoTo,thenodeindex); // put the destination node index into the look-up table of nodes
+  /* --- start of applying the automorphism --- */
 
+
+  /* APPLY THE AUTOMORPHISM */
+  // find the SVG element where the reference node is moving to, and store it in the index
+  var destinationSVGnode = findNode(autoTo,thenodeindex);
+  thenewnodeindex[autoFrom.toString()] = destinationSVGnode;
+  // set the label which the destination SVG node gets under the automorphism
+  thenewnodes[destinationSVGnode] = autoFrom;
   // add the distance between the reference and destination nodes:
   autodistance[autoFrom.toString()] = nodeDistance(autoFrom,autoTo);
-
-  showFromTo();
-  document.getElementById("editorhider").classList.remove("hiddenElement"); // "mask" the local action editor when we are showing the transformed graph
-
   // carry out the automorphism:
   if (testPermutation(thelocalaction[autoFrom.toString()])){
    processnode(autoFrom);
   } else {
-   console.log("Error: invalid permutation specified for local action");
+   console.log("Error: invalid permutation specified for local action at the reference vertex");
   }
 
+
+  /*  DECORATION/REPORTING */
+  // show the reference node and its destination on the page (inside the graph area)
+  showFromTo();
+  // cover up the local action editor (greyed out) by unhiding the "mask" over it
+  document.getElementById("editorhider").classList.remove("hiddenElement");
+
+
+  /* DYNAMICS CONTROLS */
   // set the available dynamic range limits according to the just-drawn graph
   // (note: always use a min and max limits for the slider of at least 0 and 6)
   var D = gatherDistances();
   document.getElementById('dynamicrange').noUiSlider.updateOptions({range:{'min':Math.min(...D,0),'max':Math.max(...D,6)},start:[D[0], D[1]]});
-
   // turn off the dynamics when re-drawing the graph (they are not drawn, just need to reset the 'dynamicsShown' flag
   if (dynamicsShown) showDynamics(); // ie. turn them off if they were on
 
+
+  /* --- end of applying the automorphism --- */
  } else {
 //  clearAutomorphism();
   if (autoFrom!=null && autoTo!=null){
