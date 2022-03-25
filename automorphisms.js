@@ -224,7 +224,7 @@ async function run(doAutomorphism=false){
 
 
   /*  DECORATION/REPORTING */
-  // show the reference node and its destination on the page (inside the graph area)
+  // show the reference node and its destination on the screen (inside the graph area)
   showFromTo();
   // cover up the local action editor (greyed out) by unhiding the "mask" over it
   document.getElementById("editorhider").classList.remove("hiddenElement");
@@ -232,9 +232,9 @@ async function run(doAutomorphism=false){
 
   /* DYNAMICS CONTROLS */
   // set the available dynamic range limits according to the just-drawn graph
-  // (note: always use a min and max limits for the slider of at least 0 and 6)
+  // (note: always use a min and max limits for the slider of 0 and 1+max(D))
   var D = gatherDistances();
-  document.getElementById('dynamicrange').noUiSlider.updateOptions({range:{'min':Math.min(...D,0),'max':Math.max(...D,6)},start:[D[0], D[1]]});
+  document.getElementById('dynamicrange').noUiSlider.updateOptions({range:{'min':Math.min(...D,0),'max':Math.max(...D,0)+1},start:[D[0], D[1]]});
   // turn off the dynamics when re-drawing the graph (they are not drawn, just need to reset the 'dynamicsShown' flag
   if (dynamicsShown) showDynamics(); // ie. turn them off if they were on
 
@@ -688,8 +688,8 @@ function labelToNode(thelabel=""){
  return thenode;
 }
 
-// function to find the SVG for a given node, by label ///////////////////////////////////////////// fn: findSVGNode
-function findSVGNode(nodelabel=null){
+// function to find the SVG for a given node, by label ///////////////////////////////////////////// fn: findSVGNodeByLabel
+function findSVGNodeByLabel(nodelabel=null){
  if (nodelabel!=null){
   var allnodes=document.getElementsByClassName("node");
   for (var j=0;j<allnodes.length;j++){
@@ -701,15 +701,26 @@ function findSVGNode(nodelabel=null){
  return null;
 }
 
-// function to get the coordinates (x,y) of an SVG node drawn on the page, by label //////////////// fn: findCoords
-function findCoords(nodelabel=null){
- var thisnode = findSVGNode(nodelabel);
- if (thisnode!=null){
-  var x = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.cx.value);
-  var y = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.cy.value);
-  var r = parseFloat(document.getElementById(thisnode).querySelector(Node="ellipse").attributes.rx.value); // assume equal to ry
+// function to get the coordinates of an SVG node on the screen using a vertex label //////////////// fn: findSVGCoordsByLabel
+function findSVGCoordsByLabel(nodelabel=null){
+ var thisnode = findSVGNodeByLabel(nodelabel); // "thisnode" is the id of the SVG element
+ if (thisnode != null){
+  return getSVGCoords(thisnode);
+ } else {
+  return null;
  }
- return [x,y,r];
+}
+
+// function to get the coordinates of an SVG node using its ID ///////////////////////////////////// fn: getSVGCoords
+function getSVGCoords(nodeid=null){
+ if (nodeid != null && document.getElementById(nodeid)){
+  var x = parseFloat(document.getElementById(nodeid).querySelector(Node="ellipse").attributes.cx.value);
+  var y = parseFloat(document.getElementById(nodeid).querySelector(Node="ellipse").attributes.cy.value);
+  var r = parseFloat(document.getElementById(nodeid).querySelector(Node="ellipse").attributes.rx.value); // assume equal to ry
+  return [x,y,r];
+ } else {
+  return null;
+ }
 }
 
 // calculate the Euclidean distance between two points ///////////////////////////////////////////// fn: euclideanDistance
@@ -724,12 +735,42 @@ function lineMidPoint(start,end,factor=0.5){
  return [alongX,alongY];
 }
 
-// function to create an arrow between two nodes /////////////////////////////////////////////////// fn: addArrow
-function addArrow(startNode,endNode,clearOldArrows=false,doAnimate=true){
- // create an SVG path between the given nodes (by label, eg. addArrow("br",labelNode([])) )
- startPosition=findCoords(startNode);
- endPosition=findCoords(endNode);
- if (startPosition[0]==undefined || endPosition[0]==undefined){
+// create an arrow between two nodes specified by their labels ///////////////////////////////////// fn: addArrowByLabel
+function addArrowByLabel(startLabel=null,endLabel=null,clearOldArrows=false,doAnimate=true){
+ // create an SVG path between the given vertices, using their labels, eg. addArrowByLabel("br","g") )
+ startPosition=findSVGCoordsByLabel(startLabel);
+ endPosition=findSVGCoordsByLabel(endLabel);
+
+ var A = addArrow(startPosition,endPosition,clearOldArrows,doAnimate);
+ return A;
+}
+
+// create an arrow between two nodes specified by their addresses ////////////////////////////////// fn: addArrowByAddress
+function addArrowByAddress(startAddress=null,endAddress=null,clearOldArrows=false,doAnimate=true){
+ // create an SVG path between the given vertices using their addresses, eg. addArrowByAddress([1,0,1],[0,1,0]) )
+ startPosition = getSVGCoords(findSVGNodeByLabel(labelNode(startAddress)));
+ endPosition = getSVGCoords(findSVGNodeByLabel(labelNode(endAddress)));
+
+ var A = addArrow(startPosition,endPosition,clearOldArrows,doAnimate);
+ return A;
+}
+
+// create an arrow between two nodes specified by their SVG nodes ////////////////////////////////// fn: addArrowBySvg
+function addArrowBySvg(startNodeId,endNodeId,clearOldArrows=false,doAnimate=true){
+ // create an SVG path between the given SVG elements using their IDs, eg. addArrowByAddress("node7","node5")
+ var startPosition = getSVGCoords(startNodeId);
+ var endPosition = getSVGCoords(endNodeId);
+
+ var A = addArrow(startPosition,endPosition,clearOldArrows,doAnimate);
+ return A;
+}
+
+// create an arrow between two coordinates ///////////////////////////////////////////////////////// fn: addArrow
+function addArrow(startPosition,endPosition,clearOldArrows=false,doAnimate=true){
+ // create an SVG path between the given coordinates
+ if (startPosition == null || endPosition == null){
+  return null;
+ } else if (startPosition[0]==undefined || endPosition[0]==undefined){
   // not found, don't make the arrow (probably tried to draw an arrow to a node which is not drawn)
   return null;
  } else {
@@ -905,7 +946,7 @@ function createSVGPath(startX,startY,endX,endY,offset=0,relativePath=false){
   var c1yALT = Math.round(mpy + offset * Math.sin(theta)); // fixed
 
   // we want arrows to curve away from the centre, so test which side of the arrow the control point is
-  if (euclideanDistance(findCoords(labelNode([])),[c1x,c1y])<euclideanDistance(findCoords(labelNode([])),[c1xALT,c1yALT])){
+  if (euclideanDistance(findSVGCoordsByLabel(labelNode([])),[c1x,c1y])<euclideanDistance(findSVGCoordsByLabel(labelNode([])),[c1xALT,c1yALT])){
    // swap
    c1x = c1xALT;
    c1y = c1yALT;
@@ -1018,19 +1059,19 @@ function decorateNodes(doAutomorphism=false){
  // if not drawing the post-automorphism graph, apply the reference and destination node classes
  // and mark the nodes with local action functions
  if (!doAutomorphism){
-  var fromNode = findSVGNode(labelNode(autoFrom));
-  var toNode = findSVGNode(labelNode(autoTo));
+  var fromNode = findSVGNodeByLabel(labelNode(autoFrom));
+  var toNode = findSVGNodeByLabel(labelNode(autoTo));
   if (fromNode != null) document.getElementById(fromNode).classList.add("referenceNode");
   if (toNode != null) document.getElementById(toNode).classList.add("destinationNode");
   if (fromNode!=null && toNode!=null){
    var fromstring = labelNode(autoFrom);
    var tostring = labelNode(autoTo);
-   addArrow(fromstring,tostring,true,false); // true: clear old arrows; false: do not animate
+   addArrowByLabel(fromstring,tostring,true,false); // true: clear old arrows; false: do not animate
   }
   // add local action decorations where warranted: [remove, now done by styleActions]
   for (thenodestr in thelocalaction){
    var thenode = thenodestr.split(","); // turn the string back into an array
-   var thenodeid = findSVGNode(labelNode(thenode)); // find the corresponding node on the screen
+   var thenodeid = findSVGNodeByLabel(labelNode(thenode)); // find the corresponding node on the screen
    if (thenodeid != null){ // make sure the node exists
     if (testLocalAction(thelocalaction[thenodestr])){ // if the saved local action is valid, mark the node as "has"
      document.getElementById(thenodeid).classList.add("haslocalaction");
@@ -1056,7 +1097,7 @@ function decorateNodes(doAutomorphism=false){
   // find fixed points and give them a specific class
   for (var eachnode in autodistance){ // loop through all the labels
    if (autodistance[eachnode]==0){
-    var svgid = findSVGNode(labelNode(stringListToArray(eachnode))); // transform; eg. "2,0" -> [2,0] -> "gr"
+    var svgid = findSVGNodeByLabel(labelNode(stringListToArray(eachnode))); // transform; eg. "2,0" -> [2,0] -> "gr"
     document.getElementById(svgid).classList.add("fixedpoint");
    }
   }
@@ -1297,9 +1338,12 @@ function showDynamics(useDistance=null,forceShow=false){
   // for each node which moved the specified distance, draw an arrow between its starting and finishing locations
   for (var eachnode in autodistance){ // loop through all the node addresses as strings (eg. "2,1,0")
    if (autodistance[eachnode]>=showRange[0] && autodistance[eachnode]<=showRange[1]){
-    var to = stringListToArray(eachnode); // this is the new location
-    var from = thenodes[thenewnodeindex[to]];
-    var A = addArrow(labelNode(to),labelNode(from));
+    // find the SVG node where "eachnode" was in the original graph
+    var startNode = "node"+(thenodeindex[eachnode]+1); // +1 because SVG ids start from 1, ie. "node1", "node2", etc.
+    // find the SVG node where "eachnode" is in the transformed graph
+    var endNode = "node"+(thenewnodeindex[eachnode]+1);
+    // draw the arrow
+    var A = addArrowBySvg(startNode,endNode);
     styleArrow(A,4,"#fff8","#ffff");
    }
   }

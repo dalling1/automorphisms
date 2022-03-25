@@ -259,7 +259,7 @@ function enableLocalAction(node,constraintElement=null,constraintValue=null){
 
  var nodestr = node.toString();
  var thislabel = labelNode(node); // eg. 'rbr'
- var thisID = findSVGNode(thislabel); // eg. node18
+ var thisID = findSVGNodeByLabel(thislabel); // eg. node18
 
  var status = examineLocalActions([node]); // input must be an array of arrays, hence the [...]
  if (debug) console.log("Node \""+thislabel+"\" status: "+status);
@@ -425,7 +425,7 @@ function saveLocalAction(thisnode=null,thisaction=null){
   thelocalaction[nodestr] = thisaction;
 
   // change the SVG node's style
-  var thenodeid = findSVGNode(labelNode(thisnode));
+  var thenodeid = findSVGNodeByLabel(labelNode(thisnode));
   if (thenodeid!=null){ // check that it exists
    document.getElementById(thenodeid).classList.remove("canhavelocalaction");
    document.getElementById(thenodeid).classList.add("haslocalaction");
@@ -599,7 +599,7 @@ function styleActions(){
  if (thenodes!=undefined && autoFrom!=null){
   for (var i=0;i<thenodes.length;i++){
    var thislabel = labelNode(thenodes[i]); // eg. 'rbr'
-   var thisID = findSVGNode(thislabel); // eg. node18
+   var thisID = findSVGNodeByLabel(thislabel); // eg. node18
    if (thisID!=null){ // the SVG node exists
     var status = examineLocalActions([thenodes[i]]); // input must be an array of arrays, hence the [...]
     // remove styles:
