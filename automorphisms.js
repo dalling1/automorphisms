@@ -159,8 +159,19 @@ function drawGraph(G=[],doAutomorphism=false){
    setupNodes(); // set the onclick function for the nodes (now that they exist)
    setSVGDefs(); // attach the SVG code for the arrow head markers
    decorateNodes(doAutomorphism);
+
+   // make a list of the SVG element ID (eg. "node8") for the vertices
+   if (doAutomorphism){
+    listOfPostNodeIds = [];
+    for (var i=0;i<thenodes.length;i++) listOfPostNodeIds[i] = findSVGNodeByLabel(labelNode(thenodes[i]));
+   } else {
+    listOfNodeIds = [];
+    for (var i=0;i<thenodes.length;i++) listOfNodeIds[i] = findSVGNodeByLabel(labelNode(thenodes[i]));
+   }
+
   });
  }
+
 } // end drawGraph
 
 // function to initiate the original graph and text //////////////////////////////////////////////// fn: run
@@ -238,7 +249,6 @@ async function run(doAutomorphism=false){
   // turn off the dynamics when re-drawing the graph (they are not drawn, just need to reset the 'dynamicsShown' flag
   if (dynamicsShown) showDynamics(); // ie. turn them off if they were on
 
-
   /* --- end of applying the automorphism --- */
  } else {
 //  clearAutomorphism();
@@ -255,8 +265,7 @@ async function run(doAutomorphism=false){
 
  // ...and draw it on the screen:
  drawGraph(G,doAutomorphism);
- // alternatively, feed it to:
- //		https://dreampuf.github.io/GraphvizOnline/
+ // alternatively, feed it to https://dreampuf.github.io/GraphvizOnline/
 
  document.body.style.cursor = "";
 
