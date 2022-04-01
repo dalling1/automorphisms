@@ -635,7 +635,7 @@ function setupNodes(){
      } else if (doautomorphism){
       // the transformed graph is shown, so add orbit tracing as the onclick behaviour
 //      var thisnodelabelalt = labelNode(thenodes[listOfNodeIds.indexOf(thisnodeid)]);
-      tracePathByLabel(thisnodelabel,20,true); // max orbit length 20, draw arrows true
+      tracePathByLabel(thisnodelabel,100,true); // max orbit length 20, draw arrows true
      }
     }
 
@@ -890,6 +890,8 @@ function clearArrows(){
  for (var i=oldarrowheads.length;i>0;i--){
   oldarrowheads[i-1].remove();
  }
+ // remove the "iscycle" note as well, for good measure
+ document.getElementById("iscycle").innerHTML = '';
 }
 
 // function to compute the path between given endpoints [from focusmodels] ///////////////////////// fn: createSVGPath

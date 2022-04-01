@@ -100,7 +100,12 @@
    bottom: -10px;
    right: -10px;
   }
-  #thedetails span {
+  #fromto {
+   margin-right: 10px;
+   color: #eee;
+  }
+  #iscycle {
+   margin-left: 10px;
    color: #eee;
   }
 
@@ -656,8 +661,8 @@
   <div id="dynamicrangecontainer" class="hiddencontainer">
    <div id="dynamicrange"></div>
   </div>
-  <div style="left:10px;bottom:-10px;"><button onclick="toggleHelp();" title="Toggle display of instructions">Instructions</button></div>
-  <div id="thedetails"><span id="fromto"></span><button style="margin-left:10px;" onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Reset Automorphism</button></div>
+  <div style="left:10px;bottom:-10px;"><button onclick="toggleHelp();" title="Toggle display of instructions">Instructions</button><span id="iscycle"></span></div>
+  <div id="thedetails"><span id="fromto"></span><button onclick="clearAutomorphism();testAutomorphism();" title="Reset automorphism">Reset Automorphism</button></div>
  </div>
  <div id="parsingInput">
   <button onclick="showEditorHelp();" title="Show text editor help" style="right: 82px;">Help</button>

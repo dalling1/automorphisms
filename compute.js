@@ -11,6 +11,7 @@ function tracePathByLabel(label,N=1,drawArrows=false){
 
  // initialise the output
  var path = [];
+ var iscycle = '';
 
  // find the label in the list of all node labels (which we create on the fly with map())
  var pn = thenodes.map(t=>labelNode(t)).indexOf(label);
@@ -29,6 +30,8 @@ function tracePathByLabel(label,N=1,drawArrows=false){
   var p = listOfPostNodeIds[pn];
   path.push(p);
   if (path[0] == p){ // the orbit is a (complete) cycle, so stop tracing it
+   if (path.length==2) iscycle = "Fixed-point";
+   else iscycle = (path.length-1).toString()+"-cycle";
    break;
   }
  }
@@ -42,6 +45,7 @@ function tracePathByLabel(label,N=1,drawArrows=false){
    styleArrow(A,6,"#5f5f","#5f58");
    if (A!=null) A.classList.add("animDelay"+i.toString());
   }
+  document.getElementById("iscycle").innerHTML = iscycle;
  }
 
  // return the path of nodes traversed by this vertex
