@@ -39,7 +39,8 @@ function tracePathByLabel(label,N=1,drawArrows=false){
   // draw arrows between pairs of the nodes (the arrow functions take care of undefined SVG elements for us)
   for (var i=0;i<path.length-1;i++){
    var A = addArrowBySvg(path[i],path[i+1]);
-   styleArrow(A,6,"#5f58","#5f5f");
+   styleArrow(A,6,"#5f5f","#5f58");
+   A.classList.add("animDelay"+i.toString());
   }
  }
 

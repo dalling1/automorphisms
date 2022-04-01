@@ -221,6 +221,7 @@
    background-color: #fff0;
    border-radius: 10px;
   }
+/*
   .autoGraph .radius5:hover ellipse,
   .autoGraph .radius7:hover ellipse,
   .autoGraph .radius9:hover ellipse,
@@ -236,6 +237,7 @@
  {
    fill: #0ff;
   }
+*/
   button {
    font-family: "Open Sans", sans-serif;
   }
@@ -450,9 +452,35 @@
 
   .animatedArrow {
    animation: movearrow linear 1s forwards;
+   fill: #000;
   }
+  :root {
+   --basedelay: 1.0;
+  }
+  .animDelay0 {animation-delay: calc(var(--basedelay)*0s);}
+  .animDelay1 {animation-delay: calc(var(--basedelay)*1s);}
+  .animDelay2 {animation-delay: calc(var(--basedelay)*2s);}
+  .animDelay3 {animation-delay: calc(var(--basedelay)*3s);}
+  .animDelay4 {animation-delay: calc(var(--basedelay)*4s);}
+  .animDelay5 {animation-delay: calc(var(--basedelay)*5s);}
+  .animDelay6 {animation-delay: calc(var(--basedelay)*6s);}
+  .animDelay7 {animation-delay: calc(var(--basedelay)*7s);}
+  .animDelay8 {animation-delay: calc(var(--basedelay)*8s);}
+  .animDelay9 {animation-delay: calc(var(--basedelay)*9s);}
+  .animDelay10 {animation-delay: calc(var(--basedelay)*10s);}
+  .animDelay11 {animation-delay: calc(var(--basedelay)*11s);}
+  .animDelay12 {animation-delay: calc(var(--basedelay)*12s);}
+  .animDelay13 {animation-delay: calc(var(--basedelay)*13s);}
+  .animDelay14 {animation-delay: calc(var(--basedelay)*14s);}
+  .animDelay15 {animation-delay: calc(var(--basedelay)*15s);}
+  .animDelay16 {animation-delay: calc(var(--basedelay)*16s);}
+  .animDelay17 {animation-delay: calc(var(--basedelay)*17s);}
+  .animDelay18 {animation-delay: calc(var(--basedelay)*18s);}
+  .animDelay19 {animation-delay: calc(var(--basedelay)*19s);}
+  .animDelay20 {animation-delay: calc(var(--basedelay)*20s);}
 
-  @keyframes movearrow {
+
+ @keyframes movearrow {
    100% {
     stroke-dashoffset: 0;
    }
