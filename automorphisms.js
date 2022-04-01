@@ -690,6 +690,8 @@ function clearAutomorphism(){
  // remove the text from the corner of the graph
  document.getElementById("fromto").innerHTML = "";
 
+ // draw the original graph
+ run();
  decorateNodes();
 }
 
