@@ -40,7 +40,7 @@ function tracePathByLabel(label,N=1,drawArrows=false){
   for (var i=0;i<path.length-1;i++){
    var A = addArrowBySvg(path[i],path[i+1]);
    styleArrow(A,6,"#5f5f","#5f58");
-   A.classList.add("animDelay"+i.toString());
+   if (A!=null) A.classList.add("animDelay"+i.toString());
   }
  }
 

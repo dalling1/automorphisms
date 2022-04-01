@@ -641,6 +641,16 @@ function setupNodes(){
 
    } // end of node onclick function
 
+   allnodes[i].onmouseenter = function() {
+    var doautomorphism = document.getElementById("thesvg").classList.contains("autoGraph");
+    var thisnodeid = this.id;
+    var thisnodelabel = this.querySelector(Node="title").textContent;
+    if (doautomorphism){
+     tracePathByLabel(thisnodelabel,20,true); // max orbit length 20, draw arrows true
+    }
+   }
+
+
    // while we are here, change the font size for the xlabels
    var nodelabels = allnodes[i].querySelectorAll(Node="text");
    if (nodelabels.length>1){
