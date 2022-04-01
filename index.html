@@ -450,12 +450,12 @@
  }
 */
 
-  .animatedArrow {
-   animation: movearrow linear 1s forwards;
-   fill: #000;
-  }
   :root {
-   --basedelay: 1.0;
+   --basedelay: 0.25;
+  }
+  .animatedArrow {
+   animation: movearrow linear calc(var(--basedelay)*1s) forwards;
+   fill: #000;
   }
   .animDelay0 {animation-delay: calc(var(--basedelay)*0s);}
   .animDelay1 {animation-delay: calc(var(--basedelay)*1s);}
