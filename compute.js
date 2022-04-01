@@ -28,6 +28,9 @@ function tracePathByLabel(label,N=1,drawArrows=false){
   var pn = listOfNodeIds.indexOf(path[i]); // path[i] is the last entry so far
   var p = listOfPostNodeIds[pn];
   path.push(p);
+  if (path[0] == p){ // the orbit is a (complete) cycle, so stop tracing it
+   break;
+  }
  }
 
  // have we been requested to draw arrows?
