@@ -12,6 +12,7 @@ function tracePathByLabel(label,N=1,drawArrows=false){
  // initialise the output
  var path = [];
  var iscycle = '';
+ document.getElementById("iscycle").innerHTML = iscycle; // reset
 
  // find the label in the list of all node labels (which we create on the fly with map())
  var pn = thenodes.map(t=>labelNode(t)).indexOf(label);
@@ -29,8 +30,8 @@ function tracePathByLabel(label,N=1,drawArrows=false){
   var pn = listOfNodeIds.indexOf(path[i]); // path[i] is the last entry so far
   var p = listOfPostNodeIds[pn];
   path.push(p);
-  if (path[0] == p){ // the orbit is a (complete) cycle, so stop tracing it
-   if (path.length==2) iscycle = "Fixed-point";
+  if (path[0] == p && p!=undefined){ // the orbit is a (complete) cycle, so stop tracing it
+   if (path[0]==path[1]) iscycle = "Fixed-point";
    else iscycle = (path.length-1).toString()+"-cycle";
    break;
   }
