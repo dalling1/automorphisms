@@ -612,6 +612,8 @@ function setupNodes(){
      showFromTo();
      // now that the reference AND destination nodes are set, enable the local action editor:
      document.getElementById("editorhider").classList.add("hiddenElement");
+     decorateNodes(doautomorphism);
+     testAutomorphism();
     } else if (setFrom){
      // set the reference node
      autoFrom = labelToNode(thisnodelabel);
@@ -621,6 +623,8 @@ function setupNodes(){
      enableLocalAction(autoFrom); // turn on the local action editing for the reference node
      // show it in the local action editor
      loadNodeAction(autoFrom);
+     decorateNodes(doautomorphism);
+     testAutomorphism();
     } else {
      // some other click behaviour... like selecting nodes for defining their local action permutation
      if (debug) console.log("Clicked on node: "+thisnodeid);
@@ -628,11 +632,13 @@ function setupNodes(){
      // ... but only if the graph is not the "transformed" one (ie. does not have the autoGraph CSS class)
      if (thelocalaction[thisnode.toString()]!=undefined && !doautomorphism){
       loadNodeAction(thisnode);
+     } else if (doautomorphism){
+      // the transformed graph is shown, so add orbit tracing as the onclick behaviour
+//      var thisnodelabelalt = labelNode(thenodes[listOfNodeIds.indexOf(thisnodeid)]);
+      tracePathByLabel(thisnodelabel,20,true); // max orbit length 20, draw arrows true
      }
     }
 
-    decorateNodes(doautomorphism);
-    testAutomorphism();
    } // end of node onclick function
 
    // while we are here, change the font size for the xlabels
@@ -954,8 +960,9 @@ function createSVGPath(startX,startY,endX,endY,offset=0,relativePath=false){
   var c1xALT = Math.round(mpx - offset * Math.cos(theta));
   var c1yALT = Math.round(mpy + offset * Math.sin(theta)); // fixed
 
-  // we want arrows to curve away from the centre, so test which side of the arrow the control point is
-  if (euclideanDistance(findSVGCoordsByLabel(labelNode([])),[c1x,c1y])<euclideanDistance(findSVGCoordsByLabel(labelNode([])),[c1xALT,c1yALT])){
+  // we want arrows to curve away from the centre (always node1), so test which side of the arrow the control point is
+  var pCentre = getSVGCoords("node1");
+  if (euclideanDistance(pCentre,[c1x,c1y])<euclideanDistance(pCentre,[c1xALT,c1yALT])){
    // swap
    c1x = c1xALT;
    c1y = c1yALT;
@@ -970,7 +977,6 @@ function createSVGPath(startX,startY,endX,endY,offset=0,relativePath=false){
   // construct the command to draw a quadratic curve
   var thepath = "M " + p1x + " " + p1y + " Q " + c1x + " " + c1y + " " + p2x + " " + p2y;
  }
- if (debug) console.log(" PATH: "+thepath);
 
  return thepath;
 }
