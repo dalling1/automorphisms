@@ -138,10 +138,11 @@ function startDragGraph(){
 }
 function dragGraph(){
  if (dragging){
-  var dragStrength = 1.5; // perhaps this should scale with the zooming (scale) of the graph
+  var dragStrength = 1.5; // scaled below according to the zoom of the graph
+  var currentZoom = getScale("graph0"); // use to scale the drag strength, to maintain mouse movement to drag displacement ratio
   var offsetX = Math.round(event.clientX-dragX0);
   var offsetY = Math.round(event.clientY-dragY0);
-  setTransform("graph0",[dragOrigin[0]+dragStrength*offsetX,dragOrigin[1]+dragStrength*offsetY]); // could add scale, rotate
+  setTransform("graph0",[dragOrigin[0]+dragStrength*offsetX/(0.5*currentZoom[0]),dragOrigin[1]+dragStrength*offsetY/(0.5*currentZoom[1])]); // could add scale, rotate
  }
 }
 function endDragGraph(){
