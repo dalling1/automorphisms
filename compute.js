@@ -43,13 +43,14 @@ function tracePathByLabel(label,N=1,drawArrows=false){
  // have we been requested to draw arrows?
  if (drawArrows){
   clearArrows();
+  // add a note about this node's orbit
+  document.getElementById("iscycle").innerHTML = iscycle;
   // draw arrows between pairs of the nodes (the arrow functions take care of undefined SVG elements for us)
   for (var i=0;i<path.length-1;i++){
    var A = addArrowBySvg(path[i],path[i+1]);
    styleArrow(A,6,"#5f5f","#5f58");
    if (A!=null) A.classList.add("animDelay"+i.toString());
   }
-  document.getElementById("iscycle").innerHTML = iscycle;
  }
 
  // return the path of nodes traversed by this vertex
