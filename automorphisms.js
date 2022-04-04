@@ -1177,19 +1177,25 @@ function toggleLabels(type=0){
  }
 }
 
-// give some information about the local action //////////////////////////////////////////////////// fn: showLAinfo
-function showLAinfo(){
+// put the requested text into the infobox (below the graph) /////////////////////////////////////// fn: showInfo
+function showInfo(text=''){
  var box = document.getElementById("infobox");
- var txt = "The local action is a permutation of the edge colourings at each vertex. If the \"constant\" switch is turned on, the local action at the reference vertex is applied at all vertices. Red and green borders mark vertices at which the local action can be and has been defined, respectively. The coloured squares in the top row represent the edge colours, with markers which can be dragged into the bottom row. The local action permutation is then defined by the order of the markers.";
+ // remove any existing content
  if (box.innerHTML.length>0){
   box.innerHTML = "";
- } else {
-  box.innerHTML = txt;
-  box.classList.add("flashy");
-  setTimeout(function(){
-   box.classList.remove("flashy");
-  }, 1500);
  }
+ // add the requested text
+ box.innerHTML = text;
+ box.classList.add("flashy");
+ setTimeout(function(){
+  box.classList.remove("flashy");
+ }, 1500);
+}
+
+// give some information about the local action //////////////////////////////////////////////////// fn: showLAinfo
+function showLAinfo(){
+ var txt = "The local action is a permutation of the edge colourings at each vertex. If the \"constant\" switch is turned on, the local action at the reference vertex is applied at all vertices. Red and green borders mark vertices at which the local action can be and has been defined, respectively. The coloured squares in the top row represent the edge colours, with markers which can be dragged into the bottom row. The local action permutation is then defined by the order of the markers.";
+ showInfo(txt);
 }
 
 // check that the automorphism is fully defined //////////////////////////////////////////////////// fn: testAutomorphism
