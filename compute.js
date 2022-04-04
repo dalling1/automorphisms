@@ -1,3 +1,34 @@
+// wrapper function for tracePathByAddress which just returns the orbit length /////////////////////////////// fn: calculateOrbitLengthByAddress
+function calculateOrbitLengthByAddress(node){
+ var tmp = tracePathByAddress(node,100,false);
+ // check that we have a cycle and return its length
+ if (tmp[0]==tmp[tmp.length-1]){
+  var Lorbit = tmp.length-1; // -1 since the last entry repeats the first
+ } else {
+  // otherwise, return -1
+  var Lorbit = -1;
+ }
+ return Lorbit;
+}
+
+// display orbit cycle lengths in the information area
+function reportOrbitLengths(){
+ // initialise
+ var L=[];
+ // get the cycle length for each node
+ for (var i=0;i<thenewnodes.length;i++) L[i]=calculateOrbitLengthByAddress(thenewnodes[i]);
+ // make a "histogram"
+ var Lcount = Array(Math.max(...L)).fill(0);
+ for (var i=0;i<L.length;i++) Lcount[L[i]]++;
+ // make some text for the info area
+ var output = '';
+ for (var i=0;i<L.length;i++){
+  if(Lcount[i]>0) output += ' Orbits of length '+i+': '+Lcount[i]+'; ';
+ }
+ // put it on the screen
+ showInfo(output);
+}
+
 // wrapper function for calling by address (eg. [0,1,0]) ///////////////////////////////////////////////////// fn: tracePathByAddress
 function tracePathByAddress(node,N=1,drawArrows=false){
  var path = tracePathByLabel(labelNode(node),N,drawArrows);
