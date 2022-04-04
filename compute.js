@@ -1,14 +1,18 @@
 // wrapper function for tracePathByAddress which just returns the orbit length /////////////////////////////// fn: calculateOrbitLengthByAddress
 function calculateOrbitLengthByAddress(node){
- var tmp = tracePathByAddress(node,100,false);
- // check that we have a cycle and return its length
- if (tmp[0]==tmp[tmp.length-1]){
-  var Lorbit = tmp.length-1; // -1 since the last entry repeats the first
+ if (node!=null){
+  var tmp = tracePathByAddress(node,100,false);
+  // check that we have a cycle and return its length
+  if (tmp[0]==tmp[tmp.length-1]){
+   var Lorbit = tmp.length-1; // -1 since the last entry repeats the first
+  } else {
+   // otherwise, return -1
+   var Lorbit = 0;
+  }
+  return Lorbit;
  } else {
-  // otherwise, return -1
-  var Lorbit = -1;
+  return 0;
  }
- return Lorbit;
 }
 
 // display orbit cycle lengths in the information area
