@@ -1,6 +1,7 @@
 // wrapper function for calling by address (eg. [0,1,0]) ///////////////////////////////////////////////////// fn: tracePathByAddress
 function tracePathByAddress(node,N=1,drawArrows=false){
  var path = tracePathByLabel(labelNode(node),N,drawArrows);
+ return path;
 }
 
 
