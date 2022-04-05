@@ -603,11 +603,11 @@ function setupNodes(){
    allnodes[i].onclick = function() {
     var thisnodeid = this.id;
     var thisnodelabel = this.querySelector(Node="title").textContent;
-    var thisnode = labelToNode(thisnodelabel);
+    var thisnode = labelToAddress(thisnodelabel);
     var doautomorphism = document.getElementById("thesvg").classList.contains("autoGraph");
     if (setTo){
      // set the destination node
-     autoTo = labelToNode(thisnodelabel);
+     autoTo = labelToAddress(thisnodelabel);
      setTo = false;
      showFromTo();
      // now that the reference AND destination nodes are set, enable the local action editor:
@@ -616,7 +616,7 @@ function setupNodes(){
      testAutomorphism();
     } else if (setFrom){
      // set the reference node
-     autoFrom = labelToNode(thisnodelabel);
+     autoFrom = labelToAddress(thisnodelabel);
      setFrom = false;
      setTo = true;
      showFromTo();
@@ -646,6 +646,7 @@ function setupNodes(){
     var thisnodeid = this.id;
     var thisnodelabel = this.querySelector(Node="title").textContent;
     if (doautomorphism){
+     loadNodeAction(labelToAddress(thisnodelabel)); // show the node's local action in the editor
      tracePathByLabel(thisnodelabel,20,true); // max orbit length 20, draw arrows true
     }
    }
@@ -705,8 +706,8 @@ function clearAutomorphism(){
  decorateNodes();
 }
 
-// inverse function from label (string, eg. 'grb') to node (address, eg. [2,0,1]) ////////////////// fn: labelToNode
-function labelToNode(thelabel=""){
+// inverse function from label (string, eg. 'grb') to node (address, eg. [2,0,1]) ////////////////// fn: labelToAddress
+function labelToAddress(thelabel=""){
  var thenode = [];
  for (var i=0;i<thelabel.length;i++){
   var indx = thelabels.indexOf(thelabel[i]);
@@ -1260,8 +1261,8 @@ function demo(n=1){
   setOutputValues();
   manageControls();
   run(false); // create the original (non-transformed) graph
-  autoFrom = labelToNode(demos[n][2]);
-  autoTo = labelToNode(demos[n][3]);
+  autoFrom = labelToAddress(demos[n][2]);
+  autoTo = labelToAddress(demos[n][3]);
   setTo = false;
   setFrom = false;
   showFromTo();

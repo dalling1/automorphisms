@@ -147,7 +147,7 @@ function isConstrained(el){
 function setTrivialLocalAction(){
  var proceed = true;
  // if the node being edited has a constraint, do nothing
- var thisnode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
+ var thisnode = labelToAddress(document.getElementById("actionnode").getAttribute("data-use-node"));
  var nodestr = thisnode.toString();
  if (thelocalconstraint[nodestr] != undefined){
   if (thelocalconstraint[nodestr][0] == thelocalconstraint[nodestr][1]){
@@ -386,7 +386,7 @@ function constrainEditor(constraint=null){
  clearEditorConstraints();
  // if constraint not given, work it out from the editor's node label (data-use-node)
  if (constraint==null){
-  var editornode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
+  var editornode = labelToAddress(document.getElementById("actionnode").getAttribute("data-use-node"));
   constraint = thelocalconstraint[editornode.toString()];
  }
 
@@ -408,7 +408,7 @@ function saveLocalAction(thisnode=null,thisaction=null){
 
  if (thisnode==null){
   // fetch the node we are saving the local action for (as an address, eg. [1,0,1,1]) from the editor:
-  var thisnode = labelToNode(document.getElementById("actionnode").getAttribute("data-use-node"));
+  var thisnode = labelToAddress(document.getElementById("actionnode").getAttribute("data-use-node"));
  }
  if (thisaction==null){
   // get the permutation from the editor
