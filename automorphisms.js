@@ -698,8 +698,10 @@ function clearAutomorphism(){
  // turn off the "constant" local action switch
  document.getElementById("input_constantauto").checked = false;
 
- // remove the text from the corner of the graph
+ // remove the text from the corner of the graph (the reference node and its destination)
  document.getElementById("fromto").innerHTML = "";
+ // remove any text in the infobox below the graph
+ showInfo('');
 
  // draw the original graph
  run();
