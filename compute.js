@@ -22,15 +22,16 @@ function reportOrbitLengths(){
  // get the cycle length for each node
  for (var i=0;i<thenewnodes.length;i++) L[i]=calculateOrbitLengthByAddress(thenewnodes[i]);
  // make a "histogram"
- var Lcount = Array(Math.max(...L)).fill(0);
+ var Lcount = Array(1+Math.max(...L)).fill(0); // +1 to account for the zero-length orbits (really missing values/non-cycles)
  for (var i=0;i<L.length;i++) Lcount[L[i]]++;
  // make some text for the info area
  var output = '';
- for (var i=0;i<L.length;i++){
+ for (var i=1;i<L.length;i++){ // don't report length 0 orbits (really missing values/non-cycles)
   if(Lcount[i]>0) output += ' Orbits of length '+i+': '+Lcount[i]+'; ';
  }
  // put it on the screen
  showInfo(output);
+ return Lcount;
 }
 
 // wrapper function for calling by address (eg. [0,1,0]) ///////////////////////////////////////////////////// fn: tracePathByAddress
