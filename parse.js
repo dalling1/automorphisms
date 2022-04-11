@@ -1,13 +1,17 @@
-function parse(){
-// var what = document.getElementById('parsewhat').value; // optional selector for different input formats
- var what = 'localaction';
- var rawinput = document.getElementById('theinput').value;
+function parse(what='localaction',rawinput=null){
+ // 'what' options are
+ //    'localaction' (the default)
+ //    'mapsto'
+ //    'listtolist'
+ // 'rawinput' is the text to parse
+ //
+ if (rawinput==null) rawinput = document.getElementById('theinput').value; // default to the input textarea
  var input = rawinput.split('\n').map(X=>X.trim());
  var comments = []
  var output = ''
  var parseReferenceNodeString = 'NOT SET';
  var parseDestinationNodeString = 'NOT SET';
- var valencyEstimate = -1;
+ var valencyEstimate = -1; // used for testing permutations
 
  // global variables for taking the editor's automorphism and putting it into the graph
  editorAutomorphismValid = false;
@@ -44,7 +48,7 @@ function parse(){
   // format for a comma-separated list, with optional spaces around the commas
   var spacedcommas = new RegExp(' *, *','g');
   // format for a list of multiple (alphanumeric) labels, possibly with a terminating comma (followed by no label: used for the root (empty) node)
-  var listformat = new RegExp('^ *([0-9a-z]+ *?, *?)*[0-9a-z]+ *?$|^ *[0-9a-z]* *,? *$','i');
+  var addressformat = new RegExp('^ *([0-9a-z]+ *?, *?)*[0-9a-z]+ *?$|^ *[0-9a-z]* *,? *$','i');
   // reference node format:
   var refformat = new RegExp('^\\s*?//\\s*?Reference node:\\s*?\\((.*)\\).*$','i');
   // destination node format:
@@ -54,9 +58,19 @@ function parse(){
   var constantactionformat = new RegExp('^\\s*\/\/\\s*constant\\s+(local\\s+)?action\\s+(enabled|on)$','i')
 
   var EOL = '<br/>'; //  var EOL = '\n';
+ } else if (what=='listtolist'){
+  console.log("Requested list to list parsing");
+  var commentformat = new RegExp('(^.*?)\\s*//\\s*(.*)$'); // the '?' makes it right-greedy instead of left (so multiple occurences of // all become part of the comment);
+  var addressformat = new RegExp('^ *([0-9a-z]+ *?, *?)*[0-9a-z]+ *?$|^ *[0-9a-z]* *,? *$','i');
+  var listlistformat = new RegExp('^ *(\\(.*?\\)) *(?:,|\t+|-+>?) *(\\(.*?\\)) *$','i');
+  var EOL = '<br/>';
+//alt:  var EOL = '\n';
+  // initialise the resulting lists
+  listtolistFrom = [];
+  listtolistTo = [];
  }
 
- /* break the input down by rows and process each one as an element of the automorphism */
+ /* break the input down by rows and process each one as mapping of nodes */
  for (var i=0;i<input.length;i++){
   if (what=='mapsto'){ // could be adapted for dot language
    var tmp = mapstoformat.exec(input[i]); // find matches
@@ -105,8 +119,8 @@ function parse(){
     var node1 = stringListToArray(term1);
     // check that each term's contents are legal: a list of numbers separated by commas
     // - three options here: a list of comma-separated numbers/letters, and a single number with optional comma, or empty
-    var checkterm1 = listformat.exec(term1);
-    var checkterm2 = listformat.exec(term2);
+    var checkterm1 = addressformat.exec(term1);
+    var checkterm2 = addressformat.exec(term2);
 
     /*
      We will do a series of tests to see if this is a valid local action:
@@ -207,23 +221,86 @@ console.log("TESTING entry is: "+parselocalaction[thisconstraint[0]].toString()+
     output += '<span class="nomatch" title="No match for the format (list1),[list2] or (list1)->[list2]">'+input[i]+'</span>';
    }
    output += comments[i]+EOL;
+
+  } else if (what='listtolist'){
+   // look for a comment: (note: in the list-to-list format there are no reference or destination nodes (and so no special comments))
+   var tmpcomments = commentformat.exec(input[i]);
+   if (tmpcomments && tmpcomments.length>2){ // ie. if the row matched (has a comment, even if the comment part is empty)
+    // found a (normal) comment, so store it in the comments array
+    comments[i] = ' <span class="comment">// '+tmpcomments[2].trim()+'</span>';
+    // now remove the comment part and pass the line on to the automorphism parser:
+    input[i] = tmpcomments[1].trim();
+   } else {
+    comments[i] = '';
+   }
+
+   // comments have now been stored and removed, next look for the () -> () entries
+
+   var tmp = listlistformat.exec(input[i].replaceAll('"','')); // find matches, ignore quotation marks
+   if (tmp && tmp[1].length && tmp[2].length){
+    // remove the () or [] and spaces around commas
+    var term1 = tmp[1].replace(spacedcommas,',').trim().slice(1,-1).trim();
+    var term2 = tmp[2].replace(spacedcommas,',').trim().slice(1,-1).trim();
+    // check that each term's contents are legal: a list of numbers separated by commas
+    // - three options here: a list of comma-separated numbers/letters, and a single number with optional comma, or empty
+    var checkterm1 = addressformat.exec(term1);
+    var checkterm2 = addressformat.exec(term2);
+    // do any additional parsing and testing here
+
+    var testlineFormat = (checkterm1 && checkterm2);
+    if (testlineFormat){
+     // replace empty terms with the empty set symbol (for the root node):
+     var showterm1 = (term1.length==0?'\u{d8}':term1);
+     var showterm2 = (term2.length==0?'\u{d8}':term2);
+
+     // no need to estimate valency (as we are not doing permutation testing)
+     // but we could include further parsing and testing here or below
+    //   eg. valency estimation: highest address value, eg. 4 in (2,1,4,0,2,3)
+    //   eg. depth estimation: length of longest term, eg. 6 for (2,1,4,0,2,3)
+
+     // store the valid entries
+     listtolistFrom.push(stringListToArray(term1));
+     listtolistTo.push(stringListToArray(term2));
+
+     // format the output
+     output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">(${showterm2})</span>`+(testlineReference?' <span class="comment refnodecomment">// reference vertex</span>':'');
+    } else {
+     // testlineFormat failed, report
+     output += '<span class="wrongformat" title="Wrong format for lists within (...)">'+input[i]+'</span>';
+    }
+   } else {
+    output += '<span class="nomatch" title="Not in the format (term1) -> (term2)">'+input[i]+'</span>';
+   }
+
+   // put back any comment that was found on this line
+   output += comments[i]+EOL;
+
   }
+
  }
 
  // display
  setEditorOutput(output);
 
- // if the automorphism in the editor (whether read from the graph or typed/pasted in) is complete and legal,
- // then set some global variables which might be used for putting the editor's automorphism into the graph:
- editorReferenceNode = parseReferenceNode; // this is the array of integers, not the string
- editorDestinationNode = parseDestinationNode;
- if (parseReferenceNodeString!="NOT SET" && parseDestinationNodeString!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[parseReferenceNodeString.toString()]!=undefined){
-  editorAutomorphismValid = true;
- } else {
-  // not complete
-  editorAutomorphismValid = false;
-  editorLocalAction = new Array; // remove any entries which might have been added
+ if (what=='localaction'){
+  // if the automorphism in the editor (whether read from the graph or typed/pasted in) is complete and legal,
+  // then set some global variables which might be used for putting the editor's automorphism into the graph:
+  editorReferenceNode = parseReferenceNode; // this is the array of integers, not the string
+  editorDestinationNode = parseDestinationNode;
+  if (parseReferenceNodeString!="NOT SET" && parseDestinationNodeString!="NOT SET" && Object.keys(editorLocalAction).length>0 && editorLocalAction[parseReferenceNodeString.toString()]!=undefined){
+   editorAutomorphismValid = true;
+  } else {
+   // not complete
+   editorAutomorphismValid = false;
+   editorLocalAction = new Array; // remove any entries which might have been added
+  }
+ } else if (what=='listtolist'){
+  // add futher testing here for listtolist:
+  //  - eg. check that the specified from-to pairs form a legal automorphism
+  //  - eg. identify any "null region" in an almost-automorphism
+  //  - etc.
  }
+
 }
 
 function syncScroll(){
