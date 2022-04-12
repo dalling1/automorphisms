@@ -35,14 +35,14 @@ function reportOrbitLengths(){
 }
 
 // wrapper function for calling by address (eg. [0,1,0]) ///////////////////////////////////////////////////// fn: tracePathByAddress
-function tracePathByAddress(node,N=1,drawArrows=false){
- var path = tracePathByLabel(labelNode(node),N,drawArrows);
+function tracePathByAddress(node,N=1,drawArrows=false,clearOldArrows=true){
+ var path = tracePathByLabel(labelNode(node),N,drawArrows,clearOldArrows);
  return path;
 }
 
 
 // find the SVG elements which a given vertex will transfer to upon N applications of the automorphism /////// fn: tracePathByLabel
-function tracePathByLabel(label,N=1,drawArrows=false){
+function tracePathByLabel(label,N=1,drawArrows=false,clearOldArrows=true){
  // make it easier to pass in the label of the root node: let people use "" instead of "Ø" (O-slash)
  if (label.length==0) label = labelNode([]);
 
@@ -66,25 +66,32 @@ function tracePathByLabel(label,N=1,drawArrows=false){
  for (var i=0;i<N;i++){
   var pn = listOfNodeIds.indexOf(path[i]); // path[i] is the last entry so far
   var p = listOfPostNodeIds[pn];
-  path.push(p);
-  if (path[0] == p && p!=undefined){ // the orbit is a (complete) cycle, so stop tracing it
-   if (path[0]==path[1]){
-    iscycle += "Fixed-point";
-   } else {
-    iscycle += (path.length-1).toString()+"-cycle";
+  if (p!=undefined){
+   path.push(p);
+   if (path[0] == p && p!=undefined){ // the orbit is a (complete) cycle, so stop tracing it
+    if (path[0]==path[1]){
+     iscycle += "Fixed-point";
+    } else {
+     iscycle += (path.length-1).toString()+"-cycle";
+    }
+    break;
    }
+  } else {
    break;
   }
  }
 
  // have we been requested to draw arrows?
  if (drawArrows){
-  clearArrows();
+  if (clearOldArrows){
+   clearArrows();
+  }
   // add a note about this node's orbit
   document.getElementById("iscycle").innerHTML = iscycle;
   // draw arrows between pairs of the nodes (the arrow functions take care of undefined SVG elements for us)
   for (var i=0;i<path.length-1;i++){
    var A = addArrowBySvg(path[i],path[i+1]);
+   if (A==null) break;
    styleArrow(A,6,"#5f5f","#5f58");
    if (A!=null) A.classList.add("animDelay"+i.toString());
   }
