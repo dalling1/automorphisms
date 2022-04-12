@@ -635,19 +635,20 @@ function setupNodes(){
      } else if (doautomorphism){
       // the transformed graph is shown, so add orbit tracing as the onclick behaviour
 //      var thisnodelabelalt = labelNode(thenodes[listOfNodeIds.indexOf(thisnodeid)]);
-      tracePathByLabel(thisnodelabel,100,true); // max orbit length 20, draw arrows true
+      tracePathByLabel(thisnodelabel,100,true); // max orbit length 100, draw arrows true
      }
     }
 
    } // end of node onclick function
 
+   // add hover/mouseover behaviour to trace nodes' orbits
    allnodes[i].onmouseenter = function() {
     var doautomorphism = document.getElementById("thesvg").classList.contains("autoGraph");
     var thisnodeid = this.id;
     var thisnodelabel = this.querySelector(Node="title").textContent;
     if (doautomorphism){
      loadNodeAction(labelToAddress(thisnodelabel)); // show the node's local action in the editor
-     tracePathByLabel(thisnodelabel,20,true); // max orbit length 20, draw arrows true
+     tracePathByLabel(thisnodelabel,100,true); // max orbit length 100, draw arrows true
     }
    }
 
