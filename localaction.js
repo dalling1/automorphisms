@@ -321,12 +321,13 @@ function updateConstraint(node,el=null,val=null){
 
 // remove local actions and constraints outwards from the given node (away from reference node) //// fn: pruneLocalAction
 function pruneLocalAction(node=null){
+ // input is an address, eg. [0,1,0]
  var debug = false;
  if (node!=null){
   var thisneighbours=findNeighbours(node);
   for (var i=0;i<thisneighbours.length;i++){
    var neigh = thisneighbours[i];
-   if (thenodeindex[neigh]!=undefined){ // the node exists in the drawn extent of the graph
+   if (findSVGNodeByLabel(labelNode(node))!=null){ // check that the node exists in the drawn extent of the graph
     if (nodeDistance(neigh,autoFrom)>nodeDistance(node,autoFrom)){ // only act on "downstream" nodes
      if (debug) console.log("downstream exists "+labelNode(neigh));
      delete thelocalaction[neigh];
