@@ -1399,6 +1399,29 @@ function showDynamics(useDistance=null,forceShow=false){
  }
 }
 
+// function to draw a listtolist-parsed list of nodes and their destinations ///////////////////////////////// fn: drawListGraph
+function drawListGraph(listFrom,listTo){
+ // reuse the global variables 'thenodes' and 'thenewnodes'
+ // previously (for local-action-defined automorphisms), 'thenodes' was the list of (already) drawn nodes: now this might not be the case
+ // but (for now) leave it up to the user to draw an 'original' graph large enough to cover their 'from' nodes
+
+ // copy the destinations over 'thenewnodes' and calculate the distance they moved
+ thenewnodes = [];
+ autodistance = [];
+ for (var i=0;i<listFrom.length;i++){
+  thenewnodes[i] = listTo[i];
+  autodistance[listFrom[i].toString()] = nodeDistance(listFrom[i],listTo[i]);
+ }
+
+ // generate the dot code for these nodes and edges
+ var listG=mkdot(true);
+
+ // draw it
+ drawGraph(listG,true);
+
+ // Note that distances have been calculated, but the indices (eg. 'thenewnodeindex') have not
+}
+
 
 /*
    INITIAL FUNCTIONS TO RUN WHEN THE PAGE LOADS:
