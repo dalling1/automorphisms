@@ -10,6 +10,7 @@
  const thenodecolour = '#999999';  // '#dddd55'; // '#ccaa00'; // was orange, then yellow
  const theautonodecolour = '#dddd55'; // post-automorphism node colour
  const theautonodecolourextended = '#ddaa66'; // post-automorphism node colour for "extended" nodes
+ const theautonodenodistcolour = '#999955'; // colour for nodes whose moved distance is not defined
  const theedgecolour = 'black'; // currently a fall-back (each edge's colour is over-ridden individually)
  const thefadednodecolour = '#eaeaea22';
  const thelabelcolour = '#000000';
@@ -97,21 +98,27 @@ function mkdot(withAutomorphism=false){
    var fontcolour = thelabelcolour;
    var xlabel = labelNode(thenodes[i]);
    var thisradius = 0.1;
-   var showdist = null;
+   var showdist = null; // if requested, this is shown in the xlabel
 
    // if there is an entry in thenewnodes, set the properties of the node
    if (thislabel!=null){
     if (findNode(thenewnodes[i],thenewnodeindex) >= NoriginalNodes) nodecolour = theautonodecolourextended; // use a different colour for extended nodes
     if (autodistance[thenewnodes[i].toString()]!=undefined){
-     thisradius = 1/autodistance[thenewnodes[i].toString()];
-     if (thisradius==Infinity) thisradius = 1.0; // was 1.25
      showdist = autodistance[thenewnodes[i].toString()];
+     thisradius = 1/showdist;
+     if (thisradius==Infinity) thisradius = 1.0; // was 1.25
     } else { // try the old label instead?
      if (autodistance[thenodes[i].toString()]!=undefined){
-      thisradius = 5/autodistance[thenodes[i].toString()];
+      console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ using original node distance to set radius for "+thenewnodes[i].toString());
       showdist = autodistance[thenodes[i].toString()];
+      thisradius = 1/showdist;
+      nodecolour = theautonodenodistcolour; // distinguish SVG nodes whose radius is not accurate
      } else {
+      // the distance this node moved is not defined (probably it came from outside the original graph)
       console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ undefined distance for node "+thenodes[i].toString());
+      showdist = null;
+      thisradius = 1;
+      nodecolour = "#555555"; // distinguish SVG nodes whose radius is not accurate
      }
     }
     // ("thislabel" not null: these are the transformed nodes)
@@ -732,7 +739,7 @@ function findSVGNodeByLabel(nodelabel=null){
  return null;
 }
 
-// function to get the coordinates of an SVG node on the screen using a vertex label //////////////// fn: findSVGCoordsByLabel
+// function to get the coordinates of an SVG node on the screen using a vertex label /////////////// fn: findSVGCoordsByLabel
 function findSVGCoordsByLabel(nodelabel=null){
  var thisnode = findSVGNodeByLabel(nodelabel); // "thisnode" is the id of the SVG element
  if (thisnode != null){
