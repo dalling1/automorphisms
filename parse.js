@@ -5,6 +5,7 @@ function parse(what='localaction',rawinput=null){
  //    'listtolist'
  // 'rawinput' is the text to parse
  //
+ var debug = false;
  if (rawinput==null) rawinput = document.getElementById('theinput').value; // default to the input textarea
  var input = rawinput.split('\n').map(X=>X.trim());
  var comments = []
@@ -261,6 +262,8 @@ console.log("TESTING entry is: "+parselocalaction[thisconstraint[0]].toString()+
      // store the valid entries
      listtolistFrom.push(stringListToArray(term1));
      listtolistTo.push(stringListToArray(term2));
+     // report on what was found:
+     if (debug) console.log("HHHHH added list-to-list FROM \""+term1+"\" TO \""+term2+"\"");
 
      // format the output
      output += `<span id="term1">(${showterm1})</span> $\\mapsto$ <span id="term2">(${showterm2})</span>`+(testlineReference?' <span class="comment refnodecomment">// reference vertex</span>':'');
