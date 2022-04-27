@@ -669,6 +669,7 @@
   <button onclick="showEditorHelp();" title="Show text editor help" style="right: 82px;">Help</button>
   <button onclick="copy('theinput');" title="Copy input text" style="right: 45px;">Copy</button>
   <button onclick="editorToAction();" title="Set automorphism">Apply</button>
+  <button onclick="parse('listtolist');drawListGraph(listtolistFrom,listtolistTo);toggleEditor();" title="Parse as destination list" style="top:30px">ListToList Apply</button>
   <textarea id="theinput" data-copy-text="" oninput="parse()" onscroll="syncScroll()"></textarea>
  </div> <!-- end parsingInput -->
  <div id="parsingOutput">
