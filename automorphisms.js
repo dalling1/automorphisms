@@ -642,7 +642,7 @@ function setupNodes(){
      } else if (doautomorphism){
       // the transformed graph is shown, so add orbit tracing as the onclick behaviour
 //      var thisnodelabelalt = labelNode(thenodes[listOfNodeIds.indexOf(thisnodeid)]);
-      tracePathByLabel(thisnodelabel,100,true); // max orbit length 100, draw arrows true
+      traceOrbitByLabel(thisnodelabel,100,true); // max orbit length 100, draw arrows true
      }
     }
 
@@ -655,7 +655,7 @@ function setupNodes(){
     var thisnodelabel = this.querySelector(Node="title").textContent;
     if (doautomorphism){
      loadNodeAction(labelToAddress(thisnodelabel)); // show the node's local action in the editor
-     tracePathByLabel(thisnodelabel,100,true); // max orbit length 100, draw arrows true
+     traceOrbitByLabel(thisnodelabel,100,true); // max orbit length 100, draw arrows true
     }
    }
 
@@ -1384,13 +1384,8 @@ function showDynamics(useDistance=null,forceShow=false){
   // for each node which moved the specified distance, draw an arrow between its starting and finishing locations
   for (var eachnode in autodistance){ // loop through all the node addresses as strings (eg. "2,1,0")
    if (autodistance[eachnode]>=showRange[0] && autodistance[eachnode]<=showRange[1]){
-    // find the SVG node where "eachnode" was in the original graph
-    var startNode = "node"+(thenodeindex[eachnode]+1); // +1 because SVG ids start from 1, ie. "node1", "node2", etc.
-    // find the SVG node where "eachnode" is in the transformed graph
-    var endNode = "node"+(thenewnodeindex[eachnode]+1);
-    // draw the arrow
-    var A = addArrowBySvg(startNode,endNode);
-    styleArrow(A,4,"#fff8","#ffff");
+    traceOrbitByLabel(labelNode(stringListToArray(eachnode)),1,true,false);
+//want:    styleArrow(A,4,"#fff8","#ffff");
    }
   }
   dynamicsShown = true;
@@ -1412,6 +1407,14 @@ function drawListGraph(listFrom,listTo){
   thenewnodes[i] = listTo[i];
   autodistance[listFrom[i].toString()] = nodeDistance(listFrom[i],listTo[i]);
  }
+
+ // set up the dynamic range for the show dynamics control:
+ //   set the available dynamic range limits according to the just-drawn graph
+ //   (note: always use a min and max limits for the slider of 0 and 1+max(D))
+ var D = gatherDistances();
+ document.getElementById('dynamicrange').noUiSlider.updateOptions({range:{'min':Math.min(...D,0),'max':Math.max(...D,0)+1},start:[D[0], D[1]]});
+ // turn off the dynamics when re-drawing the graph (they are not drawn, just need to reset the 'dynamicsShown' flag
+ if (dynamicsShown) showDynamics(); // ie. turn them off if they were on
 
  // generate the dot code for these nodes and edges
  var listG=mkdot(true);
