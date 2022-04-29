@@ -1,7 +1,7 @@
-// wrapper function for tracePathByAddress which just returns the orbit length /////////////////////////////// fn: calculateOrbitLengthByAddress
+// wrapper function for traceOrbitByAddress which just returns the orbit length /////////////////////////////// fn: calculateOrbitLengthByAddress
 function calculateOrbitLengthByAddress(node){
  if (node!=null){
-  var tmp = tracePathByAddress(node,100,false);
+  var tmp = traceOrbitByAddress(node,100,false);
   // check that we have a cycle and return its length
   if (tmp[0]==tmp[tmp.length-1]){
    var Lorbit = tmp.length-1; // -1 since the last entry repeats the first
@@ -34,15 +34,15 @@ function reportOrbitLengths(){
  return Lcount;
 }
 
-// wrapper function for calling by address (eg. [0,1,0]) ///////////////////////////////////////////////////// fn: tracePathByAddress
-function tracePathByAddress(node,N=1,drawArrows=false,clearOldArrows=true){
- var path = tracePathByLabel(labelNode(node),N,drawArrows,clearOldArrows);
+// wrapper function for calling by address (eg. [0,1,0]) ///////////////////////////////////////////////////// fn: traceOrbitByAddress
+function traceOrbitByAddress(node,N=1,drawArrows=false,clearOldArrows=true){
+ var path = traceOrbitByLabel(labelNode(node),N,drawArrows,clearOldArrows);
  return path;
 }
 
 
-// find the SVG elements which a given vertex will transfer to upon N applications of the automorphism /////// fn: tracePathByLabel
-function tracePathByLabel(label,N=1,drawArrows=false,clearOldArrows=true){
+// find the SVG elements which a given vertex will transfer to upon N applications of the automorphism /////// fn: traceOrbitByLabel
+function traceOrbitByLabel(label,N=1,drawArrows=false,clearOldArrows=true){
  // make it easier to pass in the label of the root node: let people use "" instead of "Ø" (O-slash)
  if (label.length==0) label = labelNode([]);
 
