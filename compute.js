@@ -150,14 +150,14 @@ function mapVertex(v){
 }
 
 
-// test whether nodes are neighbours
-function areNeighbours(node1,node2){ //////////////////////////////////////////////////////////////////////// fn: areNeighbours
+// test whether nodes are neighbours ///////////////////////////////////////////////////////////////////////// fn: areNeighbours
+function areNeighbours(node1,node2){
  return (Math.abs(node1.length - node2.length) == 1);
 }
 
 
-// find the edge "colour" between two adjacent nodes
-function getEdge(node1,node2){ ////////////////////////////////////////////////////////////////////////////// fn: getEdge
+// find the edge "colour" between two adjacent nodes ///////////////////////////////////////////////////////// fn: getEdge
+function getEdge(node1,node2){
  // pass nodes as addresses, eg. [0,1,2,1,2]
  if (areNeighbours(node1,node2)){
   // edge colour is the difference between the neighbours:

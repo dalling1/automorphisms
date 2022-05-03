@@ -1394,7 +1394,7 @@ function showDynamics(useDistance=null,forceShow=false){
  }
 }
 
-// function to draw a listtolist-parsed list of nodes and their destinations ///////////////////////////////// fn: drawListGraph
+// function to draw a listtolist-parsed list of nodes and their destinations /////////////////////// fn: drawListGraph
 function drawListGraph(listFrom,listTo){
  // reuse the global variables 'thenodes' and 'thenewnodes'
  // previously (for local-action-defined automorphisms), 'thenodes' was the list of (already) drawn nodes: now this might not be the case
