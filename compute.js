@@ -108,6 +108,12 @@ function mapVertex(v){
  // For now, assume a local action-based automorphism rather than a list-to-list transformation; later this can be a flag
  var vdest = null; // initialise output
 
+ // check that the automorphism has been defined
+ if (autoFrom==null || autoTo==null || Object.keys(thelocalaction).length==0){
+  // the automorphism hasn't been defined, bail out
+  return vdest;
+ }
+
  // is this the reference node? easy to return its destination:
  if (labelNode(v)==labelNode(autoFrom)){
   vdest = autoTo;
@@ -137,9 +143,8 @@ function mapVertex(v){
     vdest = [];
     for (var i=0;i<wdest.length;i++) vdest[i] = wdest[i]; // duplicate wdest...
     vdest.push(LA[e]); // ...then add the next edge, connecting wdest to vdest
-    // check for duplicate edges (eg. [0,1,1])
-    console.log('NEED TO REMOVE DUPLICATE PATH ENTRIES (ie. add a function simplifyAddress())');
-    // skip this for now
+    // remove redundant edges from the destination address
+    vdest = simplifyAddress(vdest);
    }
   } else {
    // bad: no local action could be found, abort
@@ -170,4 +175,14 @@ function getEdge(node1,node2){
   // not neighbours
   return null;
  }
+}
+
+// "simplify" addresses by removing redundant edges (eg. [0,1,1,2] simplifies to [0,2]) ////////////////////// fn: simplifyAddress
+function simplifyAddress(address){
+ for (var i=0;i<address.length-1;i++){
+  if (address[i]==address[i+1]){
+   address.splice(i,2); // remove both duplicated elements (ie. remove 2 elements starting at position i)
+  }
+ }
+ return address;
 }
