@@ -1,4 +1,4 @@
-// wrapper function for traceOrbitByAddress which just returns the orbit length /////////////////////////////// fn: calculateOrbitLengthByAddress
+// wrapper function for traceOrbitByAddress which just returns the orbit length ////////////////////////////// fn: calculateOrbitLengthByAddress
 function calculateOrbitLengthByAddress(node){
  if (node!=null){
   var tmp = traceOrbitByAddress(node,100,false);
@@ -99,4 +99,75 @@ function traceOrbitByLabel(label,N=1,drawArrows=false,clearOldArrows=true){
 
  // return the path of nodes traversed by this vertex
  return path; // eg. ["node1", "node5", "node13", "node4", ...] followed by 'undefined' if the vertex maps outside the drawn graph
+}
+
+// new approach to finding vertex destinations /////////////////////////////////////////////////////////////// fn: mapVertex
+// (for now this uses the current automorphism but in the future this could become a function argument)
+function mapVertex(v){
+ // work with vertex addresses, eg. [1,0,1], as inputs and outputs.
+ // For now, assume a local action-based automorphism rather than a list-to-list transformation; later this can be a flag
+ var vdest = null; // initialise output
+
+ // is this the reference node? easy to return its destination:
+ if (labelNode(v)==labelNode(autoFrom)){
+  vdest = autoTo;
+//  console.log('Mapped the reference node, '+labelNode(v)+' to '+labelNode(vdest));
+ } else {
+  // otherwise, carry on along the path towards the reference node:
+  var p = getPath(v,autoFrom);
+  var w = p[1]; // next step from v to ref, since p[0] == v
+  var wdest = mapVertex(w); // recursive step
+  // now we have the destination of the next vertex in the path towards the reference node
+
+  // find the relevant local action (either constant or assigned to this neighbouring node w)
+  var LA = thelocalaction[w.toString()]; // might be undefined
+  var constantAuto = document.getElementById("input_constantauto").checked;
+  if (constantAuto){
+   // use the reference node's local action:
+   LA = thelocalaction[autoFrom.toString()];
+  }
+  if (LA != undefined){
+   // good
+   // 1. which "colour" neighbour of w is v? ie. which element of the LA do we need?
+   var e = getEdge(v,w);
+   // 2. which colour does that permute to under the LA?
+   if (e==null){
+    vdest = null; // not neighbours
+   } else {
+    vdest = [];
+    for (var i=0;i<wdest.length;i++) vdest[i] = wdest[i]; // duplicate wdest...
+    vdest.push(LA[e]); // ...then add the next edge, connecting wdest to vdest
+    // check for duplicate edges (eg. [0,1,1])
+    console.log('NEED TO REMOVE DUPLICATE PATH ENTRIES (ie. add a function simplifyAddress())');
+    // skip this for now
+   }
+  } else {
+   // bad: no local action could be found, abort
+   vdest = null;
+  }
+ }
+ return vdest;
+}
+
+
+// test whether nodes are neighbours
+function areNeighbours(node1,node2){ //////////////////////////////////////////////////////////////////////// fn: areNeighbours
+ return (Math.abs(node1.length - node2.length) == 1);
+}
+
+
+// find the edge "colour" between two adjacent nodes
+function getEdge(node1,node2){ ////////////////////////////////////////////////////////////////////////////// fn: getEdge
+ // pass nodes as addresses, eg. [0,1,2,1,2]
+ if (areNeighbours(node1,node2)){
+  // edge colour is the difference between the neighbours:
+  if (node1.length>node2.length){
+   return node1[node1.length-1];
+  } else {
+   return node2[node2.length-1];
+  }
+ } else {
+  // not neighbours
+  return null;
+ }
 }
