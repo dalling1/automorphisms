@@ -265,7 +265,7 @@ async function run(doAutomorphism=false){
  }
 
  // generate the dot code (for original or automorphed graph)
- G = mkdot(doAutomorphism);
+ var G = mkdot(doAutomorphism);
  // ...and display it as text:
  document.getElementById("theoutput").innerHTML = "<pre>"+G+"</pre>";
  document.getElementById("theoutput").setAttribute("data-copy-text",G); // for the clipboard
