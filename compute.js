@@ -154,6 +154,75 @@ function mapVertex(v){
  return vdest;
 }
 
+// new approach to finding vertex destinations /////////////////////////////////////////////////////////////// fn: fastmapVertex
+// (for now this uses the current automorphism but in the future this could become a function argument)
+//  - this 'fast' version caches vertex destinations as they are calculated: this greatly speeds up
+//    mapping many vertices (for example, the whole graph)
+MAPCACHE=[];
+function fastmapVertex(v,startCache=true){
+ // work with vertex addresses, eg. [1,0,1], as inputs and outputs.
+ // For now, assume a local action-based automorphism rather than a list-to-list transformation; later this can be a flag
+ var vdest = null; // initialise output
+
+ /* CHECK CACHE */
+ if (MAPCACHE.hasOwnProperty(v)){
+  // v is a key in the cache (ie. this vertex has been mapped before)
+  // return straight away, there is nothing else to do:
+  return MAPCACHE[v];
+ }
+
+
+ // check that the automorphism has been defined
+ if (autoFrom==null || autoTo==null || Object.keys(thelocalaction).length==0){
+  // the automorphism hasn't been defined, bail out
+  return vdest;
+ }
+
+ // is this the reference node? easy to return its destination:
+ if (labelNode(v)==labelNode(autoFrom)){
+  vdest = autoTo;
+//  console.log('Mapped the reference node, '+labelNode(v)+' to '+labelNode(vdest));
+ } else {
+  // otherwise, carry on along the path towards the reference node:
+  var p = getPath(v,autoFrom);
+  var w = p[1]; // next step from v to ref, since p[0] == v
+  var wdest = fastmapVertex(w,false); // recursive step ('false' says don't create cache)
+  // now we have the destination of the next vertex in the path towards the reference node
+
+  // find the relevant local action (either constant or assigned to this neighbouring node w)
+  var LA = thelocalaction[w.toString()]; // might be undefined
+  var constantAuto = document.getElementById("input_constantauto").checked;
+  if (constantAuto){
+   // use the reference node's local action:
+   LA = thelocalaction[autoFrom.toString()];
+  }
+  if (LA != undefined){
+   // good
+   // 1. which "colour" neighbour of w is v? ie. which element of the LA do we need?
+   var e = getEdge(v,w);
+   // 2. which colour does that permute to under the LA?
+   if (e==null){
+    vdest = null; // not neighbours
+   } else {
+    vdest = [];
+    for (var i=0;i<wdest.length;i++) vdest[i] = wdest[i]; // duplicate wdest...
+    vdest.push(LA[e]); // ...then add the next edge, connecting wdest to vdest
+    // remove redundant edges from the destination address
+    vdest = simplifyAddress(vdest);
+   }
+  } else {
+   // bad: no local action could be found, abort
+   vdest = null;
+  }
+ }
+
+ /* ADD TO CACHE */
+ MAPCACHE[v] = vdest;
+
+ // and return the destination of this vertex
+ return vdest;
+}
+
 
 // test whether nodes are neighbours ///////////////////////////////////////////////////////////////////////// fn: areNeighbours
 function areNeighbours(node1,node2){
